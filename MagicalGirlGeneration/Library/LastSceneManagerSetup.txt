@@ -1,5 +1,5 @@
 sceneSetups:
-- path: Assets/00_Scenes/30_CharacterSelect.unity
+- path: Assets/00_Scenes/40_Prologue.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0
