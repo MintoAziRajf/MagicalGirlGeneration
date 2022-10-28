@@ -11,6 +11,8 @@ public class CollisionManager : MonoBehaviour
     private const int DAMAGE = 3;
     private bool needReplace = false;
 
+    private const int DAMAGE_FRAME = 5;
+
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
     [Header("EMPTY,PLAYER,AVOID,DAMAGE")][SerializeField] private Color[] gridColor = new Color[4];
     private void Awake()
@@ -18,11 +20,11 @@ public class CollisionManager : MonoBehaviour
         InitGrid();
     }
  
-    public void DamageGrid(int x, int y, int frame, int power)
+    public void DamageGrid(int x, int y, int power)
     {
-        StartCoroutine(DamageCollision(x, y, frame, power));
+        StartCoroutine(DamageCollision(x, y, power));
     }
-    private IEnumerator DamageCollision(int x, int y, int frame, int power)
+    private IEnumerator DamageCollision(int x, int y,int power)
     {
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
@@ -40,7 +42,7 @@ public class CollisionManager : MonoBehaviour
         //ダメージフィールド生成
         collisionGrid[x, y] = power;
         //持続
-        for (int i = 0; i < frame; i++)
+        for (int i = 0; i < DAMAGE_FRAME; i++)
         {
             yield return null;
         }
