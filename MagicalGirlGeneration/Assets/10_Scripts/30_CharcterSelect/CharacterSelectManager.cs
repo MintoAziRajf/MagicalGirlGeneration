@@ -32,7 +32,7 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Sprite[] characterSprite = new Sprite[3]; //使用するキャラのスプライト
     private Image currentImage, beforeImage; //現在、前の見た目
 
-    [SerializeField] private Text name = null, score = null, rank = null; //キャラクターの名前、ハイスコア、ランクの表示先
+    [SerializeField] private Text characterName = null, score = null, rank = null; //キャラクターの名前、ハイスコア、ランクの表示先
     [SerializeField] private string[] nameString = new string[3]; //キャラクターの名前
     //------------------------------
 
@@ -68,6 +68,13 @@ public class CharacterSelectManager : MonoBehaviour
         {
             Debug.Log("左スクロール");
             SetCharacter(false);
+        }
+        //選択
+        if (Input.GetButtonDown("Submit"))
+        {
+            DataStorage.instance.PlayerType = (int)currentCharacter;
+            DataStorage.instance.SetNovel(true);
+            LoadManager.instance.LoadScene("40_Prologue");
         }
     }
     
@@ -143,6 +150,6 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     private void DisplayCharacterInfo()
     {
-        name.text = nameString[(int)currentCharacter];
+        characterName.text = nameString[(int)currentCharacter];
     }
 }
