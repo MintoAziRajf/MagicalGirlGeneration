@@ -8,8 +8,8 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
-[Ll]ibrary/
-
+/[Ll]ibrary/
+[Aa]rtifacts/
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 
