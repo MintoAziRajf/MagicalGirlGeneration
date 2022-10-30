@@ -14,40 +14,41 @@ public class CollisionManager : MonoBehaviour
     private const int DAMAGE_FRAME = 5;
 
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
-    [Header("EMPTY,PLAYER,AVOID,DAMAGE")][SerializeField] private Color[] gridColor = new Color[4];
+    [Header("EMPTY,PLAYER,AVOID,DAMAGE")] [SerializeField] private Color[] gridColor = new Color[4];
     private void Awake()
     {
         InitGrid();
     }
- 
-    public void DamageGrid(int x, int y, int power)
-    {
-        StartCoroutine(DamageCollision(x, y, power));
-    }
-    private IEnumerator DamageCollision(int x, int y,int power)
+
+    public IEnumerator DamageGrid(int x, int y, int power, int frame)
     {
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
         {
-            PlayerDamaged(collisionGrid[x, y]);
+            PlayerDamaged(power);
+            Debug.Log("プレイヤーに" + power + "のダメージ!");
             yield break;
         }
         //生成先に回避判定があったら成功判定を送る
         if (collisionGrid[x, y] == AVOID)
         {
-            //EvationSuccess;
+            //AvoidSuccess;
+            Debug.Log("回避成功!");
             yield break;
         }
 
         //ダメージフィールド生成
         collisionGrid[x, y] = power;
         //持続
-        for (int i = 0; i < DAMAGE_FRAME; i++)
+        for (int i = 0; i < frame; i++)
         {
             yield return null;
         }
         //ダメージフィールド削除
-        collisionGrid[x, y] = EMPTY;
+        if(collisionGrid[x, y] == power)
+        {
+            collisionGrid[x, y] = EMPTY;
+        }
     }
 
     /// <summary>
@@ -115,7 +116,7 @@ public class CollisionManager : MonoBehaviour
         }
         //移動先にプレイヤーを置く
         if (needReplace) return;
-        
+
         collisionGrid[x, y] = PLAYER;
     }
 
@@ -135,7 +136,9 @@ public class CollisionManager : MonoBehaviour
             for (int j = 0; j < 3; j++)
             {
                 int index = i + j * 3;
-                gridObj[index].color = gridColor[collisionGrid[i, j]];
+                int color = collisionGrid[i, j];
+                if (color >= DAMAGE) color = DAMAGE;
+                gridObj[index].color = gridColor[color];
             }
         }
     }
