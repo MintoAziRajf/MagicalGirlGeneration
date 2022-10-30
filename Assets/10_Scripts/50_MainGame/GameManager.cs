@@ -4,5 +4,13 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    
+    public void GameOver()
+    {
+
+    }
+
+    public void GameClear()
+    {
+
+    }
 }

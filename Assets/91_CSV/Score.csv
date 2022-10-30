@@ -1,7 +1,4 @@
-﻿CSVName
-Prologue_RED
-Prologue_BLUE
-Prologue_YELLOW
-Prologue_RED
-Prologue_BLUE
-Prologue_YELLOW
+﻿キャラ,体力(通常時),体力(変身後),攻撃回数,合計ダメージ(通常時),合計ダメージ(変身後),攻撃回数(必殺技),合計ダメージ(必殺技),移動クールタイム
+Red,100,1000,3,30,150,10,400,30
+Blue,80,800,10,40,200,20,300,20
+Yellow,200,2000,1,40,200,1,500,40

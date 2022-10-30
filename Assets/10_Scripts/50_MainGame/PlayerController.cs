@@ -2,9 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] private TextAsset statusCSV = null;
+    List<string[]> statusData = new List<string[]>();
+    private enum STATUS
+    {
+        NOR_HP = 1,
+        EVO_HP = 2,
+        ATTACK_FREQ = 3,
+        NOR_DAMAGE = 4,
+        EVO_DAMAGE = 5,
+        SKILL_FREQ = 6,
+        SKILL_DAMAGE = 7,
+        MOVE_COOLTIME = 8,
+        ATTACK_LINE = 9
+    }
+    private int type = 0;
+
     [SerializeField] private GameObject GamaManager = null;
     CollisionManager collisionManager;
     GameManager gameManager;
@@ -16,10 +33,7 @@ public class PlayerController : MonoBehaviour
     private const int ATTACK = 1;
     private const int SKILL = 2;
 
-    private int type = 0;
-    private const int RED = 0;
-    private const int BLUE = 1;
-    private const int YELLOW = 2;
+    
     //----------UI------------
     [SerializeField] private Image moveDisplay = null;
     [SerializeField] private Image avoidDisplay = null;
@@ -31,13 +45,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Image evolutionDisplay = null;
     private float evolutionCurrent = 0f;
     private float displayDelay = 20f;
+    //----------HP--------------
+    private int hp = 100;
+    private int HP_NOR_MAX = 100;
+    private int HP_EVO_MAX = 100;
+    private const int HP_MIN = 0;
     //----------移動関連------------
     private int currentX = 1, currentY = 1;
     private const int LIMIT_MIN = 0;
     private const int LIMIT_MAX = 2;
     private Vector3 targetPos;
     private const float SPEED = 20f;
-    private const int MOVE_COOLTIME = 30;
+    private int MOVE_COOLTIME = 30;
     private enum DIRECTION
     {
         UP = 0,
@@ -68,6 +87,12 @@ public class PlayerController : MonoBehaviour
         new Vector3(0f, -6f, 0f),
         new Vector3(0f, 6f, 0f)
     };
+
+    private int ATTACK_DAMAGE_NOR = 0;
+    private int ATTACK_DAMAGE_EVO = 0;
+    private int ATTACK_FREQ = 0;
+    private int SKILL_DAMAGE = 0;
+    private int SKILL_FREQ = 0;
     //------------------------------
 
     //----------スキル関連----------
@@ -85,6 +110,21 @@ public class PlayerController : MonoBehaviour
     private float evoTime = 0f;
     private int evoGauge = 0;
     private bool isEvo = false;
+    public bool IsEvo
+    {
+        set
+        {
+            isEvo = value;
+            if (isEvo)
+            {
+                StartCoroutine(WaitAnim("Evolution"));
+            }
+            else
+            {
+                StartCoroutine(WaitAnim("SolveEvolution"));
+            }
+        }
+    }
     //------------------------------
 
     //----------操作フラグ----------
@@ -102,11 +142,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        InitTiles();
-        SetScript();
-        SetCharacter();
-        SetUI();
-        SetAttackTile();
+        Initialize();
     }
 
     private void Update()
@@ -272,6 +308,12 @@ public class PlayerController : MonoBehaviour
         targetPos = targetPos + ATTACK_MOVE[attackType];
         CheckTile();
     }
+    private void AttackEnemy(int damage, int freq)
+    {
+        for(int i = 0; i < freq; i++){
+            //hp -= damage;
+        }
+    }
     //------------------------------------------------------------------
     
     //--------------------------変身関連-------------------------------
@@ -377,7 +419,45 @@ public class PlayerController : MonoBehaviour
         isSkill = false;
     }
     //--------------------------------------------------------------
+
+    //-----------HP---------
+    public void Damage(int value)
+    {
+        hp = Mathf.Max(hp - value, HP_MIN);
+        if (hp == HP_MIN)
+        {
+            //dead
+            Debug.Log("死にました。");
+        }
+    }
+    public void Heal(int value)
+    {
+        //hp = Mathf.Min(hp + value, HP_MAX);
+    }
     //------init--------
+    private void Initialize()
+    {
+        LoadStatus();
+        SetScript();
+        InitTiles();
+        SetCharacter();
+        SetUI();
+        SetAttackTile();
+    }
+    
+    private void LoadStatus()
+    {
+        StringReader reader = new StringReader(statusCSV.text);
+
+        string line = null;
+        line = reader.ReadLine(); //見出し行をスキップする
+        while (reader.Peek() != -1) // reader.Peekが-1になるまで
+        {
+            line = reader.ReadLine(); // 一行ずつ読み込み
+            statusData.Add(line.Split(',')); // , 区切りでリストに追加
+        }
+        reader.Close();
+    }
     private void SetScript()
     {
         collisionManager = GamaManager.GetComponent<CollisionManager>();
@@ -400,6 +480,15 @@ public class PlayerController : MonoBehaviour
         type = DataStorage.instance.PlayerType;
         targetPos = transform.localPosition;
         collisionManager.PlayerMoved(currentX, currentY);
+        HP_NOR_MAX = ReturnStatus(STATUS.NOR_HP);
+        HP_EVO_MAX = ReturnStatus(STATUS.EVO_HP);
+        ATTACK_FREQ = ReturnStatus(STATUS.ATTACK_FREQ);
+        ATTACK_DAMAGE_NOR = ReturnStatus(STATUS.NOR_DAMAGE);
+        ATTACK_DAMAGE_EVO = ReturnStatus(STATUS.EVO_DAMAGE);
+        SKILL_DAMAGE = ReturnStatus(STATUS.SKILL_DAMAGE);
+        SKILL_FREQ = ReturnStatus(STATUS.SKILL_FREQ);
+        MOVE_COOLTIME = ReturnStatus(STATUS.MOVE_COOLTIME);
+        attackType = ReturnStatus(STATUS.ATTACK_LINE);
     }
 
     private void SetAttackTile()
@@ -415,5 +504,11 @@ public class PlayerController : MonoBehaviour
         avoidCurrentTime = AVOID_COOLTIME;
         skillCurrentTime = SKILL_COOLTIME;
         StartCoroutine(MessageManager.instance.DisplayMessage("さぁ世界を救いに行こう！"));
+    }
+
+    private int ReturnStatus(STATUS s)
+    {
+        int value = int.Parse(statusData[type][(int)s]);
+        return value;
     }
 }
