@@ -1,8 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using System.IO;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,6 +10,7 @@ public class PlayerController : MonoBehaviour
     Evolution evolution;
     GameUI gameUI;
     PlayerSkill skill;
+    PlayerHP playerHP;
 
     private int[,] playerGrid = new int[3, 3];
     private int[,] skillGrid = new int[3, 3];
@@ -73,12 +71,6 @@ public class PlayerController : MonoBehaviour
     public int SkillFreq { set { skillFreq = value;} }
     //------------------------------
 
-    //----------スキル関連----------
-    private int skillTiles = 4;
-    private int currentSkillTiles = 0;
-    private const int SKILL_COOLTIME = 600;
-    //------------------------------
-
     //----------変身関連------------
     private bool isEvo = false;
     public bool IsEvo
@@ -86,6 +78,8 @@ public class PlayerController : MonoBehaviour
         set
         {
             isEvo = value;
+            playerHP.IsEvo = value;
+            skill.IsEvo = value;
             if (isEvo)
             {
                 StartCoroutine(WaitAnim("Evolution"));
@@ -124,7 +118,7 @@ public class PlayerController : MonoBehaviour
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
         canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill;
         if (!canInput) return;
-        //
+        evolution.Check();
         InputDirection();
     }
     //-------------------------UI-------------------------------
@@ -179,7 +173,6 @@ public class PlayerController : MonoBehaviour
             {
                 collisionManager.PlayerMoved(currentX, currentY);
                 StartCoroutine(MoveDelay());
-                Debug.Log("a");
             }
             return;
         }
@@ -222,7 +215,7 @@ public class PlayerController : MonoBehaviour
     {
         isMove = true;
         gameUI.MoveCurrentTime = 0;
-        for (int i = 0; i < moveCooltime; i++)
+        for (int i = 1; i <= moveCooltime; i++)
         {
             gameUI.MoveCurrentTime = i;
             yield return null;
@@ -285,7 +278,7 @@ public class PlayerController : MonoBehaviour
     }
     //------------------------------------------------------------------
     
-    //--------------------------変身関連---------------------------------
+    //-------------------------カットイン関連---------------------------------
     private IEnumerator WaitAnim(string s)
     {
         isAnim = true;
@@ -325,6 +318,7 @@ public class PlayerController : MonoBehaviour
         evolution = GetComponent<Evolution>();
         gameUI = GetComponent<GameUI>();
         skill = GetComponent<PlayerSkill>();
+        playerHP = GetComponent<PlayerHP>();
     }
     private void InitTiles()
     {
@@ -351,8 +345,8 @@ public class PlayerController : MonoBehaviour
     private void SetUI()
     {
         gameUI.MoveCooltime = moveCooltime;
+        gameUI.MoveCurrentTime = moveCooltime;
         gameUI.AvoidCooltime = AVOID_COOLTIME;
-        gameUI.SkillCooltime = SKILL_COOLTIME;
         StartCoroutine(MessageManager.instance.DisplayMessage("さぁ世界を救いに行こう！"));
     }
 }

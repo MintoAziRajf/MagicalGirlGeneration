@@ -45,6 +45,7 @@ public class StatusSetter : MonoBehaviour
     {
         playerController = GetComponent<PlayerController>();
         playerHP = GetComponent<PlayerHP>();
+        SetStatus();
     }
     private void SetStatus()
     {
