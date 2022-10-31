@@ -22,6 +22,7 @@ public class CollisionManager : MonoBehaviour
 
     public IEnumerator DamageGrid(int x, int y, int power, int frame)
     {
+        Debug.Log(collisionGrid[x, y]);
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
         {
@@ -102,7 +103,7 @@ public class CollisionManager : MonoBehaviour
         {
             for (int j = 0; j < 3; j++)
             {
-                if (collisionGrid[i, j] == PLAYER) collisionGrid[i, j] = value;
+                if (collisionGrid[i, j] == PLAYER) collisionGrid[i, j] = value; 
             }
         }
     }
@@ -116,8 +117,8 @@ public class CollisionManager : MonoBehaviour
         }
         //移動先にプレイヤーを置く
         if (needReplace) return;
-
         collisionGrid[x, y] = PLAYER;
+        
     }
 
     private void PlayerDamaged(int value)

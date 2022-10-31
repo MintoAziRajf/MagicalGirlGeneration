@@ -5,9 +5,12 @@ using UnityEngine;
 public class Evolution : MonoBehaviour
 {
     GameUI gameUI;
+    PlayerController playerController;
+
     private void Awake()
     {
-        gameUI = GetComponent<GameUI>();
+        gameUI = this.GetComponent<GameUI>();
+        playerController = this.GetComponent<PlayerController>();
         gameUI.EvolutionMax = EVO_MAX;
         gameUI.EvolutionCurrentGauge = EVO_MIN;
     }
@@ -37,7 +40,7 @@ public class Evolution : MonoBehaviour
             //変身
             isEvo = true; 
             //set
-            //playerController.IsEvo = true;
+            playerController.IsEvo = true;
         }
         //ゲージがMIN　且つ　変身しているとき
         if (evoGauge == EVO_MIN && isEvo)
@@ -45,7 +48,7 @@ public class Evolution : MonoBehaviour
             //変身を解除
             isEvo = false;
             //set
-            //playerController.IsEvo = false;
+            playerController.IsEvo = false;
         }
     }
     
