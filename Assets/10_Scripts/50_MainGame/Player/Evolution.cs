@@ -4,6 +4,14 @@ using UnityEngine;
 
 public class Evolution : MonoBehaviour
 {
+    GameUI gameUI;
+    private void Awake()
+    {
+        gameUI = GetComponent<GameUI>();
+        gameUI.EvolutionMax = EVO_MAX;
+        gameUI.EvolutionCurrentGauge = EVO_MIN;
+    }
+
     private const int EVO_MAX = 100;  //ゲージ最大値
     private const int EVO_MIN = 0;    //最小値
     private const int EVO_MOVE = 5;　 //移動時のゲージ上昇量
@@ -16,6 +24,7 @@ public class Evolution : MonoBehaviour
     
     private void Update()
     {
+        gameUI.EvolutionCurrentGauge = evoGauge;
         if (!isEvo) return;
         Decrease();
     }
@@ -44,8 +53,18 @@ public class Evolution : MonoBehaviour
     /// 変身ゲージを溜める
     /// </summary>
     /// <param name="value">増加量</param>
-    public void Increase(int value)
+    public void Increase(string s)
     {
+        int value = 0;
+        if (s == "Attack")
+        {
+            value = EVO_ATTACK;
+        }
+        else if(s == "Move")
+        {
+            value = EVO_MOVE;
+        }
+
         //最大値を上回らないように増加させる
         evoGauge = Mathf.Min(evoGauge + value, EVO_MAX);
     }

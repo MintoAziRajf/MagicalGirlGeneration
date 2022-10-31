@@ -4,6 +4,15 @@ using UnityEngine;
 
 public class PlayerSkill : MonoBehaviour
 {
+    PlayerController playerController;
+    GameUI gameUI;
+    private void Awake()
+    {
+        playerController = this.GetComponent<PlayerController>();
+        gameUI = this.GetComponent<GameUI>();
+        gameUI.SkillCooltime = SKILL_COOLTIME;
+    }
+
     private int maxTiles = 4;//スキルタイルの最大枚数
     private int currentTiles = 0;//現在の枚数
     private const int SKILL_COOLTIME = 600;//スキルタイル再生成までの時間(フレーム)
@@ -19,6 +28,7 @@ public class PlayerSkill : MonoBehaviour
 
     private void Update()
     {
+        gameUI.SkillCurrentTime = time;
         //変身中、タイルが残っていない
         bool canGenerate = isEvo && currentTiles == 0;
         if (canGenerate)
@@ -52,7 +62,7 @@ public class PlayerSkill : MonoBehaviour
     private void RandomGenerate()
     {
         //プレイヤーの現在の位置を取得
-        int playerPos = 0;//playerController.CurrentX + playerController.CurrentY * 3;
+        int playerPos = playerController.CurrentX + playerController.CurrentY * 3;
 
         List<int> numbers = new List<int>();
         //生成可能な位置を追加
@@ -78,13 +88,12 @@ public class PlayerSkill : MonoBehaviour
         }
     }
 
-    private void RemoveSkillTile()
+    public void RemoveTile()
     {
         currentTiles--;
         if (currentTiles == 0)
         {
-            //playerController.Skill();
-            //StartCoroutine(UseSkill());
+            StartCoroutine(playerController.Skill());
         }
     }
 }

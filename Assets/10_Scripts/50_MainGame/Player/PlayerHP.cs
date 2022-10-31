@@ -6,8 +6,8 @@ public class PlayerHP : MonoBehaviour
 {
     private int hp = 0; //現在のヒットポイント
     private int minHP = 0; //最小値
-    private int maxHP = 0; //最大値
-    private int evoHP = 0; //変身後の最大値
+    private int maxHP = 0; //現在の最大値
+    private int evoHP = 0; //変身後の追加Hp
     //setter
     public int EvoHP
     {
@@ -19,7 +19,22 @@ public class PlayerHP : MonoBehaviour
     {
         set { normalHP = value; }
     }
-
+    private bool isEvo = false;
+    public bool IsEvo {
+        set {
+            isEvo = value;
+            if(isEvo)
+            {
+                maxHP = normalHP + evoHP;
+                hp += evoHP;
+            }
+            else
+            {
+                maxHP = normalHP;
+                if(hp >= normalHP) hp = normalHP;
+            }
+        }
+    }
     public void Damage(int value)
     {
         hp = Mathf.Max(hp - value, minHP);
