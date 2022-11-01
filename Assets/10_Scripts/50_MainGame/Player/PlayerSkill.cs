@@ -44,15 +44,15 @@ public class PlayerSkill : MonoBehaviour
     /// <param name="y">プレイヤーの位置X</param>
     private void GenerateTile()
     {
-        //タイルの枚数を設定
-        currentTiles = maxTiles;
         //クールタイム
         if (time < SKILL_COOLTIME)
         {
             time++;
             return;
         }
-        
+        //タイルの枚数を設定
+        time = 0;
+        currentTiles = maxTiles;
         RandomGenerate();
     }
 
@@ -63,7 +63,6 @@ public class PlayerSkill : MonoBehaviour
     {
         //プレイヤーの現在の位置を取得
         int playerPos = playerController.CurrentX + playerController.CurrentY * 3;
-
         List<int> numbers = new List<int>();
         //生成可能な位置を追加
         for (int i = 0; i < 9; i++)
@@ -77,12 +76,11 @@ public class PlayerSkill : MonoBehaviour
             //ランダムな数字を取得
             int index = Random.Range(0, numbers.Count);
             //残ってる位置から生成位置を設定
-            int x = numbers[index] / 3;
-            int y = numbers[index] % 3;
+            int x = numbers[index] % 3;
+            int y = numbers[index] / 3;
             
             //
-            //playerController.SetSkillGrid(x,y);
-
+            playerController.SetSkillGrid(x,y);
             //使った位置を消す
             numbers.RemoveAt(index);
         }

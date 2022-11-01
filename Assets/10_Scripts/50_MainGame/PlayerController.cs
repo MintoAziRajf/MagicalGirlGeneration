@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private GameObject GamaManager = null;
+    [SerializeField] private GameObject Enemy = null;
     CollisionManager collisionManager;
     GameManager gameManager;
     CutIn cutIn;
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour
     GameUI gameUI;
     PlayerSkill skill;
     PlayerHP playerHP;
+    EnemyManager enemyManager;
 
     private int[,] playerGrid = new int[3, 3];
     private int[,] skillGrid = new int[3, 3];
@@ -112,13 +114,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        DisplayGrid();
         
+    }
+    private void FixedUpdate()
+    {
+        DisplayGrid();
+        evolution.Check();
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
         canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill;
         if (!canInput) return;
-        evolution.Check();
+        
         InputDirection();
     }
     //-------------------------UI-------------------------------
@@ -255,11 +261,11 @@ public class PlayerController : MonoBehaviour
     {
         evolution.Increase("Attack");
         isAttack = true;
-        yield return StartCoroutine(cutIn.Attack(isEvo));
+        
         //damage
-        if(isEvo) AttackEnemy(damageEvolution,attackFreq);
-        else AttackEnemy(damageNormal, attackFreq);
-
+        if(isEvo) AttackEnemy(damageEvolution / attackFreq, attackFreq);
+        else AttackEnemy(damageNormal / attackFreq, attackFreq);
+        yield return StartCoroutine(cutIn.Attack(isEvo));
         isAttack = false;
         BringBackPlayer();
     }
@@ -272,9 +278,7 @@ public class PlayerController : MonoBehaviour
     }
     private void AttackEnemy(int damage, int freq)
     {
-        for(int i = 0; i < freq; i++){
-            //hp -= damage;
-        }
+        StartCoroutine(enemyManager.Damaged(damage, freq));
     }
     //------------------------------------------------------------------
     
@@ -289,12 +293,16 @@ public class PlayerController : MonoBehaviour
 
 
     //--------------------------SKILL-------------------------------
-    
+    public void SetSkillGrid(int x, int y)
+    {
+        skillGrid[x, y] = SKILL;
+    }
     public IEnumerator Skill()
     {
         yield return new WaitUntil(() => !isAttack);
         isSkill = true;
         yield return StartCoroutine(cutIn.Skill());
+        AttackEnemy(damageSkill / skillFreq, skillFreq);
         //damage
         isSkill = false;
     }
@@ -319,6 +327,7 @@ public class PlayerController : MonoBehaviour
         gameUI = GetComponent<GameUI>();
         skill = GetComponent<PlayerSkill>();
         playerHP = GetComponent<PlayerHP>();
+        enemyManager = Enemy.GetComponent<EnemyManager>();
     }
     private void InitTiles()
     {

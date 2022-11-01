@@ -21,7 +21,7 @@ public class Evolution : MonoBehaviour
     private const int EVO_ATTACK = 10;//攻撃時のゲージ上昇量
     private const int EVO_TICK = -1;　//毎秒減る値
     private float evoTime = 0f;//秒数記録用
-    private int evoGauge = 0;  //現在のゲージ 
+    private int evoGauge = 90;  //現在のゲージ 
     private bool isEvo = false;//変身しているかどうか
 
     
@@ -58,6 +58,7 @@ public class Evolution : MonoBehaviour
     /// <param name="value">増加量</param>
     public void Increase(string s)
     {
+        if (isEvo) return;
         int value = 0;
         if (s == "Attack")
         {

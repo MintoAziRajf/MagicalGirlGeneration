@@ -41,12 +41,14 @@ public class StatusSetter : MonoBehaviour
         reader.Close();
         SetScript();
     }
+
     private void SetScript()
     {
         playerController = GetComponent<PlayerController>();
         playerHP = GetComponent<PlayerHP>();
         SetStatus();
     }
+
     private void SetStatus()
     {
         PLAYER_TYPE = DataStorage.instance.PlayerType;
