@@ -7,7 +7,7 @@ public class EnemySkillList : MonoBehaviour
     [SerializeField] private GameObject gameManager = null;
     CollisionManager collisionManager;
 
-    [SerializeField] private Transform[] enemyGrid = null;
+    [SerializeField] private GameObject[] enemyGrid = null;
     [SerializeField] private GameObject dangerMark = null;
     [SerializeField] private GameObject bombObj = null;
 
@@ -16,6 +16,13 @@ public class EnemySkillList : MonoBehaviour
     private const int OMEN_TIME = 1;
     private const int MARK_LIFETIME = 20;
     private const int FADE_TIME = 20;
+
+    private enum ATTACK
+    {
+        BOMB,
+        LIGHTNING,
+        BEAM
+    }
     //-----------------------------------
     private void Awake()
     {
@@ -24,37 +31,60 @@ public class EnemySkillList : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+
+    }
+    public void Stop()
+    {
+        foreach(GameObject parent in enemyGrid)
         {
-            StartCoroutine(Bomb(1, 0, 100));
+            foreach (Transform child in parent.transform)
+            {
+                GameObject.Destroy(child.gameObject);
+            }
         }
-        if (Input.GetKeyDown(KeyCode.Y))
+        
+    }
+    public IEnumerator Attack(int type, int x, int y, int damage)
+    {
+        switch (type)
         {
-            StartCoroutine(Bomb(1, 1, 100));
-        }
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            StartCoroutine(Bomb(1, 2, 100));
-        }
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            StartCoroutine(Bomb(2, 0, 100));
-        }
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-            StartCoroutine(Bomb(2, 1, 100));
-        }
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            StartCoroutine(Bomb(2, 2, 100));
+            case (int)ATTACK.BOMB:
+                yield return StartCoroutine(Bomb(x, y, damage));
+                break;
+            case (int)ATTACK.LIGHTNING:
+                yield return StartCoroutine(Lightning(x, y, damage));
+                break;
+            default:
+                yield return null;
+                break;
         }
     }
 
-    public IEnumerator Bomb(int x, int y, int damage)
+    private IEnumerator Bomb(int x, int y, int damage)
     {
         yield return StartCoroutine(DisplayDangerZone(x, y));
         int index = x + y * 3;
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].position, enemyGrid[index].rotation, enemyGrid[index]);
+        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        for (int i = 0; i < OMEN_TIME; i++)
+        {
+            yield return null;
+        }
+        StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
+        for (int i = 0; i < DAMAGE_LIFETIME; i++)
+        {
+            yield return null;
+        }
+        for (int i = 0; i < FADE_TIME; i++)
+        {
+            yield return null;
+        }
+        Destroy(effect.gameObject);
+    }
+    private IEnumerator Lightning(int x, int y, int damage)
+    {
+        yield return StartCoroutine(DisplayDangerZone(x, y));
+        int index = x + y * 3;
+        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
         for (int i = 0; i < OMEN_TIME; i++)
         {
             yield return null;
@@ -71,10 +101,11 @@ public class EnemySkillList : MonoBehaviour
         Destroy(effect.gameObject);
     }
 
+
     private IEnumerator DisplayDangerZone(int x, int y)
     {
         int index = x + y * 3;
-        GameObject mark = Instantiate(dangerMark, enemyGrid[index].position, enemyGrid[index].rotation, enemyGrid[index]);
+        GameObject mark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
         for (int i = 0; i < MARK_LIFETIME; i++)
         {
             yield return null;

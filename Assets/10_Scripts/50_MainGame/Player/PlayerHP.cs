@@ -12,6 +12,10 @@ public class PlayerHP : MonoBehaviour
         gameUI.MaxHP = evoHP;
         gameUI.CurrentHP = hp;
     }
+    private void Update()
+    {
+        gameUI.CurrentHP = hp;
+    }
 
     private int hp = 0; //現在のヒットポイント
     private int minHP = 0; //最小値

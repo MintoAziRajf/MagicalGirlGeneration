@@ -26,7 +26,7 @@ public class GameUI : MonoBehaviour
     public int SkillCooltime { set { skillCooltime = value; } }
 
     //------------------ゲージ表示------------------
-    private float displayDelay = 20f;　//変化のスピード
+    private float displaySpeed = 20f;　//変化のスピード
 
     //変身ゲージ表示(徐々に)
     [SerializeField] private Image evolutionDisplay = null; //表示先
@@ -38,10 +38,12 @@ public class GameUI : MonoBehaviour
 
     //HPゲージ表示(一気に)
     [SerializeField] private Image hpDisplay = null;
+    private int hpCurrentGauge = 0;
+    public int CurrentHP { set { hpCurrentGauge = value; } }
+    private float hpDisplayGauge = 0f;　//値を徐々に変化させるための値
     private int hpMax = 0;
     public int MaxHP { set { hpMax = value;} }
-    private int hpCurrentGauge = 0;
-    public int CurrentHP { set { hpCurrentGauge = value;} }
+    
 
     void Update()
     {
@@ -56,10 +58,10 @@ public class GameUI : MonoBehaviour
         skillDisplay.fillAmount = (float)skillCurrentTime / skillCooltime;
 
         //ゲージの計算
-        evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displayDelay * Time.deltaTime);
-
+        evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displaySpeed * Time.deltaTime);
+        hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrentGauge, displaySpeed * displaySpeed * Time.deltaTime);
         //ゲージのパーセントを計算、表示
-        hpDisplay.fillAmount = (float)hpCurrentGauge / hpMax;
+        hpDisplay.fillAmount = hpDisplayGauge / hpMax;
         evolutionDisplay.fillAmount = evolutionDisplayGauge / evolutionMax;
     }
 }
