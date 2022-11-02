@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class CollisionManager : MonoBehaviour
 {
+    PlayerController playerController;
+    [SerializeField] private GameObject player = null;
+
     private int[,] collisionGrid = new int[3, 3];
     private const int EMPTY = 0;
     private const int PLAYER = 1;
@@ -18,11 +21,11 @@ public class CollisionManager : MonoBehaviour
     private void Awake()
     {
         InitGrid();
+        playerController = player.GetComponent<PlayerController>();
     }
 
     public IEnumerator DamageGrid(int x, int y, int power, int frame)
     {
-        Debug.Log(collisionGrid[x, y]);
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
         {
@@ -123,8 +126,9 @@ public class CollisionManager : MonoBehaviour
 
     private void PlayerDamaged(int value)
     {
-
+        playerController.Damaged(value);
     }
+
     private void Update()
     {
         DisplayGrid();

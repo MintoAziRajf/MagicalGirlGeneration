@@ -47,7 +47,8 @@ public class PlayerController : MonoBehaviour
     //------------------------------
 
     //----------回避関連------------
-    private const int AVOID_COOLTIME = 600;
+    private const int AVOID_COOLTIME = 60;
+    private const int AVOID_INPUT_FRAME = 20;
     //------------------------------
 
     //----------攻撃関連------------
@@ -94,6 +95,11 @@ public class PlayerController : MonoBehaviour
     }
     //------------------------------
 
+    //-----------ゲームのスタートフラグ----------
+    private bool isStart = false;
+    public bool IsStart { set { isStart = value; } }
+    //------------------------------------------
+
     //----------操作フラグ----------
     private bool isMove = false;
     private bool isAttack = false;
@@ -103,42 +109,28 @@ public class PlayerController : MonoBehaviour
     private bool canInput = true;
     //------------------------------
 
-    [SerializeField] private SpriteRenderer[] displayPlayerGrid = new SpriteRenderer[9];
-    [SerializeField] private SpriteRenderer[] displaySkillGrid = new SpriteRenderer[9];
-    [Header("EMPTY,ATTACK,SKILL")] [SerializeField] private Color[] gridColor = new Color[3];
+    //---------------------タイル表示関連------------------
+    [SerializeField] private GameObject[] displayGrid = null;
+    private SpriteRenderer[] displayGridSprite = new SpriteRenderer[9];
+    [SerializeField] private Sprite attackSprite = null;
+    [SerializeField] private GameObject attackGridEffectPrefab = null;
+    [SerializeField] private GameObject skillOrbPrefab = null;
+    //-----------------------------------------------------
 
     private void Awake()
     {
         Initialize();
     }
 
-    private void Update()
-    {
-        
-    }
     private void FixedUpdate()
     {
-        DisplayGrid();
+        if (!isStart) return;//GameManagerからのスタートが送られるまでは何もしない
         evolution.Check();
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
         canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill;
         if (!canInput) return;
-        
         InputDirection();
-    }
-    //-------------------------UI-------------------------------
-    private void DisplayGrid()
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            for (int j = 0; j < 3; j++)
-            {
-                int index = i + j * 3;
-                displayPlayerGrid[index].color = gridColor[playerGrid[i, j]];
-                displaySkillGrid[index].color = gridColor[skillGrid[i, j]];
-            }
-        }
     }
 
     //-----------------------------------------------------------
@@ -150,37 +142,10 @@ public class PlayerController : MonoBehaviour
         bool down = Input.GetKey(KeyCode.S) && currentY < LIMIT_MAX;
         bool left = Input.GetKey(KeyCode.A) && currentX > LIMIT_MIN;
         bool right = Input.GetKey(KeyCode.D) && currentX < LIMIT_MAX;
-        
+
         if (avoid)
         {
-            collisionManager.PlayerAvoided(currentX, currentY, 30);
-            StartCoroutine(Avoid());
-            if (up)
-            {
-                currentY--;
-                Move((int)DIRECTION.UP);
-            }
-            else if (down)
-            {
-                currentY++;
-                Move((int)DIRECTION.DOWN);
-            }
-            else if (left)
-            {
-                currentX--;
-                Move((int)DIRECTION.LEFT);
-            }
-            else if (right)
-            {
-                currentX++;
-                Move((int)DIRECTION.RIGHT);
-            }
-            else
-            {
-                collisionManager.PlayerMoved(currentX, currentY);
-                StartCoroutine(MoveDelay());
-            }
-            return;
+            StartCoroutine(WaitInput());
         }
         else
         {
@@ -205,9 +170,41 @@ public class PlayerController : MonoBehaviour
                 Move((int)DIRECTION.RIGHT);
             }
         }
-        
+        IEnumerator WaitInput()
+        {
+            bool isInput = up || down || left || right;
+            for (int i = 0; i < AVOID_INPUT_FRAME; i++)
+            {
+                if (isInput)
+                {
+                    collisionManager.PlayerAvoided(currentX, currentY, 30);
+                    StartCoroutine(Avoid());
+                    if (up)
+                    {
+                        currentY--;
+                        Move((int)DIRECTION.UP);
+                    }
+                    else if (down)
+                    {
+                        currentY++;
+                        Move((int)DIRECTION.DOWN);
+                    }
+                    else if (left)
+                    {
+                        currentX--;
+                        Move((int)DIRECTION.LEFT);
+                    }
+                    else if (right)
+                    {
+                        currentX++;
+                        Move((int)DIRECTION.RIGHT);
+                    }
+                    yield break;
+                }
+                yield return null;
+            }
+        }
     }
-
     //--------------------------移動関連-------------------------
     private void Move(int direction)
     {
@@ -236,9 +233,9 @@ public class PlayerController : MonoBehaviour
         if (skillGrid[currentX, currentY] == SKILL)
         {
             skillGrid[currentX, currentY] = EMPTY;
+            Destroy(displayGrid[currentX + currentY * 3].transform.Find("SkillOrb(Clone)").gameObject);
             skill.RemoveTile();
         }
-            
     }
 
     //--------------------------回避関連-------------------------
@@ -286,25 +283,45 @@ public class PlayerController : MonoBehaviour
     private IEnumerator WaitAnim(string s)
     {
         isAnim = true;
+        enemyManager.StopAttack();
         yield return cutIn.StartCoroutine(s);
         isAnim = false;
+        enemyManager.StartAttack();
     }
     //--------------------------------------------------------------
 
-
+    //--------------------HP関連----------------------
+    public void Damaged(int value)
+    {
+        playerHP.Damaged(value);
+    }
+    
     //--------------------------SKILL-------------------------------
+    private void ResetSkillGrid()
+    {
+        for(int i = 0; i < 9; i++)
+        {
+            if(skillGrid[i % 3, i / 3] == SKILL)
+            {
+                skillGrid[i % 3, i / 3] = EMPTY;
+                Destroy(displayGrid[i].transform.Find("SkillOrb(Clone)").gameObject);
+            }
+        }
+    }
     public void SetSkillGrid(int x, int y)
     {
         skillGrid[x, y] = SKILL;
+        Instantiate(skillOrbPrefab, displayGrid[x+y*3].transform);
     }
     public IEnumerator Skill()
     {
         yield return new WaitUntil(() => !isAttack);
         isSkill = true;
+        enemyManager.StopAttack();
         yield return StartCoroutine(cutIn.Skill());
         AttackEnemy(damageSkill / skillFreq, skillFreq);
-        //damage
         isSkill = false;
+        enemyManager.StartAttack();
     }
     //--------------------------------------------------------------
 
@@ -331,13 +348,11 @@ public class PlayerController : MonoBehaviour
     }
     private void InitTiles()
     {
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 9; i++)
         {
-            for (int j = 0; j < 3; j++)
-            {
-                playerGrid[i, j] = EMPTY;
-                skillGrid[i, j] = EMPTY;
-            }
+            displayGridSprite[i] = displayGrid[i].GetComponent<SpriteRenderer>(); 
+            playerGrid[i%3, i/3] = EMPTY;
+            skillGrid[i%3, i/3] = EMPTY;
         }
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = transform.localPosition;
@@ -348,6 +363,7 @@ public class PlayerController : MonoBehaviour
         for (int i = 0; i < 3; i++)
         {
             playerGrid[i, ATTACK_LINE[attackType]] = ATTACK;
+            Instantiate(attackGridEffectPrefab,displayGrid[i + ATTACK_LINE[attackType] * 3].transform); 
         }
     }
 

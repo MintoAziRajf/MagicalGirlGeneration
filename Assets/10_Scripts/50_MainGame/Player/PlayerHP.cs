@@ -42,16 +42,19 @@ public class PlayerHP : MonoBehaviour
             }
         }
     }
-    public void Damage(int value)
+
+    public void Damaged(int value)
     {
         hp = Mathf.Max(hp - value, minHP);
         gameUI.CurrentHP = hp;
+        StartCoroutine(gameUI.DamagedEffect());
         if (hp == minHP)
         {
             //dead
             Debug.Log("死にました。");
         }
     }
+
     public void Heal(int value)
     {
         hp = Mathf.Min(hp + value, maxHP);

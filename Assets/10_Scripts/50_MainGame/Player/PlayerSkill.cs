@@ -15,7 +15,7 @@ public class PlayerSkill : MonoBehaviour
 
     private int maxTiles = 4;//スキルタイルの最大枚数
     private int currentTiles = 0;//現在の枚数
-    private const int SKILL_COOLTIME = 600;//スキルタイル再生成までの時間(フレーム)
+    private const int SKILL_COOLTIME = 60;//スキルタイル再生成までの時間(フレーム)
     private int time = 0; //クールタイム計算用
     private bool isEvo = false;
     public bool IsEvo
@@ -23,6 +23,7 @@ public class PlayerSkill : MonoBehaviour
         set
         {
             isEvo = value;
+            if (!isEvo) currentTiles = 0;
         }
     }
 
