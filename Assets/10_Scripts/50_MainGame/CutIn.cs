@@ -11,8 +11,6 @@ public class CutIn : MonoBehaviour
     private const int ANIM_COOLTIME = 120;
     private const int ATTACK_COOLTIME = 20;
 
-    [SerializeField] private int duration = 0;
-    [SerializeField] private float magnitude = 0f;
     private void Awake()
     {
         cutInAnim = cutInObj.GetComponent<Animator>();
@@ -25,27 +23,11 @@ public class CutIn : MonoBehaviour
     {
         if (b) damageAnim.SetTrigger("EvoAttack");
         else damageAnim.SetTrigger("Attack");
-        StartCoroutine(DamagedAnim());
 
         yield return StartCoroutine(WaitAnim(ATTACK_COOLTIME));
         StartCoroutine(MessageManager.instance.DisplayMessage("ナイス攻撃！"));
     }
 
-    private IEnumerator DamagedAnim()
-    {
-        GameObject target = damageEffect.transform.parent.gameObject;
-        Vector3 pos = target.transform.localPosition;
-
-        for(int i = 0; i < duration; i++)
-        {
-            float x = pos.x + Random.Range(-1f, 1f) * magnitude;
-            float y = pos.y + Random.Range(-1f, 1f) * magnitude;
-
-            target.transform.localPosition = new Vector3(x, y, pos.z);
-
-            yield return null;
-        }
-    }
 
     private IEnumerator WaitAnim(int value)
     {
@@ -58,11 +40,13 @@ public class CutIn : MonoBehaviour
     {
         cutInAnim.SetTrigger("Counter");
         yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
+        damageAnim.SetTrigger("Counter");
     }
     public IEnumerator Skill()
     {
         cutInAnim.SetTrigger("Skill");
         yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
+        damageAnim.SetTrigger("Skill");
         StartCoroutine(MessageManager.instance.DisplayMessage("ソウルバースト！決まったね！"));
     }
 

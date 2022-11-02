@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
+using System.Collections.Generic;
 
 public class GameUI : MonoBehaviour
 {
@@ -63,5 +65,24 @@ public class GameUI : MonoBehaviour
         //ゲージのパーセントを計算、表示
         hpDisplay.fillAmount = hpDisplayGauge / hpMax;
         evolutionDisplay.fillAmount = evolutionDisplayGauge / evolutionMax;
+    }
+
+    [SerializeField] private float magnitude = 0f;
+    [SerializeField] private float duration = 0f;
+    [SerializeField] private GameObject playerFace = null;
+
+    public IEnumerator DamagedEffect()
+    {
+        RectTransform target = playerFace.GetComponent<RectTransform>();
+        Vector3 pos = target.anchoredPosition;
+
+        for (int i = 0; i < duration; i++)
+        {
+            float x = pos.x + Random.Range(-1f, 1f) * magnitude;
+            float y = pos.y + Random.Range(-1f, 1f) * magnitude;
+
+            target.anchoredPosition = new Vector3(x, y, pos.z);
+            yield return null;
+        }
     }
 }
