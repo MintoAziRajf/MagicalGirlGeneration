@@ -15,7 +15,7 @@ public class EnemySkillList : MonoBehaviour
     private const int DAMAGE_LIFETIME = 10;
     private const int OMEN_TIME = 1;
     private const int MARK_LIFETIME = 20;
-    private const int FADE_TIME = 20;
+    private const int FADE_TIME = 5;
 
     private enum ATTACK
     {
@@ -29,10 +29,6 @@ public class EnemySkillList : MonoBehaviour
         collisionManager = gameManager.GetComponent<CollisionManager>();
     }
 
-    private void Update()
-    {
-
-    }
     public void Stop()
     {
         foreach(GameObject parent in enemyGrid)
@@ -62,42 +58,25 @@ public class EnemySkillList : MonoBehaviour
 
     private IEnumerator Bomb(int x, int y, int damage)
     {
-        yield return StartCoroutine(DisplayDangerZone(x, y));
         int index = x + y * 3;
+
+        yield return StartCoroutine(DisplayDangerZone(x, y));
         GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        for (int i = 0; i < OMEN_TIME; i++)
-        {
-            yield return null;
-        }
+        yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
-        for (int i = 0; i < DAMAGE_LIFETIME; i++)
-        {
-            yield return null;
-        }
-        for (int i = 0; i < FADE_TIME; i++)
-        {
-            yield return null;
-        }
+        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
+        yield return StartCoroutine(WaitFrame(FADE_TIME));
         Destroy(effect.gameObject);
     }
     private IEnumerator Lightning(int x, int y, int damage)
     {
-        yield return StartCoroutine(DisplayDangerZone(x, y));
         int index = x + y * 3;
+        yield return StartCoroutine(DisplayDangerZone(x, y));
         GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        for (int i = 0; i < OMEN_TIME; i++)
-        {
-            yield return null;
-        }
+        yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
-        for (int i = 0; i < DAMAGE_LIFETIME; i++)
-        {
-            yield return null;
-        }
-        for (int i = 0; i < FADE_TIME; i++)
-        {
-            yield return null;
-        }
+        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
+        yield return StartCoroutine(WaitFrame(FADE_TIME));
         Destroy(effect.gameObject);
     }
 
@@ -106,10 +85,15 @@ public class EnemySkillList : MonoBehaviour
     {
         int index = x + y * 3;
         GameObject mark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        for (int i = 0; i < MARK_LIFETIME; i++)
-        {
-            yield return null;
-        }
+        yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
         Destroy(mark.gameObject);
+    }
+    private IEnumerator WaitFrame(int frame)
+    {
+        float oneFrame = 1f / 60f;
+        for (int i = 0; i < frame; i++)
+        {
+            yield return new WaitForSeconds(oneFrame);
+        }
     }
 }

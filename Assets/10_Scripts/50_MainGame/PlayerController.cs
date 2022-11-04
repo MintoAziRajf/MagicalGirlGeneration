@@ -1,25 +1,13 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : PlayerManager
 {
-    [SerializeField] private GameObject GamaManager = null;
-    [SerializeField] private GameObject Enemy = null;
-    CollisionManager collisionManager;
-    GameManager gameManager;
-    CutIn cutIn;
-    Evolution evolution;
-    GameUI gameUI;
-    PlayerSkill skill;
-    PlayerHP playerHP;
-    EnemyManager enemyManager;
-
-    private int[,] playerGrid = new int[3, 3];
-    private int[,] skillGrid = new int[3, 3];
-    private const int EMPTY = 0;
-    private const int ATTACK = 1;
-    private const int SKILL = 2;
-
+    private bool[,] playerGrid = new bool[3, 3];
+    private bool[,] skillGrid = new bool[3, 3];
+    private bool[,] healGrid = new bool[3, 3];
+    
     //----------移動関連------------
     private int currentX = 1, currentY = 1;
     public int CurrentX { get { return currentX; } }
@@ -68,10 +56,17 @@ public class PlayerController : MonoBehaviour
     public int DamageEvolution { set { damageEvolution = value; } }
     private int attackFreq = 0;
     public int AttackFreq { set { attackFreq = value; } }
+    private int damageCounterAttack = 0;
+    public int DamageCounterAttack { set { damageCounterAttack = value; } }
+    private int counterAttackFreq = 0;
+    public int CounterAttackFreq { set { counterAttackFreq = value; } }
     private int damageSkill = 0;
     public int DamageSkill { set { damageSkill = value;} }
     private int skillFreq = 0;
     public int SkillFreq { set { skillFreq = value;} }
+
+    //倍率
+    private const float WEAK_MULTIPLIER = 1.5f;
     //------------------------------
 
     //----------変身関連------------
@@ -82,7 +77,7 @@ public class PlayerController : MonoBehaviour
         {
             isEvo = value;
             playerHP.IsEvo = value;
-            skill.IsEvo = value;
+            playerSkill.IsEvo = value;
             if (isEvo)
             {
                 StartCoroutine(WaitAnim("Evolution"));
@@ -104,6 +99,7 @@ public class PlayerController : MonoBehaviour
     private bool isMove = false;
     private bool isAttack = false;
     private bool isSkill = false;
+    private bool isCounter = false;
     private bool isAvoid = false;
     private bool isAnim = false;
     private bool canInput = true;
@@ -111,13 +107,12 @@ public class PlayerController : MonoBehaviour
 
     //---------------------タイル表示関連------------------
     [SerializeField] private GameObject[] displayGrid = null;
-    private SpriteRenderer[] displayGridSprite = new SpriteRenderer[9];
-    [SerializeField] private Sprite attackSprite = null;
     [SerializeField] private GameObject attackGridEffectPrefab = null;
     [SerializeField] private GameObject skillOrbPrefab = null;
+    [SerializeField] private GameObject healGridEffectPrefab = null;
     //-----------------------------------------------------
 
-    private void Awake()
+    private void Start()
     {
         Initialize();
     }
@@ -128,7 +123,7 @@ public class PlayerController : MonoBehaviour
         evolution.Check();
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
-        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill;
+        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter;
         if (!canInput) return;
         InputDirection();
     }
@@ -229,13 +224,9 @@ public class PlayerController : MonoBehaviour
 
     private void CheckTile()
     {
-        if (playerGrid[currentX,currentY] == ATTACK) StartCoroutine(Attack());
-        if (skillGrid[currentX, currentY] == SKILL)
-        {
-            skillGrid[currentX, currentY] = EMPTY;
-            Destroy(displayGrid[currentX + currentY * 3].transform.Find("SkillOrb(Clone)").gameObject);
-            skill.RemoveTile();
-        }
+        if (playerGrid[currentX,currentY]) StartCoroutine(Attack());
+        if (skillGrid[currentX, currentY]) RemoveSkillGrid();
+        if (healGrid[currentX, currentY]) RemoveHealGrid();
     }
 
     //--------------------------回避関連-------------------------
@@ -250,6 +241,17 @@ public class PlayerController : MonoBehaviour
         }
         StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！"));
         isAvoid = false;
+    }
+
+    public IEnumerator AvoidSuccess()
+    {
+        isCounter = true;
+        yield return new WaitUntil(() => !isAttack);
+        enemyManager.StopAttack();
+        yield return StartCoroutine(cutIn.CounterAttack());
+        AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq);
+        isCounter = false;
+        enemyManager.StartAttack();
     }
     //------------------------------------------------------------
 
@@ -275,11 +277,52 @@ public class PlayerController : MonoBehaviour
     }
     private void AttackEnemy(int damage, int freq)
     {
-        StartCoroutine(enemyManager.Damaged(damage, freq));
+        if(currentX == enemyManager.WeakPoint)
+        {
+            damage = (int)(damage * WEAK_MULTIPLIER);
+            SetHealGrid();
+        }
+        StartCoroutine(enemyManager.Damaged((int)damage, freq));
     }
     //------------------------------------------------------------------
-    
-    //-------------------------カットイン関連---------------------------------
+
+    //------------------------回復関連----------------------------------
+    private void SetHealGrid()
+    {
+        Debug.Log("a");
+        if (CheckExistHealGrid()) return; 
+
+        //プレイヤーの現在の位置を取得
+        int playerPos = currentX + currentY * 3;
+        List<int> numbers = new List<int>();
+        //生成可能な位置を追加
+        for (int i = 0; i < 9; i++)
+        {
+            //プレイヤーがいる場所以外を追加
+            if (playerPos != i) numbers.Add(i);
+        }
+        //生成可能な位置からランダムに生成
+        int index = Random.Range(0, numbers.Count);
+        healGrid[numbers[index] % 3, numbers[index] / 3] = true;
+        Instantiate(healGridEffectPrefab, displayGrid[numbers[index]].transform);
+    }
+    private bool CheckExistHealGrid()
+    {
+        bool a = false;
+        foreach (bool b in healGrid)
+        {
+            a = a || b;
+        }
+        return a;
+    }
+    private void RemoveHealGrid()
+    {
+        Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealGridEffect(Clone)").gameObject);
+        healGrid[currentX, currentY] = false;
+    }
+    //-------------------------------------------------------------------
+
+    //-------------------------カットイン関連----------------------------
     private IEnumerator WaitAnim(string s)
     {
         isAnim = true;
@@ -295,27 +338,37 @@ public class PlayerController : MonoBehaviour
     {
         playerHP.Damaged(value);
     }
-    
+    private void Healed()
+    {
+        //playerHP.Healed();
+    }
+    //------------------------------------------------
     //--------------------------SKILL-------------------------------
     private void ResetSkillGrid()
     {
         for(int i = 0; i < 9; i++)
         {
-            if(skillGrid[i % 3, i / 3] == SKILL)
+            if(skillGrid[i % 3, i / 3])
             {
-                skillGrid[i % 3, i / 3] = EMPTY;
+                skillGrid[i % 3, i / 3] = false;
                 Destroy(displayGrid[i].transform.Find("SkillOrb(Clone)").gameObject);
             }
         }
     }
+    private void RemoveSkillGrid()
+    {
+        skillGrid[currentX, currentY] = false;
+        Destroy(displayGrid[currentX + currentY * 3].transform.Find("SkillOrb(Clone)").gameObject);
+        playerSkill.RemoveTile();
+    }
     public void SetSkillGrid(int x, int y)
     {
-        skillGrid[x, y] = SKILL;
+        skillGrid[x, y] = true;
         Instantiate(skillOrbPrefab, displayGrid[x+y*3].transform);
     }
     public IEnumerator Skill()
     {
-        yield return new WaitUntil(() => !isAttack);
+        yield return new WaitUntil(() => !isAttack && !isCounter);
         isSkill = true;
         enemyManager.StopAttack();
         yield return StartCoroutine(cutIn.Skill());
@@ -328,31 +381,17 @@ public class PlayerController : MonoBehaviour
     //------init--------
     private void Initialize()
     {
-        SetScript();
         InitTiles();
         SetUI();
         SetAttackTile();
     }
-    
-    
-    private void SetScript()
-    {
-        collisionManager = GamaManager.GetComponent<CollisionManager>();
-        gameManager = GamaManager.GetComponent<GameManager>();
-        cutIn = GetComponent<CutIn>();
-        evolution = GetComponent<Evolution>();
-        gameUI = GetComponent<GameUI>();
-        skill = GetComponent<PlayerSkill>();
-        playerHP = GetComponent<PlayerHP>();
-        enemyManager = Enemy.GetComponent<EnemyManager>();
-    }
+
     private void InitTiles()
     {
         for (int i = 0; i < 9; i++)
         {
-            displayGridSprite[i] = displayGrid[i].GetComponent<SpriteRenderer>(); 
-            playerGrid[i%3, i/3] = EMPTY;
-            skillGrid[i%3, i/3] = EMPTY;
+            playerGrid[i%3, i/3] = false;
+            skillGrid[i%3, i/3] = false;
         }
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = transform.localPosition;
@@ -362,7 +401,7 @@ public class PlayerController : MonoBehaviour
     {
         for (int i = 0; i < 3; i++)
         {
-            playerGrid[i, ATTACK_LINE[attackType]] = ATTACK;
+            playerGrid[i, ATTACK_LINE[attackType]] = true;
             Instantiate(attackGridEffectPrefab,displayGrid[i + ATTACK_LINE[attackType] * 3].transform); 
         }
     }

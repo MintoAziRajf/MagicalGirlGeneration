@@ -23,6 +23,10 @@ public class EnemyUI : MonoBehaviour
         set { hpCurrent = value; }
     }
 
+    //弱点表示用
+    [SerializeField] private GameObject[] weakIcon = null;
+
+
     private void FixedUpdate()
     {
         if(Mathf.Abs(hpCurrent - hpDisplayGauge) >= 1000f)
@@ -33,13 +37,17 @@ public class EnemyUI : MonoBehaviour
         
         hpGaugeDisplayDelay.fillAmount = hpDisplayGauge / hpMax;
         hpGaugeDisplay.fillAmount = (float)hpCurrent / hpMax;
-        hpTextDisplay.text = hpDisplayGauge.ToString();
-        hpTextDisplayShadow.text = hpDisplayGauge.ToString();
+        hpTextDisplay.text = hpDisplayGauge.ToString("F0");
+        hpTextDisplayShadow.text = hpDisplayGauge.ToString("F0");
     }
 
     [SerializeField] private float magnitude = 0f;
     [SerializeField] private float duration = 0f;
     [SerializeField] private RectTransform hpBar = null;
+
+    /// <summary>
+    /// ダメージを受けたときにUIを揺らすエフェクト
+    /// </summary>
     public IEnumerator DamagedEffect()
     {
         Vector3 pos = hpBar.anchoredPosition;
@@ -51,6 +59,19 @@ public class EnemyUI : MonoBehaviour
 
             hpBar.anchoredPosition = new Vector3(x, y, pos.z);
             yield return null;
+        }
+    }
+
+    /// <summary>
+    /// 弱点を表示する
+    /// </summary>
+    /// <param name="index">左から何番目か</param>
+    public void DisplayWeakIcon(int index)
+    {
+        for(int i = 0; i < weakIcon.Length; i++)
+        {
+            if(i == index) weakIcon[index].SetActive(true);
+            else weakIcon[i].SetActive(false);
         }
     }
 }

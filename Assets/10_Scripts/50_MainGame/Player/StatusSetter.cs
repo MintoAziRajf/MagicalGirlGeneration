@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.IO;
 
-public class StatusSetter : MonoBehaviour
+public class StatusSetter : PlayerManager
 {
     private int PLAYER_TYPE = 0;
     [SerializeField] private TextAsset statusCSV = null;
@@ -16,14 +16,13 @@ public class StatusSetter : MonoBehaviour
         EVO_DAMAGE = 5,
         SKILL_FREQ = 6,
         SKILL_DAMAGE = 7,
-        MOVE_COOLTIME = 8,
-        ATTACK_LINE = 9
+        CA_FREQ = 8,
+        CA_DAMAGE = 9,
+        MOVE_COOLTIME = 10,
+        ATTACK_LINE = 11
     }
 
-    PlayerController playerController;
-    PlayerHP playerHP;
-
-    private void Awake()
+    private void Start()
     {
         LoadStatus();
     }
@@ -39,19 +38,12 @@ public class StatusSetter : MonoBehaviour
             statusData.Add(line.Split(',')); // , 区切りでリストに追加
         }
         reader.Close();
-        SetScript();
-    }
-
-    private void SetScript()
-    {
-        playerController = GetComponent<PlayerController>();
-        playerHP = GetComponent<PlayerHP>();
         SetStatus();
     }
 
     private void SetStatus()
     {
-        PLAYER_TYPE = DataStorage.instance.PlayerType;
+        PLAYER_TYPE = gameManager.Type;
         
         playerHP.NormalHP = ReturnStatus(STATUS.NOR_HP);
         playerHP.EvoHP = ReturnStatus(STATUS.EVO_HP);
@@ -60,6 +52,8 @@ public class StatusSetter : MonoBehaviour
         playerController.DamageEvolution = ReturnStatus(STATUS.EVO_DAMAGE);
         playerController.DamageSkill = ReturnStatus(STATUS.SKILL_DAMAGE);
         playerController.SkillFreq = ReturnStatus(STATUS.SKILL_FREQ);
+        playerController.DamageCounterAttack = ReturnStatus(STATUS.CA_DAMAGE);
+        playerController.CounterAttackFreq = ReturnStatus(STATUS.CA_FREQ);
         playerController.MoveCooltime = ReturnStatus(STATUS.MOVE_COOLTIME);
         playerController.AttackType = ReturnStatus(STATUS.ATTACK_LINE);
     }

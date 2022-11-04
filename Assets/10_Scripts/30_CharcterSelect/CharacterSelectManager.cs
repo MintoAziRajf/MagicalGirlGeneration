@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using UnityEngine.SceneManagement;
 public class CharacterSelectManager : MonoBehaviour
 {
     private enum CHARACTER
@@ -72,10 +72,23 @@ public class CharacterSelectManager : MonoBehaviour
         //選択
         if (Input.GetButtonDown("Submit"))
         {
-            DataStorage.instance.PlayerType = (int)currentCharacter;
-            DataStorage.instance.SetNovel(true);
-            LoadManager.instance.LoadScene("40_Prologue");
+            SceneManager.sceneLoaded += GameSceneLoaded;
+            LoadManager.instance.LoadScene("50_MainGame");
         }
+    }
+
+    private void GameSceneLoaded(Scene next, LoadSceneMode mode)
+    {
+        // シーン切り替え後のスクリプトを取得
+        GameManager gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+
+        // データを渡す処理
+        gameManager.Type = (int)currentCharacter;
+        gameManager.IsTutorial = true;
+        gameManager.IsPrologue = true;
+
+        // イベントから削除
+        SceneManager.sceneLoaded -= GameSceneLoaded;
     }
     
     /// <summary>

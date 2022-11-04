@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CutIn : MonoBehaviour
+public class CutIn : PlayerManager
 {
     [SerializeField] GameObject cutInObj = null;
     [SerializeField] GameObject damageEffect = null;
@@ -11,13 +11,14 @@ public class CutIn : MonoBehaviour
     private const int ANIM_COOLTIME = 120;
     private const int ATTACK_COOLTIME = 20;
 
-    private void Awake()
+    private void Start()
     {
         cutInAnim = cutInObj.GetComponent<Animator>();
         damageAnim = damageEffect.GetComponent<Animator>();
-        damageAnim.SetInteger("Type", DataStorage.instance.PlayerType);
-        cutInAnim.SetInteger("Type", DataStorage.instance.PlayerType);
+        damageAnim.SetInteger("Type", gameManager.Type);
+        cutInAnim.SetInteger("Type", gameManager.Type);
     }
+    
 
     public IEnumerator Attack(bool b)
     {
@@ -33,14 +34,15 @@ public class CutIn : MonoBehaviour
     {
         for (int i = 0; i < value; i++)
         {
-            yield return null;
+            yield return new WaitForSeconds(Time.deltaTime);
         }
     }
-    public IEnumerator Counter()
+    public IEnumerator CounterAttack()
     {
         cutInAnim.SetTrigger("Counter");
         yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
         damageAnim.SetTrigger("Counter");
+        StartCoroutine(MessageManager.instance.DisplayMessage("ナイスカウンター！"));
     }
     public IEnumerator Skill()
     {

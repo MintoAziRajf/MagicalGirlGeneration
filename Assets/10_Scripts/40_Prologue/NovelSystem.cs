@@ -28,12 +28,16 @@ public class NovelSystem : MonoBehaviour
     private bool isSlide = false;//キャラクター表示時にスライドさせるか
     private string mainString = null; //本文
 
-    private bool isStart = false;
+    //
     private bool isLoad = false;
 
     //csvData
     private string csvName = null;  //使用するCSVの名前
     List<string[]> novelDatas = new List<string[]>();//ノベルデータ格納場所
+
+    //スキップする用に呼び出したコルーチンを保存する
+    private IEnumerator novel;
+    private IEnumerator sentence;
 
     private enum DATA
     {
@@ -49,106 +53,100 @@ public class NovelSystem : MonoBehaviour
     [SerializeField] private string[] characterName = new string[6];
 
 
-    void Awake()
+    public IEnumerator NovelStart(string s, int type)
     {
-        LoadData();
+        csvName = s;
+        typeID = type;
+        //CSV読み込み
         LoadCSV();
+        //初期表示
         InitializeDisplay();
-        StartCoroutine(AwakeWaitTime());
+        //CSVロード後
+        yield return new WaitUntil(() => !isLoad);
+        novel = Novel();
+        yield return StartCoroutine(novel);
     }
 
-    void Update()
+    private void Update()
     {
-        if (!isStart)
-        {
-            return;
-        }
-        //ノベルシーンをスキップしてメインゲームに遷移する
+        //ノベルシーンをスキップする
         if (Input.GetButtonDown("Cancel"))
         {
-            SceneChange();
-            return;
+            StopCoroutine(novel);
         }
-
         //Aボタン
         if (Input.GetButtonDown("Submit"))
         {
             //テキスト進行中の場合、全文表示
-            if (!nextIcon.activeSelf)
-            {
-                StopAllCoroutines();
-                mainText.text = mainString;
-                nextIcon.SetActive(true); //次のテキスト表示を可能にする
-                return;
-            }
-            //全て表示した後メインゲームに遷移する
-            if (novelDatas.Count == current + 1)
-            {
-                isStart = false;
-                SceneChange();
-                return;
-            }
-            //テキスト全文表示後の場合、次のテキストを表示
-            nextIcon.SetActive(false);
-            current++;
-            ImportNovelDatas(current);
+            StopCoroutine(sentence);
+            mainText.text = mainString;
+            nextIcon.SetActive(true); //次のテキスト表示を可能にする
         }
     }
 
-    private void LoadData()
+    private IEnumerator Novel()
     {
-        typeID = DataStorage.instance.PlayerType;
-        csvName = DataStorage.instance.CSVName;
+        //全文表示するまで繰り返す
+        while(current < novelDatas.Count)
+        {
+            //現在のテキスト
+            yield return StartCoroutine(DisplaySentence());
+            //テキスト全文表示後、Submitボタンで次のテキストを表示
+            yield return new WaitUntil(() => !Input.GetButtonDown("Submit"));
+            nextIcon.SetActive(false);
+            current++;
+        }
     }
 
-    private void InitializeDisplay()
+    //文を表示
+    private IEnumerator DisplaySentence()
     {
-        backgroundImage.color = backgroundColor[typeID];
-        visualImage.sprite = visual[0];
-        mainName.text = "";
-        mainText.text = "";
+        ImportSentenceDatas();
+        DisplayVisual();
+
+        sentence = DisplayMainText();
+        yield return StartCoroutine(sentence);
     }
+   
 
     //データの更新
-    void ImportNovelDatas(int index)
+    void ImportSentenceDatas()
     {
         nextIcon.SetActive(false);
         visualID = int.Parse(novelDatas[current][(int)DATA.Visual]); //表示キャラ
         nameID = int.Parse(novelDatas[current][(int)DATA.Name]);     //名前
         isSlide = bool.Parse(novelDatas[current][(int)DATA.IsSlide]); //スライドするかどうか
         mainString = ConvertText(novelDatas[current][(int)DATA.Text]); //本文
-        DisplayNovel();
+
+        //改行処理
+        string ConvertText(string s)
+        {
+            string t = null;
+            foreach (char c in s)
+            {
+                if (c == '/') t += "\n";
+                else t += c;
+            }
+            return t;
+        }
     }
 
-    //表示
-    void DisplayNovel()
+    //キャラクター表示
+    void DisplayVisual()
     {
         visualImage.sprite = visual[visualID];
         mainName.text = characterName[nameID];
-        
-        StartCoroutine(DisplayMainText(mainString));
     }
 
-    private string ConvertText(string s)
-    {
-        string t = null;
-        foreach(char c in s)
-        {
-            if(c == '/') t += "\n";
-            else t += c;
-            
-        }
-        return t;
-    }
-
-    IEnumerator DisplayMainText(string mText)
+    //本文表示
+    IEnumerator DisplayMainText()
     {
         int messageCount = 0; //現在表示中の文字数
         mainText.text = "";
 
-        while (mText.Length > messageCount)
+        while (mainString.Length > messageCount)
         {
-            mainText.text += mText[messageCount]; //一文字追加
+            mainText.text += mainString[messageCount]; //一文字追加
             messageCount++; //現在の文字数
             for (int i = 0; i < textSpeed; i++)
             {
@@ -158,21 +156,15 @@ public class NovelSystem : MonoBehaviour
         nextIcon.SetActive(true); //次のテキスト表示を可能にする
     }
 
-    IEnumerator AwakeWaitTime()
+    //-------------初期化----------------
+    private void InitializeDisplay()
     {
-        yield return new WaitUntil(() => !isLoad);
-        yield return new WaitForSeconds(1f);
-        isStart = true;
-        ImportNovelDatas(0);
+        backgroundImage.color = backgroundColor[typeID];
+        visualImage.sprite = visual[0];
+        mainName.text = "";
+        mainText.text = "";
     }
 
-    
-    private void SceneChange()
-    {
-        LoadManager.instance.LoadScene(nextScene);
-    }
-
-   
     private void LoadCSV()
     {
         //ロード開始

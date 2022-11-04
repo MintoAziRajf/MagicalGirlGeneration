@@ -2,15 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Evolution : MonoBehaviour
+public class Evolution : PlayerManager
 {
-    GameUI gameUI;
-    PlayerController playerController;
-
-    private void Awake()
+    private void Start()
     {
-        gameUI = this.GetComponent<GameUI>();
-        playerController = this.GetComponent<PlayerController>();
         gameUI.EvolutionMax = EVO_MAX;
         gameUI.EvolutionCurrentGauge = EVO_MIN;
     }
@@ -25,7 +20,7 @@ public class Evolution : MonoBehaviour
     private bool isEvo = false;//変身しているかどうか
 
     
-    private void Update()
+    private void FixedUpdate()
     {
         gameUI.EvolutionCurrentGauge = evoGauge;
         if (!isEvo) return;

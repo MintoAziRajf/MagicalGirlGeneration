@@ -2,16 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerHP : MonoBehaviour
-{
-    GameUI gameUI;
-    private void Awake()
-    {
-        gameUI = GetComponent<GameUI>();
-        hp = normalHP;
-        gameUI.MaxHP = evoHP;
-        gameUI.CurrentHP = hp;
-    }
+public class PlayerHP : PlayerManager
+{   
     private void Update()
     {
         gameUI.CurrentHP = hp;
@@ -22,10 +14,10 @@ public class PlayerHP : MonoBehaviour
     private int maxHP = 0; //現在の最大値
     private int evoHP = 0; //変身後の追加Hp
     //setter
-    public int EvoHP{ set { evoHP = value; } }
+    public int EvoHP{ set { evoHP = value; gameUI.MaxHP = evoHP; } }
     private int normalHP = 0;//変身前の最大値
     //setter
-    public int NormalHP { set { normalHP = value; } }
+    public int NormalHP { set { normalHP = value; hp = normalHP; } }
     private bool isEvo = false;
     public bool IsEvo {
         set {
