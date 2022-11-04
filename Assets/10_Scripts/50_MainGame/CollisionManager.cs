@@ -30,13 +30,14 @@ public class CollisionManager : MonoBehaviour
         if (collisionGrid[x, y] == PLAYER)
         {
             PlayerDamaged(power);
-            Debug.Log("プレイヤーに" + power + "のダメージ!");
+            Debug.Log("プレイヤーに" + power + "のダメージ");
             yield break;
         }
         //生成先に回避判定があったら成功判定を送る
         if (collisionGrid[x, y] == AVOID)
         {
             //AvoidSuccess;
+            StartCoroutine(playerController.AvoidSuccess());
             Debug.Log("回避成功!");
             yield break;
         }

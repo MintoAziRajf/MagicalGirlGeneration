@@ -2,17 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerSkill : MonoBehaviour
+public class PlayerSkill : PlayerManager
 {
-    PlayerController playerController;
-    GameUI gameUI;
-    private void Awake()
-    {
-        playerController = this.GetComponent<PlayerController>();
-        gameUI = this.GetComponent<GameUI>();
-        gameUI.SkillCooltime = SKILL_COOLTIME;
-    }
-
     private int maxTiles = 4;//スキルタイルの最大枚数
     private int currentTiles = 0;//現在の枚数
     private const int SKILL_COOLTIME = 60;//スキルタイル再生成までの時間(フレーム)
@@ -27,7 +18,12 @@ public class PlayerSkill : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void Start()
+    {
+        gameUI.SkillCooltime = SKILL_COOLTIME;
+    }
+
+    private void FixedUpdate()
     {
         gameUI.SkillCurrentTime = time;
         //変身中、タイルが残っていない

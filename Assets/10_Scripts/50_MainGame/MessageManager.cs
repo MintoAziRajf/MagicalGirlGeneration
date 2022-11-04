@@ -26,7 +26,7 @@ public class MessageManager : MonoBehaviour
         displayText.text = msg;
         for(int i = 0; i < DISPLAY_TIME; i++)
         {
-            yield return null;
+            yield return new WaitForSeconds(1f/60f);
         }
         messageObj.SetActive(false);
     }

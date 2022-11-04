@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GameUI : MonoBehaviour
+public class GameUI : PlayerManager
 {
     //------------------クールタイム表示------------------
     //移動クールタイム表示
@@ -47,7 +47,7 @@ public class GameUI : MonoBehaviour
     public int MaxHP { set { hpMax = value;} }
     
 
-    void Update()
+    void FixedUpdate()
     {
         //毎フレームUIを更新
         DisplayUI();

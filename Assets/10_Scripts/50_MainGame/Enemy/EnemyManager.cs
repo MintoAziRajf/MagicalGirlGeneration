@@ -52,6 +52,10 @@ public class EnemyManager : MonoBehaviour
     private int hpMin = 0; //最低HP(死亡するHP)
     private int hpCurrent = 10000; //現在のHP
 
+    //弱点
+    private int weakPoint = 0;
+    public int WeakPoint { get { return weakPoint; } }
+
     private void Awake()
     {
         enemySkillList = GetComponent<EnemySkillList>();
@@ -91,6 +95,9 @@ public class EnemyManager : MonoBehaviour
         //UIにHP情報をセット
         enemyUI.HPMax = hpMax; 
         enemyUI.HPCurrent = hpCurrent;
+        //弱点をセット
+        weakPoint = Random.Range(0, 3);
+        enemyUI.DisplayWeakIcon(weakPoint);
     }
 
     /// <summary>
@@ -119,6 +126,9 @@ public class EnemyManager : MonoBehaviour
             y -= 250f/freq;
         }
         CheckHP();
+        //弱点をリセット
+        weakPoint = Random.Range(0, 3);
+        enemyUI.DisplayWeakIcon(weakPoint);
     }
 
     
@@ -206,7 +216,7 @@ public class EnemyManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 攻撃を開始(PlayerControllerから呼ばれます)
+    /// 攻撃を開始(PlayerControllerrとGamaManager呼ばれます)
     /// </summary>
     public void StopAttack()
     {
