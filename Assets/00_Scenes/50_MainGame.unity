@@ -461,6 +461,7 @@ GameObject:
   - component: {fileID: 74683565}
   - component: {fileID: 74683564}
   - component: {fileID: 74683567}
+  - component: {fileID: 74683568}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -495,7 +496,7 @@ MonoBehaviour:
   - {r: 1, g: 1, b: 1, a: 0}
   - {r: 0.20091248, g: 1, b: 0, a: 0.48235294}
   - {r: 0, g: 0.65807414, b: 1, a: 0.3137255}
-  - {r: 1, g: 0.009313969, b: 0, a: 0.14117648}
+  - {r: 1, g: 0.009313969, b: 0, a: 0.57254905}
 --- !u!114 &74683565
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,6 +543,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayText: {fileID: 608422171}
   messageObj: {fileID: 756521388}
+--- !u!114 &74683568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74683563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c897835a29e9a674cbcf65735f87a707, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  novelObj: {fileID: 2114685884870409370, guid: f05355cd56bd32b4a9a342e634f112cb,
+    type: 3}
+  csvNames:
+  - Prologue_RED
+  - Prologue_BLUE
+  - Prologue_YELLOW
 --- !u!1 &79018966
 GameObject:
   m_ObjectHideFlags: 0

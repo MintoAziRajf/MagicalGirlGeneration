@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
         enemyManager = enemy.GetComponent<EnemyManager>();
         tutorial = this.GetComponent<Tutorial>();
         prologue = this.GetComponent<Prologue>();
+        Time.timeScale = 0f;
         StartCoroutine(GameStart());
     }
 
@@ -64,7 +65,7 @@ public class GameManager : MonoBehaviour
     {
         yield return StartCoroutine(Prologue());
         yield return StartCoroutine(Tutorial());
-        
+        Time.timeScale = 1f;
         playerController.IsStart = true;
         enemyManager.IsStart = true;
         enemyManager.StartAttack();
