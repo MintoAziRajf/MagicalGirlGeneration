@@ -26,8 +26,7 @@ public class TransitionOut : MonoBehaviour
         {
             material.SetFloat("_Alpha", current / time);
             yield return new WaitForEndOfFrame();
-            Debug.Log(current);
-            current += Time.deltaTime;
+            current += Time.unscaledDeltaTime;
         }
         material.SetFloat("_Alpha", 1);
     }

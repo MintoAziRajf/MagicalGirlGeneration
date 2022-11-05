@@ -8,25 +8,27 @@ using System.IO;
 
 public class NovelSystem : MonoBehaviour
 {
+    //Animator
+    Animator anim;
+
     //ゲーム内表示場所
     [SerializeField] private Image visualImage = null; 　//キャラの見た目
     [SerializeField] private Text mainName = null; 　　　//キャラの名前
     [SerializeField] private Text mainText = null; 　　　//本文
     [SerializeField] private GameObject nextIcon = null; //ページ送りのアイコン表示
-    [SerializeField] private Image backgroundImage = null;//背景
 
     [SerializeField] private int textSpeed = 0;  //テキストの表示速度
 
-    //次のシーンの名前
-    [SerializeField] private string nextScene = null;
-
-    private int typeID = 0; //選択されたキャラクター
     private int current = 0;//現在のテキスト
 
     private int visualID= 0;//キャラ見た目
-    private int nameID = 0; //キャラ名前
+    private string serifName = null; //キャラ名前
     private bool isSlide = false;//キャラクター表示時にスライドさせるか
     private string mainString = null; //本文
+
+    //const
+    private const int START_ANIMATION = 20;
+    private const int END_ANIMATION = 20;
 
     //
     private bool isLoad = false;
@@ -36,35 +38,44 @@ public class NovelSystem : MonoBehaviour
     List<string[]> novelDatas = new List<string[]>();//ノベルデータ格納場所
 
     //スキップする用に呼び出したコルーチンを保存する
-    private IEnumerator novel;
     private IEnumerator sentence;
 
     private enum DATA
     {
-        Number,
-        Visual,
-        Name,
-        IsSlide,
-        Text
+        NUMBER,
+        VISUAL,
+        NAME,
+        IS_SLIDE,
+        SENTENCE
     }
 
     [SerializeField] private Sprite[] visual = new Sprite[10];
-    [SerializeField] private Color[] backgroundColor = new Color[3];
-    [SerializeField] private string[] characterName = new string[6];
 
-
-    public IEnumerator NovelStart(string s, int type)
+    public IEnumerator NovelStart(string s)
     {
         csvName = s;
-        typeID = type;
         //CSV読み込み
         LoadCSV();
         //初期表示
         InitializeDisplay();
         //CSVロード後
         yield return new WaitUntil(() => !isLoad);
-        novel = Novel();
-        yield return StartCoroutine(novel);
+        anim = this.GetComponent<Animator>();
+        yield return new WaitForSecondsRealtime(0.5f);
+        anim.SetTrigger("Start");
+        for(int i = 0; i < START_ANIMATION; i++)
+        {
+            yield return null;
+        }
+        StartCoroutine(DisplaySentence());
+        //全文表示するまで待つ
+        yield return new WaitUntil(() => current >= novelDatas.Count);
+        anim.SetTrigger("End");
+        for(int i = 0; i < END_ANIMATION; i++)
+        {
+            yield return null;
+        }
+        Destroy(this.gameObject);
     }
 
     private void Update()
@@ -72,29 +83,28 @@ public class NovelSystem : MonoBehaviour
         //ノベルシーンをスキップする
         if (Input.GetButtonDown("Cancel"))
         {
-            StopCoroutine(novel);
+            StopCoroutine(sentence);
+            current = novelDatas.Count;
         }
+
         //Aボタン
         if (Input.GetButtonDown("Submit"))
         {
+            //テキスト全文表示後の場合、次のテキストを表示
+            if (nextIcon.activeSelf)
+            {
+                current++;
+                //現在のテキスト
+                StartCoroutine(DisplaySentence());
+                nextIcon.SetActive(false);
+            }
             //テキスト進行中の場合、全文表示
-            StopCoroutine(sentence);
-            mainText.text = mainString;
-            nextIcon.SetActive(true); //次のテキスト表示を可能にする
-        }
-    }
-
-    private IEnumerator Novel()
-    {
-        //全文表示するまで繰り返す
-        while(current < novelDatas.Count)
-        {
-            //現在のテキスト
-            yield return StartCoroutine(DisplaySentence());
-            //テキスト全文表示後、Submitボタンで次のテキストを表示
-            yield return new WaitUntil(() => !Input.GetButtonDown("Submit"));
-            nextIcon.SetActive(false);
-            current++;
+            else
+            {
+                StopCoroutine(sentence);
+                mainText.text = mainString;
+                nextIcon.SetActive(true); //次のテキスト表示を可能にする
+            }
         }
     }
 
@@ -112,11 +122,12 @@ public class NovelSystem : MonoBehaviour
     //データの更新
     void ImportSentenceDatas()
     {
+        if(current >=  novelDatas.Count) return;
         nextIcon.SetActive(false);
-        visualID = int.Parse(novelDatas[current][(int)DATA.Visual]); //表示キャラ
-        nameID = int.Parse(novelDatas[current][(int)DATA.Name]);     //名前
-        isSlide = bool.Parse(novelDatas[current][(int)DATA.IsSlide]); //スライドするかどうか
-        mainString = ConvertText(novelDatas[current][(int)DATA.Text]); //本文
+        visualID = int.Parse(novelDatas[current][(int)DATA.VISUAL]); //表示キャラ
+        serifName = novelDatas[current][(int)DATA.NAME];     //名前
+        isSlide = bool.Parse(novelDatas[current][(int)DATA.IS_SLIDE]); //スライドするかどうか
+        mainString = ConvertText(novelDatas[current][(int)DATA.SENTENCE]); //本文
 
         //改行処理
         string ConvertText(string s)
@@ -134,8 +145,9 @@ public class NovelSystem : MonoBehaviour
     //キャラクター表示
     void DisplayVisual()
     {
+        if (isSlide) anim.SetTrigger("Slide");
         visualImage.sprite = visual[visualID];
-        mainName.text = characterName[nameID];
+        mainName.text = serifName;
     }
 
     //本文表示
@@ -159,7 +171,6 @@ public class NovelSystem : MonoBehaviour
     //-------------初期化----------------
     private void InitializeDisplay()
     {
-        backgroundImage.color = backgroundColor[typeID];
         visualImage.sprite = visual[0];
         mainName.text = "";
         mainText.text = "";
