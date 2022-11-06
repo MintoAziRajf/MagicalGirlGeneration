@@ -1,11 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Tutorial : MonoBehaviour
 {
-    public IEnumerator Move()
+    [SerializeField] private GameObject tutorialCanvas = null;
+
+    public IEnumerator Flow()
     {
-        yield return new WaitUntil(() => !Input.GetKeyDown(KeyCode.A));
+        tutorialCanvas.SetActive(true);
+        while (tutorialCanvas.activeSelf)
+        {
+            yield return null;
+        }
     }
 }

@@ -96,4 +96,20 @@ public class EnemySkillList : MonoBehaviour
             yield return new WaitForSeconds(oneFrame);
         }
     }
+
+    private GameObject tutorialMark;
+    public IEnumerator Tutorial(int index)
+    {
+        tutorialMark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
+    }
+    public IEnumerator TutorialEnd(int index)
+    {
+        Destroy(tutorialMark);
+        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        yield return StartCoroutine(WaitFrame(OMEN_TIME));
+        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
+        yield return StartCoroutine(WaitFrame(FADE_TIME));
+        Destroy(effect.gameObject);
+    }
 }
