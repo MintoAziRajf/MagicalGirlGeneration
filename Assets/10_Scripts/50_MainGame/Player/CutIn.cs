@@ -10,6 +10,7 @@ public class CutIn : PlayerManager
     private Animator damageAnim;
     private const int ANIM_COOLTIME = 120;
     private const int ATTACK_COOLTIME = 20;
+    private const float ONE_FRAME = 1f / 60f;
 
     private void Start()
     {
@@ -34,7 +35,7 @@ public class CutIn : PlayerManager
     {
         for (int i = 0; i < value; i++)
         {
-            yield return new WaitForSeconds(Time.deltaTime);
+            yield return new WaitForSeconds(ONE_FRAME);
         }
     }
     public IEnumerator CounterAttack()

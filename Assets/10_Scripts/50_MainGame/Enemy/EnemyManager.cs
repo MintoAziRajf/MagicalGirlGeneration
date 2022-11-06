@@ -10,6 +10,7 @@ public class EnemyManager : MonoBehaviour
 
     EnemySkillList enemySkillList; //攻撃スキルを呼び出す用
     EnemyUI enemyUI; //エネミーに関するUI表示
+    GameManager gameManager;
 
     private IEnumerator attackLoop;  //途中停止用に呼び出すコルーチンの保存先
     private IEnumerator attack;      //
@@ -18,6 +19,11 @@ public class EnemyManager : MonoBehaviour
     [SerializeField] private GameObject damageUIPrefab = null;//ダメージ表記のプレファブ
     [SerializeField] private TextAsset[] csv = null;//エネミーの情報が書いてあるCSV
     List<string[]> enemyData = new List<string[]>();//エネミーの情報
+
+    [SerializeField] private SpriteRenderer enemyVisual = null;
+    [SerializeField] private SpriteRenderer defeatEnemy = null;
+    [SerializeField] private Image defeatScreen = null;
+    [SerializeField] private Sprite[] enemyVisuals = null;
 
     private int currentEnemy = 0; //現在の敵
     private bool isAlive = false; //生きているかどうか
@@ -60,19 +66,26 @@ public class EnemyManager : MonoBehaviour
     {
         enemySkillList = GetComponent<EnemySkillList>();
         enemyUI = this.GetComponent<EnemyUI>();
+        gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
         //エネミー情報をロード
         LoadEnemy();
     }
+
     /// <summary>
     /// 敵の攻撃パターンとステータスをロード
     /// </summary>
     private void LoadEnemy()
     {
+        if (currentEnemy == csv.Length)
+        {
+            EndGame();
+            return;
+        }
+        // 以前のデータをクリア
         enemyData.Clear();
-        StringReader reader = new StringReader(csv[currentEnemy].text);
-
-        string line = null;
-        line = reader.ReadLine(); //見出し行をスキップする
+        // 敵のデータをロード
+        StringReader reader = new StringReader(csv[currentEnemy].text); 
+        string line = reader.ReadLine(); //見出し行をスキップする
         while (reader.Peek() != -1) // reader.Peekが-1になるまで
         {
             line = reader.ReadLine(); // 一行ずつ読み込み
@@ -88,6 +101,10 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     private void SetEnemy()
     {
+        //見た目をセット
+        enemyVisual.sprite = enemyVisuals[currentEnemy];
+        defeatEnemy.GetComponent<SpriteMask>().sprite = enemyVisuals[currentEnemy];
+
         isAlive = true;　//生存情報をセット
         //HPをセット
         hpMax = int.Parse(enemyData[0][(int)DATA.HP]); 
@@ -95,13 +112,12 @@ public class EnemyManager : MonoBehaviour
         //UIにHP情報をセット
         enemyUI.HPMax = hpMax; 
         enemyUI.HPCurrent = hpCurrent;
-        //弱点をセット
-        weakPoint = Random.Range(0, 3);
-        enemyUI.DisplayWeakIcon(weakPoint);
+        UpdateWeakPoint();
     }
 
     /// <summary>
     /// ダメージメソッド
+    /// UIを揺らす⇒ダメージ×回数分HPを減らす⇒死亡判定⇒弱点をリセット
     /// </summary>
     /// <param name="value">ダメージ</param>
     /// <param name="freq">回数</param>
@@ -126,7 +142,13 @@ public class EnemyManager : MonoBehaviour
             y -= 250f/freq;
         }
         CheckHP();
-        //弱点をリセット
+        UpdateWeakPoint();
+    }
+
+    private void UpdateWeakPoint()
+    {
+        if (!isStart) return;
+        //弱点をセット
         weakPoint = Random.Range(0, 3);
         enemyUI.DisplayWeakIcon(weakPoint);
     }
@@ -221,6 +243,8 @@ public class EnemyManager : MonoBehaviour
     public void StopAttack()
     {
         enemySkillList.Stop();
+        if (attackLoop == null) return;
+        if (attack == null) return;
         StopCoroutine(attackLoop);
         StopCoroutine(attack);
     }
@@ -234,9 +258,86 @@ public class EnemyManager : MonoBehaviour
         //攻撃ループと現在の攻撃を停止
         StopCoroutine(attackLoop);
         StopCoroutine(attack);
-
+        StartCoroutine(DefeatAnimation());
+    }
+    
+    /// <summary>
+    /// 敵の撃破演出(敵の点滅⇒フェードアウト⇒敵のロード⇒フェードイン)
+    /// </summary>
+    private IEnumerator DefeatAnimation()
+    {
+        gameManager.StopGame();
+        for (int i = 0; i < 60; i++)
+        {
+            yield return null;
+        }
+        Time.timeScale = 0f;
+        
+        Color c = new Color(1f, 1f, 1f, 0f);
+        int flashDuration = 30; // 点滅に要するフレーム数
+        int flashTimes = 3; // 敵キャラの点滅回数
+        float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
+        
+        // 不透明度の初期化
+        defeatEnemy.color = c;
+        defeatScreen.color = c;
+        // 敵の点滅
+        for (int i = 0; i < flashTimes; i++)
+        {
+            for(int j = 0; j < flashDuration; j++)
+            {
+                c.a += unitAlpha;
+                defeatEnemy.color = c;
+                yield return null;
+            }
+            for (int j = 0; j < flashDuration; j++)
+            {
+                c.a -= unitAlpha;
+                defeatEnemy.color = c;
+                yield return null;
+            }
+        }
+        //フェードアウト
+        for (int i = 0; i < flashDuration; i++)
+        {
+            c.a += unitAlpha;
+            defeatScreen.color = c;
+            yield return null;
+        }
         //次のエネミーをロード
         currentEnemy++;
         LoadEnemy();
+        //時間を空ける
+        for (int i = 0; i < flashDuration; i++)
+        {
+            yield return null;
+        }
+        //フェードイン
+        for (int i = 0; i < flashDuration; i++)
+        {
+            c.a -= unitAlpha;
+            defeatScreen.color = c;
+            yield return null;
+        }
+        //時間を戻す
+        Time.timeScale = 1f;
+        gameManager.ResumeGame();
+    }
+
+    private void EndGame()
+    {
+        gameManager.Result();
+    }
+
+    //------------チュートリアル関連----------------
+    public IEnumerator Tutorial(int x, int y)
+    {
+        int index = x + y * 3;
+        yield return StartCoroutine(enemySkillList.Tutorial(index));
+    }
+    public void TutorialEnd(int x, int y)
+    {
+        int index = x + y * 3;
+        StartCoroutine(enemySkillList.TutorialEnd(index));
     }
 }

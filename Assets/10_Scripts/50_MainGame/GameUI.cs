@@ -28,7 +28,7 @@ public class GameUI : PlayerManager
     public int SkillCooltime { set { skillCooltime = value; } }
 
     //------------------ゲージ表示------------------
-    private float displaySpeed = 20f;　//変化のスピード
+    private float displaySpeed = 80f;　//変化のスピード
 
     //変身ゲージ表示(徐々に)
     [SerializeField] private Image evolutionDisplay = null; //表示先

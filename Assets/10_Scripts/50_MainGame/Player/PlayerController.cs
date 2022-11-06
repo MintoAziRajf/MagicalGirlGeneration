@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerController : PlayerManager
 {
-    private bool[,] playerGrid = new bool[3, 3];
+    private bool[,] attackGrid = new bool[3, 3];
     private bool[,] skillGrid = new bool[3, 3];
     private bool[,] healGrid = new bool[3, 3];
     
@@ -76,8 +76,6 @@ public class PlayerController : PlayerManager
         set
         {
             isEvo = value;
-            playerHP.IsEvo = value;
-            playerSkill.IsEvo = value;
             if (isEvo)
             {
                 StartCoroutine(WaitAnim("Evolution"));
@@ -86,13 +84,20 @@ public class PlayerController : PlayerManager
             {
                 StartCoroutine(WaitAnim("SolveEvolution"));
             }
+            playerHP.IsEvo = value;
+            if (!isTutorial)
+            {
+                playerSkill.IsEvo = value;
+            }
         }
     }
     //------------------------------
 
     //-----------ゲームのスタートフラグ----------
     private bool isStart = false;
-    public bool IsStart { set { isStart = value; } }
+    public bool IsStart { set { isStart = value; evolution.IsStart = value; } }
+    private bool isTutorial = false;
+    public bool IsTutorial { set { isTutorial = value; } }
     //------------------------------------------
 
     //----------操作フラグ----------
@@ -119,11 +124,11 @@ public class PlayerController : PlayerManager
 
     private void FixedUpdate()
     {
-        if (!isStart) return;//GameManagerからのスタートが送られるまでは何もしない
-        evolution.Check();
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
-        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter;
+        evolution.Check();
+      
+        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter && isStart;
         if (!canInput) return;
         InputDirection();
     }
@@ -146,23 +151,19 @@ public class PlayerController : PlayerManager
         {
             if (up)
             {
-                currentY--;
-                Move((int)DIRECTION.UP);
+                MoveUp();
             }
             else if (down)
             {
-                currentY++;
-                Move((int)DIRECTION.DOWN);
+                MoveDown();
             }
             else if (left)
             {
-                currentX--;
-                Move((int)DIRECTION.LEFT);
+                MoveLeft();
             }
             else if (right)
             {
-                currentX++;
-                Move((int)DIRECTION.RIGHT);
+                MoveRight();
             }
         }
         IEnumerator WaitInput()
@@ -176,23 +177,19 @@ public class PlayerController : PlayerManager
                     StartCoroutine(Avoid());
                     if (up)
                     {
-                        currentY--;
-                        Move((int)DIRECTION.UP);
+                        MoveUp();
                     }
                     else if (down)
                     {
-                        currentY++;
-                        Move((int)DIRECTION.DOWN);
+                        MoveDown();
                     }
                     else if (left)
                     {
-                        currentX--;
-                        Move((int)DIRECTION.LEFT);
+                        MoveLeft();
                     }
                     else if (right)
                     {
-                        currentX++;
-                        Move((int)DIRECTION.RIGHT);
+                        MoveRight();
                     }
                     yield break;
                 }
@@ -201,6 +198,26 @@ public class PlayerController : PlayerManager
         }
     }
     //--------------------------移動関連-------------------------
+    private void MoveUp()
+    {
+        currentY--;
+        Move((int)DIRECTION.UP);
+    }
+    private void MoveDown()
+    {
+        currentY++;
+        Move((int)DIRECTION.DOWN);
+    }
+    private void MoveLeft()
+    {
+        currentX--;
+        Move((int)DIRECTION.LEFT);
+    }
+    private void MoveRight()
+    {
+        currentX++;
+        Move((int)DIRECTION.RIGHT);
+    }
     private void Move(int direction)
     {
         collisionManager.PlayerMoved(currentX, currentY);
@@ -224,7 +241,7 @@ public class PlayerController : PlayerManager
 
     private void CheckTile()
     {
-        if (playerGrid[currentX,currentY]) StartCoroutine(Attack());
+        if (attackGrid[currentX,currentY]) StartCoroutine(Attack());
         if (skillGrid[currentX, currentY]) RemoveSkillGrid();
         if (healGrid[currentX, currentY]) RemoveHealGrid();
     }
@@ -382,6 +399,7 @@ public class PlayerController : PlayerManager
     private void Initialize()
     {
         InitTiles();
+        if (isTutorial) return;
         SetUI();
         SetAttackTile();
     }
@@ -390,7 +408,7 @@ public class PlayerController : PlayerManager
     {
         for (int i = 0; i < 9; i++)
         {
-            playerGrid[i%3, i/3] = false;
+            attackGrid[i%3, i/3] = false;
             skillGrid[i%3, i/3] = false;
         }
         collisionManager.PlayerMoved(currentX, currentY);
@@ -401,7 +419,7 @@ public class PlayerController : PlayerManager
     {
         for (int i = 0; i < 3; i++)
         {
-            playerGrid[i, ATTACK_LINE[attackType]] = true;
+            attackGrid[i, ATTACK_LINE[attackType]] = true;
             Instantiate(attackGridEffectPrefab,displayGrid[i + ATTACK_LINE[attackType] * 3].transform); 
         }
     }
@@ -413,4 +431,68 @@ public class PlayerController : PlayerManager
         gameUI.AvoidCooltime = AVOID_COOLTIME;
         StartCoroutine(MessageManager.instance.DisplayMessage("さぁ世界を救いに行こう！"));
     }
+
+    //--------------------------------------------------------------------------------
+    private GameObject tutorialAttack;
+    public IEnumerator TutorialMove()
+    {
+        yield return new WaitUntil(() => (Input.GetAxisRaw("Horizontal") == 1f));
+        MoveRight();
+        yield return StartCoroutine(MoveDelay());
+
+        //次のチュートリアルの準備
+        attackGrid[2, ATTACK_LINE[attackType]] = true;
+        tutorialAttack = Instantiate(attackGridEffectPrefab, displayGrid[2 + ATTACK_LINE[attackType] * 3].transform);
+    }
+    public IEnumerator TutorialAttack()
+    {
+        yield return new WaitUntil(() => (Input.GetAxisRaw("Vertical") == ((float)BACK_LINE[attackType] - 1f)));
+        if(attackType == 0) MoveUp();
+        else MoveDown();
+        attackGrid[2, ATTACK_LINE[attackType]] = false;
+        Destroy(tutorialAttack);
+        evolution.Increase(99);
+    }
+    public IEnumerator TutorialEvolution()
+    {
+        evolution.Increase(100);
+        isAnim = true;
+        while (isAnim)
+        {
+            yield return null;
+        }
+    }
+    public IEnumerator TutorialCounter()
+    {
+        yield return StartCoroutine(enemyManager.Tutorial(currentX, currentY));
+        bool tutorialAvoid = false;
+        while (!tutorialAvoid)
+        {
+            yield return new WaitUntil(() => (Input.GetButtonDown("Submit")));
+            for(int i = 0; i < AVOID_INPUT_FRAME; i++)
+            {
+                if (Input.GetAxisRaw("Vertical") == ((float)BACK_LINE[attackType] - 1f)) tutorialAvoid = true;
+                yield return null;
+            }
+        }
+        enemyManager.TutorialEnd(currentX, currentY);
+        if (attackType == 0) MoveUp();
+        else MoveDown();
+        yield return StartCoroutine(cutIn.CounterAttack());
+        AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq);
+    }
+    public IEnumerator TutorialSkill()
+    {
+        playerSkill.IsEvo = true;
+        while (!isSkill)
+        {
+            if(!isMove) InputDirection();
+            yield return null;
+        }
+        for(int i = 0; i < 180; i++)
+        {
+            yield return null;
+        }
+    }
+    //--------------------------------------------------------------------------
 }
