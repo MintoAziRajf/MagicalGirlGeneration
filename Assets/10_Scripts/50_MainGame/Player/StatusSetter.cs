@@ -48,7 +48,7 @@ public class StatusSetter : PlayerManager
         playerHP.NormalHP = ReturnStatus(STATUS.NOR_HP);
         playerHP.EvoHP = ReturnStatus(STATUS.EVO_HP);
         playerController.AttackFreq = ReturnStatus(STATUS.ATTACK_FREQ);
-        playerController.DamageNoraml = ReturnStatus(STATUS.NOR_DAMAGE);
+        playerController.DamageNormal = ReturnStatus(STATUS.NOR_DAMAGE);
         playerController.DamageEvolution = ReturnStatus(STATUS.EVO_DAMAGE);
         playerController.DamageSkill = ReturnStatus(STATUS.SKILL_DAMAGE);
         playerController.SkillFreq = ReturnStatus(STATUS.SKILL_FREQ);

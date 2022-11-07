@@ -24,8 +24,8 @@ public class PlayerHP : PlayerManager
             isEvo = value;
             if(isEvo)
             {
-                maxHP = normalHP + evoHP;
-                hp += evoHP;
+                maxHP = evoHP;
+                hp += evoHP - normalHP;
             }
             else
             {
@@ -44,12 +44,15 @@ public class PlayerHP : PlayerManager
         {
             //dead
             Debug.Log("死にました。");
+            gameManager.StopGame();
+            StartCoroutine(playerDeadAnimation.StartAnimation());
         }
     }
 
-    public void Heal(int value)
+    private const int heal = 50;
+    public void Heal()
     {
-        hp = Mathf.Min(hp + value, maxHP);
+        hp = Mathf.Min(hp + heal, maxHP);
         gameUI.CurrentHP = hp;
     }
 }

@@ -14,6 +14,7 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public EnemyManager enemyManager;
 
     [HideInInspector] public PlayerHP playerHP;
+    [HideInInspector] public PlayerDeadAnimation playerDeadAnimation;
     [HideInInspector] public PlayerSkill playerSkill;
     [HideInInspector] public PlayerController playerController;
     [HideInInspector] public Evolution evolution;
@@ -30,6 +31,7 @@ public class PlayerManager : MonoBehaviour
         enemyManager = enemyObj.GetComponent<EnemyManager>();
 
         playerHP = this.GetComponent<PlayerHP>();
+        playerDeadAnimation = this.GetComponent<PlayerDeadAnimation>();
         playerSkill = this.GetComponent<PlayerSkill>();
         playerController = this.GetComponent<PlayerController>();
         evolution = this.GetComponent<Evolution>();
