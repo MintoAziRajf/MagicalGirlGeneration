@@ -5,12 +5,14 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    EnemyManager enemyManager;
+    EnemyManager enemyManager; 
     PlayerController playerController;
     Tutorial tutorial;
     Prologue prologue;
+    Epilogue epilogue;
+    ScoreManager scoreManager;
 
-    [SerializeField] private GameObject player = null;
+    [SerializeField] private GameObject player = null; 
     [SerializeField] private GameObject enemy = null;
     [SerializeField] private GameObject pauseCanvas = null;
 
@@ -25,6 +27,9 @@ public class GameManager : MonoBehaviour
         get { return type; }
     }
 
+    [SerializeField] private GameObject gameOverCanvas = null;
+    [SerializeField] private GameObject resultPrefab = null;
+
     private void Start()
     {
         playerController = player.GetComponent<PlayerController>();
@@ -32,13 +37,14 @@ public class GameManager : MonoBehaviour
         enemyManager = enemy.GetComponent<EnemyManager>();
         tutorial = this.GetComponent<Tutorial>();
         prologue = this.GetComponent<Prologue>();
-        Time.timeScale = 0f;
+        epilogue = this.GetComponent<Epilogue>();
+        scoreManager = this.GetComponent<ScoreManager>();
         StartCoroutine(GameStart());
     }
 
     private void FixedUpdate()
     {
-        if (isTutorial || isPrologue) return;
+        if (isTutorial || isPrologue) return; //チュートリアルとプロローグ中は何もしない
         if (Input.GetButtonDown("Option"))
         {
             pauseCanvas.SetActive(true);
@@ -46,20 +52,67 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void StopGame()
+    /// <summary>
+    /// スコアマネージャーにスコア追加　(PlayerControllerから呼ばれます)
+    /// </summary>
+    /// <param name="scoreType"></param>
+    public void AddScore(int value)
     {
-        playerController.IsStart = false;
-    }
-    public void ResumeGame()
-    {
-        playerController.IsStart = true;
-    }
-    public void Result()
-    {
-        playerController.IsStart = false;
-        enemyManager.IsStart = false;
+        scoreManager.AddScore(value);
     }
 
+    /// <summary>
+    /// PlayerHPとEnemyManagerから呼ばれる
+    /// </summary>
+    public void StopGame()
+    {
+        Debug.Log("プレイヤーと敵の動きを停止します。");
+        playerController.IsStart = false;
+        enemyManager.IsStart = false;
+        enemyManager.StopAttack();
+    }
+
+    /// <summary>
+    /// EnemyManagerから呼ばれる
+    /// </summary>
+    public void ResumeGame()
+    {
+        Debug.Log("プレイヤーと敵の動きを開始します。");
+        enemyManager.IsStart = true;
+        playerController.IsStart = true;
+        enemyManager.StartAttack();
+    }
+
+    /// <summary>
+    /// ゲームを
+    /// </summary>
+    private IEnumerator GameStart()
+    {
+        yield return StartCoroutine(Prologue());
+        
+        yield return StartCoroutine(Tutorial());
+        playerController.IsStart = true;
+        enemyManager.IsStart = true;
+        enemyManager.StartAttack();
+    }
+
+    /// <summary>
+    /// isPrologueがTrueならプロローグを開始する
+    /// </summary>
+    private IEnumerator Prologue()
+    {
+        if (!isPrologue)
+        {
+            yield break;
+        }
+        Time.timeScale = 0f;
+        yield return StartCoroutine(prologue.StartPrologue(type));
+        Time.timeScale = 1f;
+    }
+
+    /// <summary>
+    /// isTutorialがTrueならチュートリアルを開始する
+    /// </summary>
     private IEnumerator Tutorial()
     {
         if (!isTutorial)
@@ -67,10 +120,69 @@ public class GameManager : MonoBehaviour
             yield break;
         }
         yield return StartCoroutine(tutorial.Flow());
+        Retry();
+    }
+
+    /// <summary>
+    /// ゲームオーバー時に呼ばれるメソッド
+    /// playerDead⇒GameOver()⇒gameOverCanvas
+    /// </summary>
+    public void GameOver()
+    {
+        gameOverCanvas.SetActive(true);
+    }
+
+    /// <summary>
+    /// ゲームオーバー時にゲームオーバーキャンバスから呼ばれるメソッド
+    /// gameOverCanvas.End()⇒GameOverResult()⇒gameOverCanvas.DisplayRetry()
+    /// </summary>
+    public IEnumerator GameOverResult()
+    {
+        StopGame();
+
+        yield return StartCoroutine(Result());
+        //retry
+        gameOverCanvas.GetComponent<GameOverCanvas>().DisplayRetry();
+    }
+    /// <summary>
+    /// ゲームをクリアした時に呼ばれるメソッド
+    /// EnemyManager.EndGame() ⇒ GameClear() ⇒ Epilogue ⇒ Result ⇒ Endcard
+    /// </summary>
+    public IEnumerator GameClear()
+    {
+        StopGame();
+
+        yield return StartCoroutine(epilogue.StartEpilogue(type));
+        yield return StartCoroutine(Result());
+        //endcard
+        LoadManager.instance.LoadScene("71_EndCard");
+    }
+
+    /// <summary>
+    /// リザルトを表示
+    /// </summary>
+    private IEnumerator Result()
+    {
+        GameObject resultObj = Instantiate(resultPrefab); //リザルトプレハブを生成
+        resultObj.GetComponent<ResultDisplay>().DisplayResult(type, scoreManager.Score); // 現在のキャラとscoreを受け渡す
+        while (resultObj.activeSelf) // リザルト表示終了まで待機
+        {
+            yield return null;
+        }
+    }
+
+    /// <summary>
+    /// ゲームをリスタートする
+    /// </summary>
+    public void Retry()
+    {
         SceneManager.sceneLoaded += GameSceneLoaded;
         LoadManager.instance.LoadScene("50_MainGame");
     }
 
+    /// <summary>
+    /// ゲームをリスタートするとき呼ばれる　
+    /// </summary>
     private void GameSceneLoaded(Scene next, LoadSceneMode mode)
     {
         // シーン切り替え後のスクリプトを取得
@@ -78,53 +190,9 @@ public class GameManager : MonoBehaviour
 
         // データを渡す処理
         gameManager.Type = type;
-        gameManager.IsTutorial = false;
-        gameManager.IsPrologue = false;
+        gameManager.IsTutorial = false; // リスタート時は強制OFF
+        gameManager.IsPrologue = false; // リスタート時は強制OFF
         // イベントから削除
         SceneManager.sceneLoaded -= GameSceneLoaded;
-    }
-
-    private IEnumerator Prologue()
-    {
-        if (!isPrologue)
-        {
-            yield break;
-        }
-        yield return StartCoroutine(prologue.StartPrologue(type));
-    }
-
-    private IEnumerator GameStart()
-    {
-        yield return StartCoroutine(Prologue());
-        Time.timeScale = 1f;
-        yield return StartCoroutine(Tutorial());
-        playerController.IsStart = true;
-        enemyManager.IsStart = true;
-        enemyManager.StartAttack();
-    }
-
-    [SerializeField] private GameObject resultPrefab = null;
-    private int score;
-    public int Score { set { score = value; } }
-    public IEnumerator GameOver()
-    {
-        GameObject resultObj = Instantiate(resultPrefab);
-        resultObj.GetComponent<ResultDisplay>().DisplayResult(type,score);
-        while (resultObj.activeSelf)
-        {
-            yield return null;
-        }
-        //retry
-    }
-
-    public IEnumerator GameClear()
-    {
-        GameObject resultObj = Instantiate(resultPrefab);
-        resultObj.GetComponent<ResultDisplay>().DisplayResult(type, score);
-        while (resultObj.activeSelf)
-        {
-            yield return null;
-        }
-        //endcard
     }
 }

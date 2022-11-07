@@ -76,11 +76,6 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     private void LoadEnemy()
     {
-        if (currentEnemy == csv.Length)
-        {
-            EndGame();
-            return;
-        }
         // 以前のデータをクリア
         enemyData.Clear();
         // 敵のデータをロード
@@ -101,6 +96,9 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     private void SetEnemy()
     {
+        //攻撃をリセット
+        currentAttack = 0;
+
         //見た目をセット
         enemyVisual.sprite = enemyVisuals[currentEnemy];
         defeatEnemy.GetComponent<SpriteMask>().sprite = enemyVisuals[currentEnemy];
@@ -238,7 +236,7 @@ public class EnemyManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 攻撃を開始(PlayerControllerrとGamaManager呼ばれます)
+    /// 攻撃を開始(PlayerControllerとGamaManager呼ばれます)
     /// </summary>
     public void StopAttack()
     {
@@ -306,6 +304,11 @@ public class EnemyManager : MonoBehaviour
         }
         //次のエネミーをロード
         currentEnemy++;
+        if (currentEnemy == csv.Length)
+        {
+            EndGame();
+            yield break;
+        }
         LoadEnemy();
         //時間を空ける
         for (int i = 0; i < flashDuration; i++)
@@ -326,7 +329,7 @@ public class EnemyManager : MonoBehaviour
 
     private void EndGame()
     {
-        gameManager.Result();
+        StartCoroutine(gameManager.GameClear());
     }
 
     //------------チュートリアル関連----------------

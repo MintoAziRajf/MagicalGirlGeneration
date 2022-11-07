@@ -51,7 +51,7 @@ public class PlayerController : PlayerManager
     };
 
     private int damageNormal = 0;
-    public int DamageNoraml { set { damageNormal = value; } }
+    public int DamageNormal { set { damageNormal = value; } }
     private int damageEvolution = 0;
     public int DamageEvolution { set { damageEvolution = value; } }
     private int attackFreq = 0;
@@ -78,6 +78,7 @@ public class PlayerController : PlayerManager
             isEvo = value;
             if (isEvo)
             {
+                gameManager.AddScore((int)SCORE.EVOLUTION); // スコア追加
                 StartCoroutine(WaitAnim("Evolution"));
             }
             else
@@ -105,10 +106,23 @@ public class PlayerController : PlayerManager
     private bool isAttack = false;
     private bool isSkill = false;
     private bool isCounter = false;
-    private bool isAvoid = false;
+    private bool canAvoid = true;
     private bool isAnim = false;
     private bool canInput = true;
     //------------------------------
+
+    //----------スコア一覧---------------
+    private enum SCORE
+    {
+        MOVE = 100,
+        ATTACK = 1000,
+        EVOLUTION = 3000,
+        SKILL = 5000,
+        COUNTER = 10000
+    }
+    // スコアの追加方法
+    // gameManager.AddScore((int)SCORE.○○);
+    //------------------------------------
 
     //---------------------タイル表示関連------------------
     [SerializeField] private GameObject[] displayGrid = null;
@@ -137,7 +151,7 @@ public class PlayerController : PlayerManager
 
     private void InputDirection()
     {
-        bool avoid = Input.GetKey(KeyCode.Space) && !isAvoid;
+        bool avoid = Input.GetKey(KeyCode.Space) && canAvoid;
         bool up = Input.GetKey(KeyCode.W) && currentY > LIMIT_MIN;
         bool down = Input.GetKey(KeyCode.S) && currentY < LIMIT_MAX;
         bool left = Input.GetKey(KeyCode.A) && currentX > LIMIT_MIN;
@@ -218,96 +232,128 @@ public class PlayerController : PlayerManager
         currentX++;
         Move((int)DIRECTION.RIGHT);
     }
+
+    /// <summary>
+    /// 移動メソッド
+    /// </summary>
+    /// <param name="direction">方向</param>
     private void Move(int direction)
     {
-        collisionManager.PlayerMoved(currentX, currentY);
-        targetPos = targetPos + MOVE[direction];
-        evolution.Increase("Move");
-        StartCoroutine(MoveDelay());
-        CheckTile();
+        gameManager.AddScore((int)SCORE.MOVE); //スコア追加
+        collisionManager.PlayerMoved(currentX, currentY); //コリジョンマネージャーに移動先を送る
+        targetPos = targetPos + MOVE[direction]; // 移動先を設定
+        evolution.Increase("Move"); // 変身ゲージを増やす
+        StartCoroutine(MoveDelay());// 移動クールタイム
+        CheckTile(); // 移動先のタイルを判定
     }
+
+    /// <summary>
+    /// 移動クールタイム
+    /// </summary>
     private IEnumerator MoveDelay()
     {
-        isMove = true;
+        isMove = true; //移動中
         gameUI.MoveCurrentTime = 0;
-        for (int i = 1; i <= moveCooltime; i++)
+        for (int i = 1; i <= moveCooltime; i++) //クールタイム分待機
         {
-            gameUI.MoveCurrentTime = i;
-            yield return null;
+            gameUI.MoveCurrentTime = i; //DebugUI
+            yield return new WaitForSeconds(1f / 60f); // １フレーム待機
         }
-        isMove = false;
+        isMove = false;//移動終了
     }
     //------------------------------------------------------------
 
+    /// <summary>
+    /// 対応したタイルによってメソッドを呼ぶ
+    /// </summary>
     private void CheckTile()
     {
-        if (attackGrid[currentX,currentY]) StartCoroutine(Attack());
-        if (skillGrid[currentX, currentY]) RemoveSkillGrid();
-        if (healGrid[currentX, currentY]) RemoveHealGrid();
+        if (attackGrid[currentX,currentY]) StartCoroutine(Attack()); 
+        if (skillGrid[currentX, currentY]) RemoveSkillGrid();       
+        if (healGrid[currentX, currentY]) RemoveHealGrid();          
     }
 
     //--------------------------回避関連-------------------------
+    /// <summary>
+    /// 回避メソッド
+    /// </summary>
     private IEnumerator Avoid()
     {
-        isAvoid = true;
-        gameUI.AvoidCurrentTime = 0;
-        for (int i = 0; i < AVOID_COOLTIME; i++)
+        canAvoid = false; // 回避できなくする
+        gameUI.AvoidCurrentTime = 0; // 回避クールタイム
+        for (int i = 0; i < AVOID_COOLTIME; i++) //クールタイム分待機
         {
-            gameUI.AvoidCurrentTime = i;
+            gameUI.AvoidCurrentTime = i; // クールタイム
             yield return null;
         }
-        StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！"));
-        isAvoid = false;
+        StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！")); // メッセージ表示
+        canAvoid = true; // 回避できるようにする
     }
 
+    /// <summary>
+    /// 回避成功
+    /// </summary>
     public IEnumerator AvoidSuccess()
     {
-        isCounter = true;
-        yield return new WaitUntil(() => !isAttack);
-        enemyManager.StopAttack();
-        yield return StartCoroutine(cutIn.CounterAttack());
-        AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq);
-        isCounter = false;
-        enemyManager.StartAttack();
+        isCounter = true; // カウンター攻撃中
+        yield return new WaitUntil(() => !isAttack && isStart); // 通常攻撃を待機
+        gameManager.AddScore((int)SCORE.COUNTER); // スコア追加
+        enemyManager.StopAttack(); // 敵の攻撃を止める
+        yield return StartCoroutine(cutIn.CounterAttack()); // カウンター攻撃のカットイン
+        AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq); // 攻撃メソッド
+        isCounter = false; // カウンター攻撃終了
+        enemyManager.StartAttack(); // 敵の攻撃を開始
     }
     //------------------------------------------------------------
 
     //--------------------------攻撃関連--------------------------
     private IEnumerator Attack()
     {
-        evolution.Increase("Attack");
-        isAttack = true;
-        
-        //damage
-        if(isEvo) AttackEnemy(damageEvolution / attackFreq, attackFreq);
-        else AttackEnemy(damageNormal / attackFreq, attackFreq);
-        yield return StartCoroutine(cutIn.Attack(isEvo));
-        isAttack = false;
-        BringBackPlayer();
+        gameManager.AddScore((int)SCORE.ATTACK); // スコア追加
+        evolution.Increase("Attack"); // 変身ゲージを増やす
+        isAttack = true; // 通常攻撃中
+
+        // 攻撃メソッド
+        if (isEvo) AttackEnemy(damageEvolution / attackFreq, attackFreq); // 変身後
+        else AttackEnemy(damageNormal / attackFreq, attackFreq); // 通常時
+        yield return StartCoroutine(cutIn.Attack(isEvo)); // 攻撃エフェクト(変身してるかどうか)
+        isAttack = false; // 通常攻撃終了
+        BringBackPlayer(); // 攻撃が終わったら反対のタイルに移動
     }
+
+    /// <summary>
+    /// 攻撃が終わったら反対のタイルに移動
+    /// </summary>
     private void BringBackPlayer()
     {
-        currentY = BACK_LINE[attackType];
+        //反対のタイルに移動させる
+        currentY = BACK_LINE[attackType]; 
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = targetPos + ATTACK_MOVE[attackType];
+        // 移動先のタイルを判定
         CheckTile();
     }
+
+    /// <summary>
+    /// 攻撃メソッド
+    /// </summary>
+    /// <param name="damage">ダメージ量</param>
+    /// <param name="freq">攻撃回数</param>
     private void AttackEnemy(int damage, int freq)
     {
-        if(currentX == enemyManager.WeakPoint)
+        if(currentX == enemyManager.WeakPoint) //弱点かどうか判定
         {
-            damage = (int)(damage * WEAK_MULTIPLIER);
-            SetHealGrid();
+            damage = (int)(damage * WEAK_MULTIPLIER); // ダメージを計算
+            SetHealGrid(); // 回復タイルをセット
         }
-        StartCoroutine(enemyManager.Damaged((int)damage, freq));
+        StartCoroutine(enemyManager.Damaged((int)damage, freq)); // エネミーにダメージを送信
     }
     //------------------------------------------------------------------
 
     //------------------------回復関連----------------------------------
     private void SetHealGrid()
     {
-        Debug.Log("a");
-        if (CheckExistHealGrid()) return; 
+        if (CheckExistHealGrid()) return; // 回復タイルがある場合は何もしない
 
         //プレイヤーの現在の位置を取得
         int playerPos = currentX + currentY * 3;
@@ -323,6 +369,10 @@ public class PlayerController : PlayerManager
         healGrid[numbers[index] % 3, numbers[index] / 3] = true;
         Instantiate(healGridEffectPrefab, displayGrid[numbers[index]].transform);
     }
+
+    /// <summary>
+    ///  回復タイルがあるかチェック
+    /// </summary>
     private bool CheckExistHealGrid()
     {
         bool a = false;
@@ -332,34 +382,51 @@ public class PlayerController : PlayerManager
         }
         return a;
     }
+
+    /// <summary>
+    /// 回復タイルが踏まれたら回復タイルを削除し、プレイヤーを回復
+    /// </summary>
     private void RemoveHealGrid()
     {
-        Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealGridEffect(Clone)").gameObject);
-        healGrid[currentX, currentY] = false;
+        Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealGridEffect(Clone)").gameObject); // 回復タイルの見た目を削除
+        healGrid[currentX, currentY] = false; // 回復タイルのタイルを削除
+        Healed(); //回復メソッド
     }
     //-------------------------------------------------------------------
 
     //-------------------------カットイン関連----------------------------
+    /// <summary>
+    /// アニメーションの終了を待つ
+    /// </summary>
+    /// <param name="s"> アニメーションの名前 </param>
     private IEnumerator WaitAnim(string s)
     {
-        isAnim = true;
-        enemyManager.StopAttack();
-        yield return cutIn.StartCoroutine(s);
-        isAnim = false;
-        enemyManager.StartAttack();
+        isAnim = true; // アニメーション中
+        enemyManager.StopAttack(); // エネミーの攻撃を停止
+        yield return cutIn.StartCoroutine(s); // アニメーション
+        isAnim = false; // アニメーション終了
+        enemyManager.StartAttack(); // エネミーの攻撃を開始
     }
     //--------------------------------------------------------------
 
-    //--------------------HP関連----------------------
+    //--------------------HP関連-----------------------------------
+    /// <summary>
+    /// ダメージメソッド
+    /// </summary>
+    /// <param name="value">ダメージ量</param>
     public void Damaged(int value)
     {
         playerHP.Damaged(value);
     }
+    /// <summary>
+    /// 回復メソッド
+    /// </summary>
     private void Healed()
     {
-        //playerHP.Healed();
+        playerHP.Heal();
     }
-    //------------------------------------------------
+    //--------------------------------------------------------------
+
     //--------------------------SKILL-------------------------------
     private void ResetSkillGrid()
     {
@@ -383,9 +450,11 @@ public class PlayerController : PlayerManager
         skillGrid[x, y] = true;
         Instantiate(skillOrbPrefab, displayGrid[x+y*3].transform);
     }
+
     public IEnumerator Skill()
     {
-        yield return new WaitUntil(() => !isAttack && !isCounter);
+        yield return new WaitUntil(() => !isAttack && !isCounter && isStart);
+        gameManager.AddScore((int)SCORE.SKILL); // スコア追加
         isSkill = true;
         enemyManager.StopAttack();
         yield return StartCoroutine(cutIn.Skill());
