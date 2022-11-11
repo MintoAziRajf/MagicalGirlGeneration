@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-
 public class GameOverCanvas : MonoBehaviour
 {
     GameManager gameManager;
@@ -22,39 +20,49 @@ public class GameOverCanvas : MonoBehaviour
         anim.SetTrigger("Retry");
     }
 
+    [SerializeField] private GameObject[] buttonsOutline = null;
 
-    [SerializeField] private Text[] buttons = null;
-    [SerializeField] private Color selectColor = Color.blue;
-    [SerializeField] private Color unselectColor = Color.white;
-
+    private const int INPUT_DELAY = 20;
     private int currentSelect = 0;
     private enum MENU
     {
         RETRY,
+        CHARACTER_SELECT,
         TITLE
     }
     private IEnumerator RetryMenu()
     {
         bool isSelected = false;
+        bool canInput = true;
         while (!isSelected)
         {
+            if (!canInput)
+            {
+                for (int i = 0; i < INPUT_DELAY; i++)
+                {
+                    yield return null;
+                }
+                canInput = true;
+            }
             float v = Input.GetAxisRaw("Vertical");
             if (v == 1f)
             {
-                currentSelect = (int)MENU.RETRY;
+                currentSelect = Mathf.Clamp(currentSelect - 1, (int)MENU.RETRY, (int)MENU.TITLE);
+                canInput = false;
             }
             else if (v == -1f)
             {
-                currentSelect = (int)MENU.TITLE;
+                currentSelect = Mathf.Clamp(currentSelect + 1, (int)MENU.RETRY, (int)MENU.TITLE);
+                canInput = false;
             }
             if (Input.GetButtonDown("Submit"))
             {
                 isSelected = true;
             }
-            for(int i = 0; i < buttons.Length; i++)
+            for(int i = 0; i < buttonsOutline.Length; i++)
             {
-                if (i == currentSelect) buttons[i].color = selectColor;
-                else buttons[i].color = unselectColor;
+                if (i == currentSelect) buttonsOutline[i].SetActive(true);
+                else buttonsOutline[i].SetActive(false);
             }
             yield return null;
         }
@@ -63,6 +71,9 @@ public class GameOverCanvas : MonoBehaviour
         {
             case (int)MENU.RETRY:
                 gameManager.Retry();
+                break;
+            case (int)MENU.CHARACTER_SELECT:
+                LoadManager.instance.LoadScene("30_CharacterSelect");
                 break;
             case (int)MENU.TITLE:
                 LoadManager.instance.LoadScene("20_Title");

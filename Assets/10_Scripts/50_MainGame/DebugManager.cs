@@ -38,7 +38,6 @@ public class DebugManager : MonoBehaviour
 
     [SerializeField] private Text[] buttons = null;
     private int currentSelect = 0;
-    private bool nowSelect = false;
     private enum DEBUG
     {
         INVINCIBLE,

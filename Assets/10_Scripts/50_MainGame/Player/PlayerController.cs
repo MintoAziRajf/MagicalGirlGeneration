@@ -34,6 +34,11 @@ public class PlayerController : PlayerManager
     };
     //------------------------------
 
+    // 回復関連 --------------------
+    private int healPos = -1;
+    public int HealPos { get { return healPos; } }
+    // -----------------------------
+
     //----------回避関連------------
     private const int AVOID_COOLTIME = 600;
     private const int AVOID_INPUT_FRAME = 20;
@@ -356,7 +361,7 @@ public class PlayerController : PlayerManager
     }
     //------------------------------------------------------------------
 
-    //------------------------回復関連----------------------------------
+    // 回復関連--------------------------------------------------------------------
     private void SetHealGrid()
     {
         if (CheckExistHealGrid()) return; // 回復タイルがある場合は何もしない
@@ -367,11 +372,12 @@ public class PlayerController : PlayerManager
         //生成可能な位置を追加
         for (int i = 0; i < 9; i++)
         {
-            //プレイヤーがいる場所以外を追加
-            if (playerPos != i) numbers.Add(i);
+            //プレイヤーがいる場所とスキルオーブがある場所以外を追加
+            if (playerPos != i && skillGrid[i%3,i/3] == false) numbers.Add(i);
         }
         //生成可能な位置からランダムに生成
         int index = Random.Range(0, numbers.Count);
+        healPos = numbers[index];
         healGrid[numbers[index] % 3, numbers[index] / 3] = true;
         Instantiate(healGridEffectPrefab, displayGrid[numbers[index]].transform);
     }
@@ -394,8 +400,9 @@ public class PlayerController : PlayerManager
     /// </summary>
     private void RemoveHealGrid()
     {
-        Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealGridEffect(Clone)").gameObject); // 回復タイルの見た目を削除
+        Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealOrb(Clone)").gameObject); // 回復タイルの見た目を削除
         healGrid[currentX, currentY] = false; // 回復タイルのタイルを削除
+        healPos = -1;
         Healed(); //回復メソッド
     }
     //-------------------------------------------------------------------
@@ -553,13 +560,12 @@ public class PlayerController : PlayerManager
             yield return new WaitUntil(() => (Input.GetButtonDown("Submit")));
             for(int i = 0; i < AVOID_INPUT_FRAME; i++)
             {
-                if (Input.GetAxisRaw("Vertical") == ((float)BACK_LINE[attackType] - 1f)) tutorialAvoid = true;
+                if (Input.GetAxisRaw("Horizontal") == -1f) tutorialAvoid = true;
                 yield return null;
             }
         }
         enemyManager.TutorialEnd(currentX, currentY);
-        if (attackType == 0) MoveUp();
-        else MoveDown();
+        MoveLeft();
         yield return StartCoroutine(cutIn.CounterAttack());
         AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq);
     }

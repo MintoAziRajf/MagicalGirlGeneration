@@ -12,10 +12,11 @@ public class PlayerDeadAnimation : PlayerManager
     public IEnumerator StartAnimation()
     {
         anim = this.GetComponent<Animator>();
-        anim.SetTrigger("Dead");
-        StartCoroutine(BackgroundFade());
-        yield return StartCoroutine(CameraZoomIn());
+        //anim.SetTrigger("Dead");
+        //StartCoroutine(BackgroundFade());
+        //yield return StartCoroutine(CameraZoomIn());
         gameManager.GameOver();
+        yield break;
     }
     private IEnumerator BackgroundFade()
     {
@@ -27,6 +28,7 @@ public class PlayerDeadAnimation : PlayerManager
             deadBackground.color = c;
             yield return null;
         }
+        yield return new WaitForSecondsRealtime(1f);
     }
 
     private IEnumerator CameraZoomIn()

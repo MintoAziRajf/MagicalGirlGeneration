@@ -61,6 +61,7 @@ public class CutIn : PlayerManager
     }
     public IEnumerator SolveEvolution()
     {
+        Debug.Log("a");
         cutInAnim.SetTrigger("SolveEvolution");
         yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
     }
