@@ -4768,4 +4768,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetMaterial: {fileID: 2100000, guid: ae411f7a9eb7c3f4aa0905c5b2722550, type: 2}
-  _scrollX: 3
+  _scrollX: -3

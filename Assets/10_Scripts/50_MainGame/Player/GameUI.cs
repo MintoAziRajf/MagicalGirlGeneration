@@ -20,11 +20,6 @@ public class GameUI : PlayerManager
     private int avoidCooltime = 0;
     public int AvoidCooltime { set { avoidCooltime = value; } }
 
-    //回避クールタイム表示先
-    [SerializeField] private Camera targetCamera;
-    private RectTransform targetUI;
-    
-
     //スキルクールタイム表示
     [SerializeField] private Image skillDisplay = null;
     private int skillCurrentTime = 0;
@@ -54,10 +49,6 @@ public class GameUI : PlayerManager
 
     void Update()
     {
-        //playerの位置をセット
-        Vector3 targetScreenPos = targetCamera.WorldToScreenPoint(this.gameObject.transform.position);
-        targetUI = avoidDisplay.transform.parent.GetComponent<RectTransform>();
-        targetUI.anchoredPosition = targetScreenPos;
         //毎フレームUIを更新
         DisplayUI();
     }
@@ -78,21 +69,21 @@ public class GameUI : PlayerManager
 
     [SerializeField] private float magnitude = 0f;
     [SerializeField] private float duration = 0f;
-    [SerializeField] private RectTransform allUI = null;
     [SerializeField] private Image damageScreen = null;
+    [SerializeField] private Camera targetCamera;
 
     public IEnumerator DamagedEffect()
     {
-        Vector3 pos = allUI.anchoredPosition;
+        Vector3 pos = targetCamera.transform.position;
         StartCoroutine(DamagedScreen());
         for (int i = 0; i < duration; i++)
         {
             float x = pos.x + Random.Range(-1f, 1f) * magnitude;
             float y = pos.y + Random.Range(-1f, 1f) * magnitude;
-            allUI.anchoredPosition = new Vector3(x, y, pos.z);
+            targetCamera.transform.position = new Vector3(x, y, pos.z);
             yield return null;
         }
-        allUI.anchoredPosition = pos;
+        targetCamera.transform.position = pos;
     }
 
     private IEnumerator DamagedScreen()

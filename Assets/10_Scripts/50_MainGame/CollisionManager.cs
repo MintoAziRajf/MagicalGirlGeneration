@@ -5,7 +5,6 @@ using UnityEngine;
 public class CollisionManager : MonoBehaviour
 {
     PlayerController playerController;
-    [SerializeField] private GameObject player = null;
 
     private int[,] collisionGrid = new int[3, 3];
     private const int EMPTY = 0;
@@ -18,10 +17,11 @@ public class CollisionManager : MonoBehaviour
 
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
     [Header("EMPTY,PLAYER,AVOID,DAMAGE")] [SerializeField] private Color[] gridColor = new Color[4];
+    [SerializeField] private GameObject avoidObj = null;
     private void Awake()
     {
         InitGrid();
-        playerController = player.GetComponent<PlayerController>();
+        playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
     }
 
     public IEnumerator DamageGrid(int x, int y, int power, int frame)
@@ -72,7 +72,7 @@ public class CollisionManager : MonoBehaviour
     /// </summary>
     /// <param name="x">回避タイルの生成先X</param>
     /// <param name="y">回避タイルの生成先Y</param>
-    /// <param name="frame">移動先Y</param>
+    /// <param name="frame">持続時間</param>
     public void PlayerAvoided(int x, int y, int frame)
     {
         ReplaceCollision(AVOID);
@@ -81,12 +81,13 @@ public class CollisionManager : MonoBehaviour
     private IEnumerator AvoidedCollision(int x, int y, int frame)
     {
         int value;
+        GameObject playerAvoid = Instantiate(avoidObj, gridObj[x+y*3].transform);
         //持続
         for (int i = 0; i < frame; i++)
         {
             yield return null;
         }
-
+        //
         if (needReplace)
         {
             value = PLAYER;
@@ -96,7 +97,7 @@ public class CollisionManager : MonoBehaviour
         {
             value = EMPTY;
         }
-
+        Destroy(playerAvoid);
         collisionGrid[x, y] = value;
     }
 
@@ -143,7 +144,8 @@ public class CollisionManager : MonoBehaviour
             {
                 int index = i + j * 3;
                 int color = collisionGrid[i, j];
-                if (color >= DAMAGE) color = DAMAGE;
+                if (color >= DAMAGE) color = 1;
+                else color = EMPTY;
                 gridObj[index].color = gridColor[color];
             }
         }

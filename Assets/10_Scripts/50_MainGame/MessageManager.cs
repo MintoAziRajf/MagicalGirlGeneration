@@ -19,15 +19,20 @@ public class MessageManager : MonoBehaviour
     [SerializeField] private Text displayText = null;
     [SerializeField] private GameObject messageObj = null;
     private const int DISPLAY_TIME = 180;
+
+    private bool isDisplay = false;
+
     public IEnumerator DisplayMessage(string msg)
     {
-        Debug.Log(msg);
+        if (isDisplay) yield break;
+        isDisplay = true;
         messageObj.SetActive(true);
         displayText.text = msg;
         for(int i = 0; i < DISPLAY_TIME; i++)
         {
             yield return new WaitForSeconds(1f/60f);
         }
+        isDisplay = false;
         messageObj.SetActive(false);
     }
 }

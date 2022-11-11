@@ -1305,8 +1305,8 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 1, g: 0.028783847, b: 0, a: 1}
-        key1: {r: 1, g: 0.028783847, b: 0, a: 0}
+        key0: {r: 1, g: 0, b: 1, a: 1}
+        key1: {r: 1, g: 0, b: 1, a: 0}
         key2: {r: 0.03374029, g: 0.3584906, b: 0, a: 0}
         key3: {r: 0, g: 0, b: 0, a: 0}
         key4: {r: 0, g: 0, b: 0, a: 0}
@@ -4731,7 +4731,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 10
+  m_SortingOrder: 9
   m_RenderMode: 4
   m_SortMode: 0
   m_MinParticleSize: 0
@@ -4743,7 +4743,7 @@ ParticleSystemRenderer:
   m_NormalDirection: 1
   m_ShadowBias: 0
   m_RenderAlignment: 2
-  m_Pivot: {x: 0, y: 0, z: 0.1}
+  m_Pivot: {x: 0, y: -0.5, z: 0.1}
   m_Flip: {x: 0, y: 0, z: 0}
   m_UseCustomVertexStreams: 0
   m_EnableGPUInstancing: 0
@@ -4768,4 +4768,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _targetMaterial: {fileID: 2100000, guid: ae411f7a9eb7c3f4aa0905c5b2722550, type: 2}
-  _scrollX: 3
+  _scrollX: 0
+  _scrollY: 3

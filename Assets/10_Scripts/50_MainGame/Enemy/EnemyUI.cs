@@ -14,7 +14,7 @@ public class EnemyUI : MonoBehaviour
         set { hpMax = value; }
     }
 
-    private float delay = 200f;
+    private float delay = 500f;
     private float hpDisplayGauge = 0f;
     private int hpCurrent = 0;
     public int HPCurrent
@@ -60,6 +60,7 @@ public class EnemyUI : MonoBehaviour
         }
 
         hpBar.anchoredPosition = pos;
+        Debug.Log(hpBar.anchoredPosition);
     }
 
     /// <summary>

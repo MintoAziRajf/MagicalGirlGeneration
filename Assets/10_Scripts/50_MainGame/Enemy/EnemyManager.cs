@@ -156,17 +156,17 @@ public class EnemyManager : MonoBehaviour
     
     private IEnumerator DamagedShake()
     {
-        Transform target = this.gameObject.transform;
-        Vector3 pos = target.localPosition;
+        Vector3 pos = this.gameObject.transform.localPosition;
 
         for (int i = 0; i < duration; i++)
         {
             float x = pos.x + Random.Range(-1f, 1f) * magnitude;
             float y = pos.y + Random.Range(-1f, 1f) * magnitude;
 
-            target.localPosition = new Vector3(x, y, pos.z);
+            this.gameObject.transform.localPosition = new Vector3(x, y, pos.z);
             yield return null;
         }
+        this.gameObject.transform.localPosition = pos;
     }
 
 
@@ -280,6 +280,7 @@ public class EnemyManager : MonoBehaviour
         int flashDuration = 30; // 点滅に要するフレーム数
         int flashTimes = 3; // 敵キャラの点滅回数
         float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
+        Animator anim = defeatScreen.GetComponent<Animator>();
         
         // 不透明度の初期化
         defeatEnemy.color = c;
@@ -305,6 +306,12 @@ public class EnemyManager : MonoBehaviour
         {
             c.a += unitAlpha;
             defeatScreen.color = c;
+            yield return null;
+        }
+        //
+        anim.SetTrigger("Transition");
+        for (int i = 0; i < 120; i++)
+        {
             yield return null;
         }
         //次のエネミーをロード

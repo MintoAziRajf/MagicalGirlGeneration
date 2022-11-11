@@ -61,12 +61,14 @@ public class PlayerSkill : PlayerManager
     {
         //プレイヤーの現在の位置を取得
         int playerPos = playerController.CurrentX + playerController.CurrentY * 3;
+        int healPos = playerController.HealPos;
+        Debug.Log(healPos);
         List<int> numbers = new List<int>();
         //生成可能な位置を追加
         for (int i = 0; i < 9; i++)
         {
             //プレイヤーがいる場所以外を追加
-            if (playerPos != i) numbers.Add(i);
+            if (playerPos != i && healPos != i) numbers.Add(i);
         }
         //生成可能な位置からランダムに生成
         for (int i = 0; i < maxTiles; i++)

@@ -9,6 +9,8 @@ public class UVScroll : MonoBehaviour
 
     [SerializeField]
     private float _scrollX;
+    [SerializeField]
+    private float _scrollY;
 
     private Vector2 offset;
     private void Awake()
@@ -18,11 +20,10 @@ public class UVScroll : MonoBehaviour
 
     private void Update()
     {
-        offset.y -= _scrollX * Time.deltaTime;
-        if(offset.y <= -100f)
-        {
-            offset.y = 0f;
-        }
+        offset.y += _scrollY * Time.unscaledDeltaTime;
+        offset.x += _scrollX * Time.unscaledDeltaTime;
+        if (offset.y >= 10f) offset.y = 0f;
+        if (offset.x >= 10f) offset.x = 0f;
         _targetMaterial.mainTextureOffset = offset;
     }
 }

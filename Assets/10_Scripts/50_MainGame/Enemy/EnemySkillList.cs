@@ -10,6 +10,7 @@ public class EnemySkillList : MonoBehaviour
     [SerializeField] private GameObject[] enemyGrid = null;
     [SerializeField] private GameObject dangerMark = null;
     [SerializeField] private GameObject bombObj = null;
+    [SerializeField] private GameObject enemyAttacks = null;
 
     //---------コンストラクタ------------
     private const int DAMAGE_LIFETIME = 10;
@@ -35,14 +36,10 @@ public class EnemySkillList : MonoBehaviour
 
     public void Stop()
     {
-        foreach(GameObject parent in enemyGrid)
+        foreach (Transform child in enemyAttacks.transform)
         {
-            foreach (Transform child in parent.transform)
-            {
-                GameObject.Destroy(child.gameObject);
-            }
+            GameObject.Destroy(child.gameObject);
         }
-        
     }
     public IEnumerator Attack(int type, int x, int y, int damage)
     {
@@ -110,7 +107,7 @@ public class EnemySkillList : MonoBehaviour
         int index = x + y * 3;
 
         yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));

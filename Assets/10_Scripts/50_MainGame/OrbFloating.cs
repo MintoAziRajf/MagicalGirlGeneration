@@ -6,6 +6,7 @@ public class OrbFloating : MonoBehaviour
 {
     [SerializeField] private float height = 0f;
     [SerializeField] private float speed = 0f;
+    [SerializeField] private float angle = 0f;
 
     private float startHeight = 0f;
     private float currentHeight = 0f;
@@ -15,6 +16,7 @@ public class OrbFloating : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        this.transform.Rotate(new Vector3(0f, 0f, angle * Time.deltaTime));
         if(Mathf.Abs(currentHeight) >= height)
         {
             speed *= -1f;
