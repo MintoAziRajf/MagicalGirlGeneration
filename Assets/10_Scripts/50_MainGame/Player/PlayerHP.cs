@@ -17,7 +17,7 @@ public class PlayerHP : PlayerManager
     public int EvoHP{ set { evoHP = value; gameUI.MaxHP = evoHP; } }
     private int normalHP = 0;//変身前の最大値
     //setter
-    public int NormalHP { set { normalHP = value; hp = normalHP; } }
+    public int NormalHP { set { normalHP = value; hp = value; maxHP = value; } }
     private bool isEvo = false;
     public bool IsEvo {
         set {
@@ -52,7 +52,17 @@ public class PlayerHP : PlayerManager
     private const int heal = 50;
     public void Heal()
     {
+        Debug.Log(hp + heal);
         hp = Mathf.Min(hp + heal, maxHP);
+        gameUI.CurrentHP = hp;
+    }
+
+    /// <summary>
+    /// Debug用
+    /// </summary>
+    public void SetHP(int debugHp)
+    {
+        hp = Mathf.Min(debugHp, maxHP);
         gameUI.CurrentHP = hp;
     }
 }

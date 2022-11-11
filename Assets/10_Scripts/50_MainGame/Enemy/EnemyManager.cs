@@ -57,9 +57,10 @@ public class EnemyManager : MonoBehaviour
     private int hpMax = 10000; //最大HP
     private int hpMin = 0; //最低HP(死亡するHP)
     private int hpCurrent = 10000; //現在のHP
+    public int HPCurrent { set { hpCurrent = Mathf.Min(value, hpMax); enemyUI.HPCurrent = hpCurrent; } } // Debug用
 
     //弱点
-    private int weakPoint = 0;
+    private int weakPoint = 4;
     public int WeakPoint { get { return weakPoint; } }
 
     private void Awake()
@@ -119,7 +120,8 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     /// <param name="value">ダメージ</param>
     /// <param name="freq">回数</param>
-    public IEnumerator Damaged(int value, int freq)
+    /// <param name="isWeak">弱点にヒットしたかどうか</param>
+    public IEnumerator Damaged(int value, int freq, bool isWeak)
     {
         StartCoroutine(enemyUI.DamagedEffect());
         StartCoroutine(DamagedShake());
@@ -127,7 +129,7 @@ public class EnemyManager : MonoBehaviour
         for(int i = 0; i < freq; i++)
         {
             GameObject damage = Instantiate(damageUIPrefab, enemyUIObj.transform); //ダメージ表記を生成
-            damage.GetComponent<EnemyDamageUI>().Damaged(value,y); //生成したダメージ表記にダメージと表示する高さを送る
+            damage.GetComponent<EnemyDamageUI>().Damaged(value, y, isWeak); //生成したダメージ表記にダメージと表示する高さを送る
             hpCurrent -= value;//ダメージ分HPを減らす
 
             Destroy(damage, 1f); //ダメージ表記を生成してから1秒後に削除
@@ -231,6 +233,7 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     public void StartAttack()
     {
+        if (attackLoop != null) return;
         attackLoop = AttackLoop();
         StartCoroutine(attackLoop);
     }
@@ -245,6 +248,8 @@ public class EnemyManager : MonoBehaviour
         if (attack == null) return;
         StopCoroutine(attackLoop);
         StopCoroutine(attack);
+        attackLoop = null;
+        attack = null;
     }
 
     /// <summary>

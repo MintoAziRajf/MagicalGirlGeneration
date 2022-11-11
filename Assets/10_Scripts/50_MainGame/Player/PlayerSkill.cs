@@ -6,8 +6,9 @@ public class PlayerSkill : PlayerManager
 {
     private int maxTiles = 4;//スキルタイルの最大枚数
     private int currentTiles = 0;//現在の枚数
-    private const int SKILL_COOLTIME = 60;//スキルタイル再生成までの時間(フレーム)
+    private const int SKILL_COOLTIME = 600;//スキルタイル再生成までの時間(フレーム)
     private int time = 0; //クールタイム計算用
+    public int SetTime { set { time = value; } } // Debug用
     private bool isEvo = false;
     public bool IsEvo
     {

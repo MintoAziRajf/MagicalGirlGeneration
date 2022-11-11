@@ -15,11 +15,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject player = null; 
     [SerializeField] private GameObject enemy = null;
     [SerializeField] private GameObject pauseCanvas = null;
+    [SerializeField] private GameObject debugCanvas = null;
 
     [SerializeField] private bool isTutorial = false;
     public bool IsTutorial { set { isTutorial = value; } }
     [SerializeField] private bool isPrologue = false;
     public bool IsPrologue { set { isPrologue = value; } }
+    private bool isStart = false;
     [SerializeField] private int type = 0;
     public int Type
     {
@@ -45,9 +47,16 @@ public class GameManager : MonoBehaviour
     private void FixedUpdate()
     {
         if (isTutorial || isPrologue) return; //チュートリアルとプロローグ中は何もしない
-        if (Input.GetButtonDown("Option"))
+        if (Input.GetButtonDown("Option") && isStart)
         {
+            isStart = false;
             pauseCanvas.SetActive(true);
+            Time.timeScale = 0f;
+        }
+        if (Input.GetKeyDown("joystick button 6") && isStart || Input.GetKeyDown(KeyCode.R) && isStart)
+        {
+            isStart = false;
+            debugCanvas.SetActive(true);
             Time.timeScale = 0f;
         }
     }
@@ -67,6 +76,7 @@ public class GameManager : MonoBehaviour
     public void StopGame()
     {
         Debug.Log("プレイヤーと敵の動きを停止します。");
+        this.isStart = false;
         playerController.IsStart = false;
         enemyManager.IsStart = false;
         enemyManager.StopAttack();
@@ -78,9 +88,23 @@ public class GameManager : MonoBehaviour
     public void ResumeGame()
     {
         Debug.Log("プレイヤーと敵の動きを開始します。");
+        this.isStart = true;
         enemyManager.IsStart = true;
         playerController.IsStart = true;
         enemyManager.StartAttack();
+    }
+
+    [SerializeField] private GameObject countDownObj = null;
+    private const int COUNTDOWN_TIME = 180; //3秒
+    public IEnumerator StartCountDown()
+    {
+        Time.timeScale = 0f;
+        countDownObj.SetActive(true);
+        for (int i = 0; i < COUNTDOWN_TIME; i++) yield return null;
+        countDownObj.SetActive(false);
+        Time.timeScale = 1f;
+        isStart = true;
+        yield break;
     }
 
     /// <summary>
@@ -88,37 +112,33 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private IEnumerator GameStart()
     {
-        yield return StartCoroutine(Prologue());
-        
-        yield return StartCoroutine(Tutorial());
-        playerController.IsStart = true;
+        if (isPrologue) yield return StartCoroutine(Prologue()); // isPrologueがTrueならプロローグを開始する
+        if (isTutorial)
+        {
+            yield return StartCoroutine(Tutorial()); // isTutorialがTrueならチュートリアルを開始する
+            yield break;
+        }
+        yield return StartCoroutine(StartCountDown()); //カウントダウンを始める
+        playerController.IsStart = true; // playerとenemyを動かす
         enemyManager.IsStart = true;
         enemyManager.StartAttack();
     }
 
     /// <summary>
-    /// isPrologueがTrueならプロローグを開始する
+    /// プロローグを開始する
     /// </summary>
     private IEnumerator Prologue()
     {
-        if (!isPrologue)
-        {
-            yield break;
-        }
         Time.timeScale = 0f;
         yield return StartCoroutine(prologue.StartPrologue(type));
         Time.timeScale = 1f;
     }
 
     /// <summary>
-    /// isTutorialがTrueならチュートリアルを開始する
+    /// チュートリアルを開始する
     /// </summary>
     private IEnumerator Tutorial()
     {
-        if (!isTutorial)
-        {
-            yield break;
-        }
         yield return StartCoroutine(tutorial.Flow());
         Retry();
     }
@@ -151,7 +171,6 @@ public class GameManager : MonoBehaviour
     public IEnumerator GameClear()
     {
         StopGame();
-
         yield return StartCoroutine(epilogue.StartEpilogue(type));
         yield return StartCoroutine(Result());
         //endcard
