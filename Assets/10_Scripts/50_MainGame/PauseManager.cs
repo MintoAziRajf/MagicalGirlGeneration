@@ -11,14 +11,17 @@ public class PauseManager : MonoBehaviour
     private int time = 0;
 
     [SerializeField] private GameObject pauseMenu = null;
-    [SerializeField] private Outline resumeOutline = null;
-    [SerializeField] private Outline exitOutline = null;
+    [SerializeField] private GameObject resumeOutline = null;
+    [SerializeField] private GameObject exitOutline = null;
     [SerializeField] private GameObject dialogMenu = null;
-    [SerializeField] private Outline yesOutline = null;
-    [SerializeField] private Outline noOutline = null;
+    [SerializeField] private GameObject yesOutline = null;
+    [SerializeField] private GameObject noOutline = null;
+
+    private GameManager gameManager;
 
     private void OnEnable()
     {
+        if(gameManager == null) gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
         currentSelect = POSITIVE;
         pauseMenu.SetActive(true);
         dialogMenu.SetActive(false);
@@ -42,26 +45,26 @@ public class PauseManager : MonoBehaviour
         {
             if (currentSelect == POSITIVE)
             {
-                resumeOutline.enabled = true;
-                exitOutline.enabled = false;
+                resumeOutline.SetActive(true);
+                exitOutline.SetActive(false);
             }
             else if (currentSelect == NEGATIVE)
             {
-                resumeOutline.enabled = false;
-                exitOutline.enabled = true;
+                resumeOutline.SetActive(false);
+                exitOutline.SetActive(true);
             }
         }
         else
         {
             if (currentSelect == POSITIVE)
             {
-                yesOutline.enabled = true;
-                noOutline.enabled = false;
+                yesOutline.SetActive(true);
+                noOutline.SetActive(false);
             }
             else if (currentSelect == NEGATIVE)
             {
-                yesOutline.enabled = false;
-                noOutline.enabled = true;
+                yesOutline.SetActive(false);
+                noOutline.SetActive(true);
             }
         }
     }
@@ -83,19 +86,11 @@ public class PauseManager : MonoBehaviour
 
         if (submit)
         {
-            if (pauseMenu.activeSelf)
-            {
-                Time.timeScale = 1f;
-                this.gameObject.SetActive(false);
-            }
-            else
-            {
-                //title
-            }
+            if (pauseMenu.activeSelf) Unpause();
+            else LoadManager.instance.LoadScene("20_Title");
         }
         else if (cancel)
         {
-            Debug.Log("b");
             if (pauseMenu.activeSelf)
             {
                 pauseMenu.SetActive(false);
@@ -108,10 +103,12 @@ public class PauseManager : MonoBehaviour
             }
         }
 
-        if (unpause)
-        {
-            Time.timeScale = 1f;
-            this.gameObject.SetActive(false);
-        }
+        if (unpause) Unpause();
+    }
+
+    private void Unpause()
+    {
+        gameManager.StartCoroutine(gameManager.StartCountDown());
+        this.gameObject.SetActive(false);
     }
 }

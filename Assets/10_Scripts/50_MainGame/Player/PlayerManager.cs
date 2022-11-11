@@ -23,7 +23,7 @@ public class PlayerManager : MonoBehaviour
 
     public void Awake()
     {
-        gameManagerObj = GameObject.Find("GameManager");
+        gameManagerObj = GameObject.FindWithTag("GameManager");
         gameManager = gameManagerObj.GetComponent<GameManager>();
         collisionManager = gameManagerObj.GetComponent<CollisionManager>();
 

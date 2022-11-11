@@ -17,6 +17,7 @@ public class Evolution : PlayerManager
     private const int EVO_TICK = -1;　//毎秒減る値
     private float evoTime = 0f;//秒数記録用
     private int evoGauge = 0;  //現在のゲージ 
+    public int EvoGauge { set { evoGauge = value; } } //Debug用
     private bool isEvo = false;//変身しているかどうか
     private bool isStart = false;
     public bool IsStart { set { isStart = value; } }

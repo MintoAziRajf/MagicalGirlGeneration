@@ -13,6 +13,7 @@ public class EnemyDamageUI : MonoBehaviour
     private GameObject tensObj;
     private GameObject hundredsObj;
     private GameObject thousandsObj;
+    [SerializeField] private GameObject weakObj = null;
 
     private const int FADE_COOLTIME = 5;
     private const float FADE_TIME = 5f;
@@ -29,9 +30,10 @@ public class EnemyDamageUI : MonoBehaviour
         thousandsText = thousandsObj.GetComponent<Text>();
     }
 
-    public void Damaged(int value, float y)
+    public void Damaged(int value, float y, bool isWeak)
     {
         SetObject();
+        weakObj.SetActive(isWeak);
         int ones = value % 10;
         int tens = (value / 10) % 10;
         int hundreds = (value / 100) % 10;

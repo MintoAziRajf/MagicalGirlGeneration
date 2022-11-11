@@ -20,6 +20,11 @@ public class GameUI : PlayerManager
     private int avoidCooltime = 0;
     public int AvoidCooltime { set { avoidCooltime = value; } }
 
+    //回避クールタイム表示先
+    [SerializeField] private Camera targetCamera;
+    private RectTransform targetUI;
+    
+
     //スキルクールタイム表示
     [SerializeField] private Image skillDisplay = null;
     private int skillCurrentTime = 0;
@@ -47,8 +52,12 @@ public class GameUI : PlayerManager
     public int MaxHP { set { hpMax = value;} }
     
 
-    void FixedUpdate()
+    void Update()
     {
+        //playerの位置をセット
+        Vector3 targetScreenPos = targetCamera.WorldToScreenPoint(this.gameObject.transform.position);
+        targetUI = avoidDisplay.transform.parent.GetComponent<RectTransform>();
+        targetUI.anchoredPosition = targetScreenPos;
         //毎フレームUIを更新
         DisplayUI();
     }
@@ -60,8 +69,8 @@ public class GameUI : PlayerManager
         skillDisplay.fillAmount = (float)skillCurrentTime / skillCooltime;
 
         //ゲージの計算
-        evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displaySpeed * Time.deltaTime);
-        hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrentGauge, displaySpeed * displaySpeed * Time.deltaTime);
+        evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displaySpeed * Time.unscaledDeltaTime);
+        hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrentGauge, displaySpeed * displaySpeed * Time.unscaledDeltaTime);
         //ゲージのパーセントを計算、表示
         hpDisplay.fillAmount = hpDisplayGauge / hpMax;
         evolutionDisplay.fillAmount = evolutionDisplayGauge / evolutionMax;
@@ -69,20 +78,34 @@ public class GameUI : PlayerManager
 
     [SerializeField] private float magnitude = 0f;
     [SerializeField] private float duration = 0f;
-    [SerializeField] private GameObject playerFace = null;
+    [SerializeField] private RectTransform allUI = null;
+    [SerializeField] private Image damageScreen = null;
 
     public IEnumerator DamagedEffect()
     {
-        RectTransform target = playerFace.GetComponent<RectTransform>();
-        Vector3 pos = target.anchoredPosition;
-
+        Vector3 pos = allUI.anchoredPosition;
+        StartCoroutine(DamagedScreen());
         for (int i = 0; i < duration; i++)
         {
             float x = pos.x + Random.Range(-1f, 1f) * magnitude;
             float y = pos.y + Random.Range(-1f, 1f) * magnitude;
-
-            target.anchoredPosition = new Vector3(x, y, pos.z);
+            allUI.anchoredPosition = new Vector3(x, y, pos.z);
             yield return null;
         }
+        allUI.anchoredPosition = pos;
+    }
+
+    private IEnumerator DamagedScreen()
+    {
+        Color c = damageScreen.color;
+        
+        for (int i = 0; i < duration; i++)
+        {
+            c.a = Mathf.Sin((i+1)* 3f / duration) / 4f;
+            damageScreen.color = c;
+            yield return null;
+        }
+        c.a = 0f;
+        damageScreen.color = c;
     }
 }

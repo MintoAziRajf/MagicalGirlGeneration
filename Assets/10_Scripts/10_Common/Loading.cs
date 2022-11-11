@@ -12,15 +12,16 @@ public class Loading : MonoBehaviour
     private int isEvo;
     //背景
     [SerializeField] private Image background = null;
-    [SerializeField] private Color[] backgroundColor = new Color[3];
+    [SerializeField] private Sprite[] backgroundSprite = new Sprite[3];
     //フレーム
     [SerializeField] private Image frame = null;
-    [SerializeField] private Color[] frameColor = new Color[3];
+    [SerializeField] private Sprite[] frameSprite = new Sprite[3];
     //見た目
     [SerializeField] private Image visual = null;
     [SerializeField] private Sprite[] visualType = new Sprite[6];
     //名前
     [SerializeField] private Text nameText = null;
+    [SerializeField] private Color[] nameColor = new Color[3];
     [SerializeField] private string[] characterName = new string[3];
     //変身前かどうか
     [SerializeField] private Text evoText = null;
@@ -43,14 +44,15 @@ public class Loading : MonoBehaviour
     {
         type = Random.Range(0, 3); //ランダム
 
-        background.color = backgroundColor[type]; //背景色
-        frame.color = frameColor[type]; //フレームの色
+        background.sprite = backgroundSprite[type]; //背景
+        frame.sprite = frameSprite[type]; //フレーム
         nameText.text = characterName[type]; //表示中のキャラの名前
-        nameText.color = frameColor[type];
+        nameText.GetComponent<Outline>().effectColor = nameColor[type];
 
 
         isEvo = Random.Range(0, 2); //変身前か変身後か　ランダム
         evoText.text = evoString[isEvo]; //変身有無のテキスト表示
+        evoText.GetComponent<Outline>().effectColor = nameColor[type];
 
         //変身後なら変身後のスプライトを適用
         if (isEvo == 1) type = type + 3; 

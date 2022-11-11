@@ -8,7 +8,6 @@ public class EnemyUI : MonoBehaviour
     [SerializeField] private Image hpGaugeDisplay = null;
     [SerializeField] private Image hpGaugeDisplayDelay = null;
     [SerializeField] private Text hpTextDisplay = null;
-    [SerializeField] private Text hpTextDisplayShadow = null;
     private int hpMax = 0;
     public int HPMax
     {
@@ -35,10 +34,9 @@ public class EnemyUI : MonoBehaviour
         }
         hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrent, delay * Time.deltaTime);
         
-        hpGaugeDisplayDelay.fillAmount = hpDisplayGauge / hpMax;
-        hpGaugeDisplay.fillAmount = (float)hpCurrent / hpMax;
+        //hpGaugeDisplayDelay.fillAmount = hpDisplayGauge / hpMax;
+        hpGaugeDisplay.fillAmount = hpDisplayGauge / hpMax;
         hpTextDisplay.text = hpDisplayGauge.ToString("F0");
-        hpTextDisplayShadow.text = hpDisplayGauge.ToString("F0");
     }
 
     [SerializeField] private float magnitude = 0f;
@@ -60,6 +58,8 @@ public class EnemyUI : MonoBehaviour
             hpBar.anchoredPosition = new Vector3(x, y, pos.z);
             yield return null;
         }
+
+        hpBar.anchoredPosition = pos;
     }
 
     /// <summary>

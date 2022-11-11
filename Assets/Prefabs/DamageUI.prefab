@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8674201942923677074}
   - component: {fileID: 4482809817549167280}
   m_Layer: 5
-  m_Name: Weak
+  m_Name: WeakText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,7 +35,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 16.4, y: 55}
+  m_AnchoredPosition: {x: 10.7, y: 55.3}
   m_SizeDelta: {x: 300, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6335581888330000963
@@ -429,6 +429,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e59f16b1cdef7f246a3ac82d71c11912, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weakObj: {fileID: 2661858036194852090}
   onesPos: {x: 70, y: 0, z: 0}
   tensPos: {x: 0, y: 0, z: 0}
   hundredsPos: {x: -70, y: 0, z: 0}

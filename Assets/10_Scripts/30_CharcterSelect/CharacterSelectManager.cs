@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.IO;
+using System.Text;
+
 public class CharacterSelectManager : MonoBehaviour
 {
     private enum CHARACTER
@@ -15,41 +18,71 @@ public class CharacterSelectManager : MonoBehaviour
 
     [SerializeField] private GameObject currentObj = null, beforeObj = null; //現在、前のキャラ
 
-    //--------スクロール関連--------
-    private bool isScroll = false; //スクロール中かどうか
-
-    [SerializeField] private Vector2 centerPos, leftPos, rightPos; //スクロール先(固定値)
+    private bool canOperate = true;
     
-    private RectTransform currentTrans, beforeTrans; //現在、前のキャラの場所
+    //--------スクロール関連--------
+    [SerializeField] private Vector2 centerPos, leftPos, rightPos; // スクロール先(固定値)
+    
+    private RectTransform currentTrans, beforeTrans; // 現在、前のキャラの場所
     private Vector2 targetPos; //スクロール先
     
-    private static float speed = 4f; //基本速度
-    private float currentDistance, beforeDistance; //速度補間
+    private static float speed = 4f; // 基本速度
+    private float currentDistance, beforeDistance; // 速度補間
     //------------------------------
 
     //--------キャラクター情報-------
-
     [SerializeField] private Sprite[] characterSprite = new Sprite[3]; //使用するキャラのスプライト
     private Image currentImage, beforeImage; //現在、前の見た目
 
+    [SerializeField] private Sprite[] backgroundSprite = null; //使用する背景のスプライト配列
+    [SerializeField] private Image background = null; // 表示先
+
+    [SerializeField] private Sprite[] infoWindowSprite = null; // キャラクター情報の表示ウィンドウ
+    [SerializeField] private Image infoWindow = null; // 表示先
+
     [SerializeField] private Text characterName = null, score = null, rank = null; //キャラクターの名前、ハイスコア、ランクの表示先
     [SerializeField] private string[] nameString = new string[3]; //キャラクターの名前
+
+    private List<string[]> scoreDatas = new List<string[]>();
+    private enum SCORE
+    {
+        VALUE = 0,
+        RANK = 1
+    }
+    //------------------------------
+
+    //------------------------------
+    Animator anim;
+    private bool isDialog = false;
+    public bool IsDialog { set { isDialog = value; } }
+    [SerializeField] private GameObject dialogs = null;
+    private bool isPrologue = true;
+    public bool IsPrologue { set { isPrologue = value; } }
+    private bool isTutorial = true;
+    public bool IsTutorial { set { isTutorial = value; } }
     //------------------------------
 
     private void Awake()
     {
         //Init
+        LoadScore();
         currentImage = currentObj.GetComponent<Image>();
         currentTrans = currentObj.GetComponent<RectTransform>();
         beforeImage = beforeObj.GetComponent<Image>();
         beforeTrans = beforeObj.GetComponent<RectTransform>();
-
+        anim = dialogs.GetComponent<Animator>();
         DisplayCharacterInfo();
     }
 
     private void Update()
     {
-        isScroll = !(currentTrans.anchoredPosition == centerPos); //スクロール中かどうかの判定
+        bool isScroll = !(currentTrans.anchoredPosition == centerPos); //スクロール中かどうかの判定
+        bool submit = Input.GetButtonDown("Submit") && canOperate;
+        bool cancel = Input.GetButtonDown("Cancel") && canOperate;
+
+        bool right = Input.GetAxisRaw("Horizontal") == 1f && !isDialog;
+        bool left = Input.GetAxisRaw("Horizontal") == -1f && !isDialog;
+
         //スクロール中は操作を受け付けない
         if (isScroll)
         {
@@ -58,23 +91,44 @@ public class CharacterSelectManager : MonoBehaviour
         }
         Debug.Log("スクロール操作可能");
         //右
-        if (Input.GetKeyDown(KeyCode.D))
+        if (right)
         {
             Debug.Log("右スクロール");
             SetCharacter(true);
         }
         //左
-        if (Input.GetKeyDown(KeyCode.A))
+        if (left)
         {
             Debug.Log("左スクロール");
             SetCharacter(false);
         }
         //選択
-        if (Input.GetButtonDown("Submit"))
+        if (submit)
         {
-            SceneManager.sceneLoaded += GameSceneLoaded;
-            LoadManager.instance.LoadScene("50_MainGame");
+            anim.SetTrigger("Submit");
+            StartCoroutine(AllowOperate());
         }
+        else if (cancel)
+        {
+            anim.SetTrigger("Cancel");
+            StartCoroutine(AllowOperate());
+        }
+    }
+
+    private IEnumerator AllowOperate()
+    {
+        canOperate = false;
+        for(int i = 0; i < 30; i++)
+        {
+            yield return null;
+        }
+        canOperate = true;
+    }
+
+    public void LoadMainGame()
+    {
+        SceneManager.sceneLoaded += GameSceneLoaded;
+        LoadManager.instance.LoadScene("50_MainGame");
     }
 
     private void GameSceneLoaded(Scene next, LoadSceneMode mode)
@@ -84,8 +138,8 @@ public class CharacterSelectManager : MonoBehaviour
 
         // データを渡す処理
         gameManager.Type = (int)currentCharacter;
-        gameManager.IsTutorial = true;
-        gameManager.IsPrologue = true;
+        gameManager.IsTutorial = this.isTutorial;
+        gameManager.IsPrologue = this.isPrologue;
 
         // イベントから削除
         SceneManager.sceneLoaded -= GameSceneLoaded;
@@ -147,7 +201,32 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     private void LoadScore()
     {
+        string path = Application.dataPath + @"\score.csv";
+        scoreDatas.Clear();
+        if (!File.Exists(path))
+        {
+            using (File.Create(path)) { }
+            using (StreamWriter streamWriter = new StreamWriter(path, false, Encoding.UTF8))
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    streamWriter.Write("0,C");
+                    streamWriter.WriteLine();
+                }
+                streamWriter.Flush();
+                streamWriter.Close();
+                Debug.Log("プレイヤーデータを初期化しました。");
+            }
+        }
 
+        StreamReader csv = new StreamReader(path, Encoding.UTF8);
+        string line = null;
+        while ((line = csv.ReadLine()) != null)
+        {
+            scoreDatas.Add(line.Split(','));
+        }
+        csv.Close();
+        Debug.Log("スコアデータをロードしました。");
     }
 
     /// <summary>
@@ -163,6 +242,13 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     private void DisplayCharacterInfo()
     {
-        characterName.text = nameString[(int)currentCharacter];
+        int current = (int)currentCharacter;
+        characterName.text = nameString[current];
+        background.sprite = backgroundSprite[current];
+        infoWindow.sprite = infoWindowSprite[current];
+
+        //
+        score.text = int.Parse(scoreDatas[current][(int)SCORE.VALUE]).ToString("000000000");
+        rank.text = scoreDatas[current][(int)SCORE.RANK];
     }
 }
