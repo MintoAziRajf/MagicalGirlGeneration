@@ -942,6 +942,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d416d1715bbc06d4789612d1211da8d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1297637841 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 11486218, guid: 53c22e1773be7f84aad8ed8b7b58fa6e,
+    type: 3}
+  m_PrefabInstance: {fileID: 352380364}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297637839}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 448623d86f85950479f00cc5367d0ca9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1297637845
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1797,6 +1809,7 @@ MonoBehaviour:
   decisionGameStart: {fileID: 1338197825}
   decisionEXIT: {fileID: 325396602}
   loadPrefab: {fileID: 2081249878}
+  fi: {fileID: 1297637841}
 --- !u!4 &1841504641
 Transform:
   m_ObjectHideFlags: 0

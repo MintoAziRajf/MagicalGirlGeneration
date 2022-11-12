@@ -19,10 +19,13 @@ namespace NTitleController
         [SerializeField] private GameObject loadPrefab = null;
 
         float getHorizontalValue = 0f;
-        bool isCheck = false;
+        bool isCheck = true;
+
+        [SerializeField]FadeImage fi;
         // Start is called before the first frame update
         protected virtual void Start()
         {
+           
             getHorizontalValue = 0f;
             decisionGameStart.SetActive(true);
             decisionEXIT.SetActive(false);
@@ -32,11 +35,8 @@ namespace NTitleController
         protected virtual void Update()
         {
             GetHorizontal();
-
-            if (Input.GetButtonDown("Submit") && isCheck)
-            {
-                LoadManager.instance.LoadScene("30_CharacterSelect");
-            }
+          
+            StartCoroutine(wait());
         }
 
         public virtual void GetHorizontal()
@@ -55,6 +55,16 @@ namespace NTitleController
                 isCheck= false;
                 decisionEXIT.SetActive(true);
                 decisionGameStart.SetActive(false);
+            }
+        }
+
+        IEnumerator wait()
+        {
+            yield return new WaitUntil(() => fi.CutoutRange == 0f);
+
+            if (Input.GetButtonDown("Submit") && isCheck)
+            {
+                LoadManager.instance.LoadScene("30_CharacterSelect");
             }
         }
     }
