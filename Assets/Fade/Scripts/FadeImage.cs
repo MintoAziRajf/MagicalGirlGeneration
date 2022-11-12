@@ -32,6 +32,8 @@ public class FadeImage : UnityEngine.UI.Graphic , IFade
 	[SerializeField, Range (0, 1)]
 	private float cutoutRange;
 
+	public float CutoutRange => cutoutRange;
+
 	public float Range {
 		get {
 			return cutoutRange;
