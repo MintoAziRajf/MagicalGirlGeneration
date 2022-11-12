@@ -192,7 +192,7 @@ public class EnemyManager : MonoBehaviour
     private IEnumerator AttackLoop()
     {
         yield return new WaitUntil(() => isStart);
-
+        yield return new WaitForSeconds(1f);
         while (isAlive)//生存情報がTRUEの間攻撃
         {
             attack = Attack();
@@ -236,6 +236,7 @@ public class EnemyManager : MonoBehaviour
         if (attackLoop != null) return;
         attackLoop = AttackLoop();
         StartCoroutine(attackLoop);
+        Debug.Log("a");
     }
 
     /// <summary>
@@ -246,6 +247,7 @@ public class EnemyManager : MonoBehaviour
         enemySkillList.Stop();
         if (attackLoop == null) return;
         if (attack == null) return;
+        Debug.Log("b");
         StopCoroutine(attackLoop);
         StopCoroutine(attack);
         attackLoop = null;

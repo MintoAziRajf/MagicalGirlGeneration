@@ -313,7 +313,7 @@ public class PlayerController : PlayerManager
         yield return StartCoroutine(cutIn.CounterAttack()); // カウンター攻撃のカットイン
         AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq); // 攻撃メソッド
         isCounter = false; // カウンター攻撃終了
-        enemyManager.StartAttack(); // 敵の攻撃を開始
+        if(!isSkill) enemyManager.StartAttack(); // 敵の攻撃を開始
     }
     //------------------------------------------------------------
 
@@ -328,6 +328,8 @@ public class PlayerController : PlayerManager
         else AttackEnemy(damageNormal / attackFreq, attackFreq); // 通常時
         yield return StartCoroutine(cutIn.Attack(isEvo)); // 攻撃エフェクト(変身してるかどうか)
         isAttack = false; // 通常攻撃終了
+        isMove = true;
+        yield return new WaitUntil(() => !isCounter && !isSkill);
         BringBackPlayer(); // 攻撃が終わったら反対のタイルに移動
     }
 
@@ -337,9 +339,10 @@ public class PlayerController : PlayerManager
     private void BringBackPlayer()
     {
         //反対のタイルに移動させる
-        currentY = BACK_LINE[attackType]; 
+        currentY = BACK_LINE[attackType];
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = targetPos + ATTACK_MOVE[attackType];
+        isMove = false;
         // 移動先のタイルを判定
         CheckTile();
     }
@@ -471,9 +474,10 @@ public class PlayerController : PlayerManager
 
     public IEnumerator Skill()
     {
+        isSkill = true;
         yield return new WaitUntil(() => !isAttack && !isCounter);
         gameManager.AddScore((int)SCORE.SKILL); // スコア追加
-        isSkill = true;
+        
         enemyManager.StopAttack();
         yield return StartCoroutine(cutIn.Skill());
         AttackEnemy(damageSkill / skillFreq, skillFreq);
