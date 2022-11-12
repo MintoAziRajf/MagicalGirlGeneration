@@ -4,15 +4,24 @@ using UnityEngine;
 
 public class HealEffect : MonoBehaviour
 {
-    [SerializeField] private GameObject star = null;
-    List<GameObject> stars = new List<GameObject>();
+    [SerializeField] private GameObject _star = null;
+    [SerializeField] private RectTransform _rTransform = null;
+    [SerializeField] private Camera cam = null;
+    private GameObject player;
 
-    private void Start()
+    public void StartEffect()
     {
-        for(int i = 0; i < 10; i++)
+        List<GameObject> stars = new List<GameObject>();
+        if (player == null)
         {
-            stars.Add(Instantiate(star, this.gameObject.transform));
-            stars[i].GetComponent<HealGather>().Rot = (90f - 36f * i) * Mathf.Deg2Rad;
+            player = GameObject.FindWithTag("Player");
+        }
+        this.transform.position = player.transform.position;
+        Vector3 target = cam.ScreenToWorldPoint(_rTransform.position);
+        for(int i = 0; i < 20; i++)
+        {
+            stars.Add(Instantiate(_star, this.gameObject.transform));
+            stars[i].GetComponent<HealGather>().SetTarget(target, (90f - 18f * i) * Mathf.Deg2Rad, 360f/20f); 
         }
     }
 } 

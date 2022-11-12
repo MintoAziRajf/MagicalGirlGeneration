@@ -15,9 +15,9 @@ public class PlayerController : PlayerManager
     private const int LIMIT_MIN = 0;
     private const int LIMIT_MAX = 2;
     private Vector3 targetPos;
-    private const float SPEED = 20f;
+    private float speed = 250f;
     private int moveCooltime = 30;
-    public int MoveCooltime { set { moveCooltime = value; } }
+    public int MoveCooltime { set { moveCooltime = value; speed = speed / value;} }
     private enum DIRECTION
     {
         UP = 0,
@@ -37,6 +37,8 @@ public class PlayerController : PlayerManager
     // 回復関連 --------------------
     private int healPos = -1;
     public int HealPos { get { return healPos; } }
+    [SerializeField] private GameObject healEffectObj = null;
+    private HealEffect healEffect;
     // -----------------------------
 
     //----------回避関連------------
@@ -148,7 +150,7 @@ public class PlayerController : PlayerManager
     private void FixedUpdate()
     {
         //移動
-        transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, SPEED * Time.deltaTime);
+        transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, speed * Time.deltaTime);
         evolution.Check();
       
         canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter && isStart;
@@ -249,7 +251,6 @@ public class PlayerController : PlayerManager
     private void Move(int direction)
     {
         gameManager.AddScore((int)SCORE.MOVE); //スコア追加
-        collisionManager.PlayerMoved(currentX, currentY); //コリジョンマネージャーに移動先を送る
         targetPos = targetPos + MOVE[direction]; // 移動先を設定
         evolution.Increase("Move"); // 変身ゲージを増やす
         StartCoroutine(MoveDelay());// 移動クールタイム
@@ -263,8 +264,9 @@ public class PlayerController : PlayerManager
     {
         isMove = true; //移動中
         gameUI.MoveCurrentTime = 0;
-        for (int i = 1; i <= moveCooltime; i++) //クールタイム分待機
+        for (int i = 0; i < moveCooltime; i++) //クールタイム分待機
         {
+            if(i == moveCooltime / 2) collisionManager.PlayerMoved(currentX, currentY); //コリジョンマネージャーに移動先を送る
             gameUI.MoveCurrentTime = i; //DebugUI
             yield return new WaitForSeconds(1f / 60f); // １フレーム待機
         }
@@ -400,6 +402,7 @@ public class PlayerController : PlayerManager
     /// </summary>
     private void RemoveHealGrid()
     {
+        healEffect.StartEffect();
         Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealOrb(Clone)").gameObject); // 回復タイルの見た目を削除
         healGrid[currentX, currentY] = false; // 回復タイルのタイルを削除
         healPos = -1;
@@ -486,6 +489,7 @@ public class PlayerController : PlayerManager
         if (isTutorial) return;
         SetUI();
         SetAttackTile();
+        healEffect = healEffectObj.GetComponent<HealEffect>();
     }
 
     private void InitTiles()

@@ -27,7 +27,7 @@ public class UIChanger : MonoBehaviour
     [SerializeField, Header("キャラに応じて2DSpriteObjを表示")]
     private List<SpriteData> spriteData = new List<SpriteData>();
 
-    private void Awake()
+    private void Start()
     {
         SetUI(GameObject.FindWithTag("GameManager").GetComponent<GameManager>().Type);
     }

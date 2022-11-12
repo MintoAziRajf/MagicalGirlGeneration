@@ -4,45 +4,53 @@ using UnityEngine;
 
 public class HealGather : MonoBehaviour
 {
-    private Vector3 velocity;
-    private Vector3 position;
-    Transform target;
-    private float period = 1f;
-    private bool isStart = false;
-    [SerializeField] private float radius = 0f;
-    private float rot = 0f;
-    public float Rot { set { rot = value; AwakeScript(); } }
+    private Vector3 _velocity;
+    private Vector3 _position;
+    private Vector3 _targetPos;
+    private float _period = 1f;
+    private bool _isStart = false;
+    private float _radius = 0f;
+    private float _angle = 0f;
+    private Vector3 _diff;
+    private float speed = 50f;
+    public void SetTarget(Vector3 pos, float angle, float radius)
+    {
+        _radius = radius;
+        _targetPos = pos;
+        _angle = angle;
+        AwakeScript();
+    }
 
     private void AwakeScript()
     {
-        position = this.transform.position;
+        _position = this.transform.position;
         CircleVelocity();
-        target = GameObject.Find("Cube").transform;
+        
+        _isStart = true;
     }
-    int time = 0;
+
     private void Update()
     {
-        if (target == null) return;
+        if (!_isStart) return;
         var acceleration = Vector3.zero;
+        _diff = _targetPos - _position;
+        acceleration += (_diff - _velocity * _period) * 2f / (_period * _period);
 
-        var diff = target.position - position;
-        acceleration += (diff - velocity * period) * 2f / (period * period);
-
-        period -= Time.deltaTime;
-        if (period < 0f)
+        _period -= Time.deltaTime;
+        if ((this.transform.position - _targetPos).magnitude <= 0.1f)
         {
             Destroy(this.gameObject);
             return;
         }
 
-        velocity += acceleration * Time.deltaTime;
-        position += velocity * Time.deltaTime;
-        transform.position = position;
+        _velocity += acceleration.normalized * Time.deltaTime * speed;
+        _position += _velocity * Time.deltaTime;
+        transform.position = _position;
     }
 
     private void CircleVelocity()
     {
-        velocity = new Vector3(radius * Mathf.Cos(rot), radius * Mathf.Sin(rot), 0f);
-        Debug.Log(velocity);
+        _velocity = new Vector3(_radius * Mathf.Cos(_angle), _radius * Mathf.Sin(_angle), 0f);
+        Debug.Log(_velocity);
     }
 }
