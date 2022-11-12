@@ -127,6 +127,7 @@ public class CharacterSelectManager : MonoBehaviour
 
     public void LoadMainGame()
     {
+        Debug.Log((int)currentCharacter);
         SceneManager.sceneLoaded += GameSceneLoaded;
         LoadManager.instance.LoadScene("50_MainGame");
     }
