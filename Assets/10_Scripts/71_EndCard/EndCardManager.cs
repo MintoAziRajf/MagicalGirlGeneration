@@ -4,25 +4,22 @@ using UnityEngine;
 using UnityEngine.UI;
 using NUnityGameLib;
 
-public class EndCardManager : UnityGameLib,IUnityGameLib 
+public class EndCardManager : UnityGameLib, IUnityGameLib
 {
     public static LoadManager instance = null;
     [SerializeField] private GameObject loadPrefab = null;
-    [SerializeField]FadeImage fi = null;
-    [SerializeField]Image image = null;
-    [SerializeField]string str = "";
+    [SerializeField] FadeImage fi = null;
+
     // Start is called before the first frame update
     void Start()
     {
-        str = "";
-        image = ImageLoadingAsync(image, str);
+
     }
 
     // Update is called once per frame
     void Update()
     {
-         StartCoroutine(wait());
-        
+        StartCoroutine(wait());
     }
 
     IEnumerator wait()
@@ -34,4 +31,6 @@ public class EndCardManager : UnityGameLib,IUnityGameLib
             LoadManager.instance.LoadScene("20_Title");
         }
     }
+
+
 }

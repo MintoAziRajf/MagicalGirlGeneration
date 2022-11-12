@@ -19,7 +19,9 @@ namespace NTitleController
         [SerializeField] private GameObject loadPrefab = null;
 
         float getHorizontalValue = 0f;
-        bool isCheck = true;
+        bool isGameStartCheck = true;
+        bool isExitGameCheck = true;
+        bool checkIf = true;
 
         [SerializeField]FadeImage fi;
         // Start is called before the first frame update
@@ -34,7 +36,6 @@ namespace NTitleController
         // Update is called once per frame
         protected virtual void Update()
         {
-            GetHorizontal();
           
             StartCoroutine(wait());
         }
@@ -45,14 +46,16 @@ namespace NTitleController
 
             if (getHorizontalValue == 1)
             {
-                isCheck = true;
+                isGameStartCheck = true;
+                isExitGameCheck = false;
                 decisionGameStart.SetActive(true);
-                decisionEXIT.SetActive(false);                
+                decisionEXIT.SetActive(false);
             }
 
             if (getHorizontalValue == -1)
             {
-                isCheck= false;
+                isGameStartCheck = false;
+                isExitGameCheck = true;
                 decisionEXIT.SetActive(true);
                 decisionGameStart.SetActive(false);
             }
@@ -62,9 +65,17 @@ namespace NTitleController
         {
             yield return new WaitUntil(() => fi.CutoutRange == 0f);
 
-            if (Input.GetButtonDown("Submit") && isCheck)
+            GetHorizontal();
+            if (Input.GetButtonDown("Submit") && isGameStartCheck && checkIf)
             {
+                checkIf = false;
                 LoadManager.instance.LoadScene("30_CharacterSelect");
+            }
+
+            if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf)
+            {
+                checkIf = false;
+                LoadManager.instance.LoadScene("50_MainGame");
             }
         }
     }
