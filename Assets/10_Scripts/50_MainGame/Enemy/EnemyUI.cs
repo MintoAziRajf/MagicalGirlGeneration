@@ -60,7 +60,6 @@ public class EnemyUI : MonoBehaviour
         }
 
         hpBar.anchoredPosition = pos;
-        Debug.Log(hpBar.anchoredPosition);
     }
 
     /// <summary>

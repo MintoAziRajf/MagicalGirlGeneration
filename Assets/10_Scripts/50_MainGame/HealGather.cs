@@ -51,6 +51,6 @@ public class HealGather : MonoBehaviour
     private void CircleVelocity()
     {
         _velocity = new Vector3(_radius * Mathf.Cos(_angle), _radius * Mathf.Sin(_angle), 0f);
-        Debug.Log(_velocity);
+        //Debug.Log(_velocity);
     }
 }
