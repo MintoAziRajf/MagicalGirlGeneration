@@ -11,9 +11,6 @@ public class CollisionManager : MonoBehaviour
     private const int PLAYER = 1;
     private const int AVOID = 2;
     private const int DAMAGE = 3;
-    private bool needReplace = false;
-
-    private const int DAMAGE_FRAME = 5;
 
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
     [Header("EMPTY,PLAYER,AVOID,DAMAGE")] [SerializeField] private Color[] gridColor = new Color[4];
@@ -63,7 +60,6 @@ public class CollisionManager : MonoBehaviour
     /// <param name="y">移動先Y</param>
     public void PlayerMoved(int x, int y)
     {
-        if (collisionGrid[x, y] == AVOID) needReplace = true;
         ReplaceCollision(EMPTY);
         MoveCheck(x, y);
     }
@@ -75,30 +71,19 @@ public class CollisionManager : MonoBehaviour
     /// <param name="frame">持続時間</param>
     public void PlayerAvoided(int x, int y, int frame)
     {
-        ReplaceCollision(AVOID);
         StartCoroutine(AvoidedCollision(x, y, frame));
     }
     private IEnumerator AvoidedCollision(int x, int y, int frame)
     {
-        int value;
+        collisionGrid[x, y] = AVOID;
         GameObject playerAvoid = Instantiate(avoidObj, gridObj[x+y*3].transform);
         //持続
         for (int i = 0; i < frame; i++)
         {
             yield return null;
         }
-        //
-        if (needReplace)
-        {
-            value = PLAYER;
-            needReplace = false;
-        }
-        else
-        {
-            value = EMPTY;
-        }
         Destroy(playerAvoid);
-        collisionGrid[x, y] = value;
+        collisionGrid[x, y] = EMPTY;
     }
 
     private void ReplaceCollision(int value)
@@ -121,7 +106,6 @@ public class CollisionManager : MonoBehaviour
             PlayerDamaged(collisionGrid[x, y]);
         }
         //移動先にプレイヤーを置く
-        if (needReplace) return;
         collisionGrid[x, y] = PLAYER;
         
     }

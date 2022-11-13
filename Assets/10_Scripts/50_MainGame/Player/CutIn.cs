@@ -9,6 +9,7 @@ public class CutIn : PlayerManager
     private Animator cutInAnim;
     private Animator damageAnim;
     private const int ANIM_COOLTIME = 120;
+    private const int COUNTER_COOLTIME = 30;
     private const int ATTACK_COOLTIME = 20;
     private const float ONE_FRAME = 1f / 60f;
 
@@ -41,7 +42,7 @@ public class CutIn : PlayerManager
     public IEnumerator CounterAttack()
     {
         cutInAnim.SetTrigger("Counter");
-        yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
+        yield return StartCoroutine(WaitAnim(COUNTER_COOLTIME));
         damageAnim.SetTrigger("Counter");
         StartCoroutine(MessageManager.instance.DisplayMessage("ナイスカウンター！"));
     }

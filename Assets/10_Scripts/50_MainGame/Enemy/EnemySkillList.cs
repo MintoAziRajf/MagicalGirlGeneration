@@ -10,12 +10,15 @@ public class EnemySkillList : MonoBehaviour
     [SerializeField] private GameObject[] enemyGrid = null;
     [SerializeField] private GameObject dangerMark = null;
     [SerializeField] private GameObject bombObj = null;
+    [SerializeField] private GameObject beamObj = null;
+    [SerializeField] private GameObject lightningObj = null;
+    [SerializeField] private GameObject stoneObj = null;
     [SerializeField] private GameObject enemyAttacks = null;
 
     //---------コンストラクタ------------
-    private const int DAMAGE_LIFETIME = 10;
     private const int OMEN_TIME = 1;
     private const int MARK_LIFETIME = 20;
+    private const int DAMAGE_LIFETIME = 5;
     private const int FADE_TIME = 5;
 
     private const int SPIKE_DELAY = 10;
@@ -26,7 +29,8 @@ public class EnemySkillList : MonoBehaviour
         LIGHTNING,
         BEAM,
         EARTHSPIKE,
-        ICESPIKE
+        ICESPIKE,
+        ALL
     }
     //-----------------------------------
     private void Awake()
@@ -49,21 +53,21 @@ public class EnemySkillList : MonoBehaviour
                 yield return StartCoroutine(Bomb(x, y, damage));
                 break;
             case (int)ATTACK.LIGHTNING:
-                StartCoroutine(Lightning(0, y, damage));
-                StartCoroutine(Lightning(1, y, damage));
-                yield return StartCoroutine(Lightning(2, y, damage));
+                StartCoroutine(AttackEffect(0, y, damage, beamObj));
+                StartCoroutine(AttackEffect(1, y, damage, beamObj));
+                yield return StartCoroutine(AttackEffect(2, y, damage, beamObj));
                 break;
             case (int)ATTACK.BEAM:
-                StartCoroutine(Beam(x, 0, damage));
-                StartCoroutine(Beam(x, 1, damage));
-                yield return StartCoroutine(Beam(x, 2, damage));
+                StartCoroutine(AttackEffect(x, 0, damage, beamObj));
+                StartCoroutine(AttackEffect(x, 1, damage, beamObj));
+                yield return StartCoroutine(AttackEffect(x, 2, damage, beamObj));
                 break;
             case (int)ATTACK.EARTHSPIKE:
                 if (x == 2)
                 {
                     for(int i = x; i >= 0; i--)
                     {
-                        StartCoroutine(EarthSpike(i, y, damage));
+                        StartCoroutine(AttackEffect(i, y, damage, stoneObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
@@ -71,7 +75,7 @@ public class EnemySkillList : MonoBehaviour
                 {
                     for (int i = x; i <= 2; i++)
                     {
-                        StartCoroutine(EarthSpike(i, y, damage));
+                        StartCoroutine(AttackEffect(i, y, damage, stoneObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
@@ -82,7 +86,7 @@ public class EnemySkillList : MonoBehaviour
                 {
                     for (int i = y; i >= 0; i--)
                     {
-                        StartCoroutine(IceSpike(x, i, damage));
+                        StartCoroutine(AttackEffect(x, i, damage, stoneObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
@@ -90,11 +94,18 @@ public class EnemySkillList : MonoBehaviour
                 {
                     for (int i = y; i <= 2; i++)
                     {
-                        StartCoroutine(IceSpike(x, i, damage));
+                        StartCoroutine(AttackEffect(x, i, damage, stoneObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
                 else Debug.Log("Error");
+                break;
+            case (int)ATTACK.ALL:
+                for(int i = 0; i < 8; i++)
+                {
+                    StartCoroutine(AttackEffect(i%3, i/3, damage, lightningObj));
+                }
+                yield return StartCoroutine(AttackEffect(2, 2, damage, lightningObj));
                 break;
             default:
                 yield return null;
@@ -105,60 +116,25 @@ public class EnemySkillList : MonoBehaviour
     private IEnumerator Bomb(int x, int y, int damage)
     {
         int index = x + y * 3;
-
-        yield return StartCoroutine(DisplayDangerZone(x, y));
         GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+        yield return StartCoroutine(DisplayDangerZone(x, y));
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(FADE_TIME));
         Destroy(effect.gameObject);
     }
-    private IEnumerator Lightning(int x, int y, int damage) //横一列ディレイ無し
+    private IEnumerator AttackEffect(int x, int y, int damage, GameObject effectPrefab)
     {
         int index = x + y * 3;
         yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        GameObject effect = Instantiate(effectPrefab, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(FADE_TIME));
         Destroy(effect.gameObject);
     }
-    private IEnumerator Beam(int x, int y, int damage) //横一列ディレイ無し
-    {
-        int index = x + y * 3;
-        yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        yield return StartCoroutine(WaitFrame(OMEN_TIME));
-        StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(FADE_TIME));
-        Destroy(effect.gameObject);
-    }
-    private IEnumerator EarthSpike(int x, int y, int damage) //横一列ディレイ無し
-    {
-        int index = x + y * 3;
-        yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        yield return StartCoroutine(WaitFrame(OMEN_TIME));
-        StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(FADE_TIME));
-        Destroy(effect.gameObject);
-    }
-    private IEnumerator IceSpike(int x, int y, int damage) //横一列ディレイ無し
-    {
-        int index = x + y * 3;
-        yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
-        yield return StartCoroutine(WaitFrame(OMEN_TIME));
-        StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(FADE_TIME));
-        Destroy(effect.gameObject);
-    }
-
 
     private IEnumerator DisplayDangerZone(int x, int y)
     {

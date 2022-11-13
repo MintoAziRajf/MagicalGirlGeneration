@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using System;
 
 public class DialogManager : MonoBehaviour
 {
@@ -12,10 +13,8 @@ public class DialogManager : MonoBehaviour
     }
     public void ActivateDialog(int value)
     {
-        bool isActivate = false;
-        if (value == 0) isActivate = false;
-        else if (value == 1) isActivate = true;
-        else Debug.Log("Error");
+        bool isActivate = Convert.ToBoolean(value);
+        Debug.Log(isActivate);
         characterSelectManager.IsDialog = isActivate;
     }
     public void PrologueSelect(bool select)

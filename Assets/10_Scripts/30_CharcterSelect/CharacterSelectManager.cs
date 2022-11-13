@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.IO;
 using System.Text;
+using System;
 
 public class CharacterSelectManager : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class CharacterSelectManager : MonoBehaviour
     
     //--------スクロール関連--------
     [SerializeField] private Vector2 centerPos, leftPos, rightPos; // スクロール先(固定値)
+    [SerializeField] private Image[] arrow = null; // 矢印
     
     private RectTransform currentTrans, beforeTrans; // 現在、前のキャラの場所
     private Vector2 targetPos; //スクロール先
@@ -37,11 +39,23 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Sprite[] backgroundSprite = null; //使用する背景のスプライト配列
     [SerializeField] private Image background = null; // 表示先
 
+    [SerializeField] private Sprite[] outerSprite = null; // 外側のデザイン
+    [SerializeField] private Image outer = null; // 表示先
+    [SerializeField] private Sprite[] innerSprite = null; // 内側のデザイン
+    [SerializeField] private Image inner = null; // 表示先
+
     [SerializeField] private Sprite[] infoWindowSprite = null; // キャラクター情報の表示ウィンドウ
     [SerializeField] private Image infoWindow = null; // 表示先
 
-    [SerializeField] private Text characterName = null, score = null, rank = null; //キャラクターの名前、ハイスコア、ランクの表示先
+    [SerializeField] private Text characterName = null, score = null; //キャラクターの名前、ハイスコア
     [SerializeField] private string[] nameString = new string[3]; //キャラクターの名前
+
+    [SerializeField] private Sprite[] rankIconSprite = null; // ランクの表示 アイコン
+    [SerializeField] private Image rankIcon = null; // 表示先
+    [SerializeField] private Sprite[] rankTextSprite = null; // ランクの表示 文字
+    [SerializeField] private Image rankText = null; // 表示先
+    [SerializeField] private Sprite[] weaponIconSprite = null; // 武器アイコンの表示
+    [SerializeField] private Image weaponIcon = null; // 表示先
 
     private List<string[]> scoreDatas = new List<string[]>();
     private enum SCORE
@@ -66,6 +80,7 @@ public class CharacterSelectManager : MonoBehaviour
     {
         //Init
         LoadScore();
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.CharacterSelect);
         currentImage = currentObj.GetComponent<Image>();
         currentTrans = currentObj.GetComponent<RectTransform>();
         beforeImage = beforeObj.GetComponent<Image>();
@@ -89,23 +104,26 @@ public class CharacterSelectManager : MonoBehaviour
             Scroll();
             return;
         }
-        Debug.Log("スクロール操作可能");
+        if (!isDialog) Debug.Log("スクロール操作可能");
         //右
         if (right)
         {
             Debug.Log("右スクロール");
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.CS_Scroll);
             SetCharacter(true);
         }
         //左
         if (left)
         {
             Debug.Log("左スクロール");
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.CS_Scroll);
             SetCharacter(false);
         }
         //選択
         if (submit)
         {
             anim.SetTrigger("Submit");
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.CS_Submit);
             StartCoroutine(AllowOperate());
         }
         else if (cancel)
@@ -118,10 +136,12 @@ public class CharacterSelectManager : MonoBehaviour
     private IEnumerator AllowOperate()
     {
         canOperate = false;
-        for(int i = 0; i < 30; i++)
+        for(int i = 0; i < 12; i++)
         {
             yield return null;
         }
+
+        currentTrans.anchoredPosition = centerPos;
         canOperate = true;
     }
 
@@ -152,6 +172,8 @@ public class CharacterSelectManager : MonoBehaviour
     /// <param name="isRight">右=true,左=false</param>
     private void SetCharacter(bool isRight)
     {
+        //矢印を点滅させる
+        StartCoroutine(ArrowFlash(isRight));
         //選択中のキャラクターに値を変更
         if (!isRight)
         {
@@ -185,6 +207,17 @@ public class CharacterSelectManager : MonoBehaviour
         //速度補間用
         currentDistance = Vector2.Distance(currentTrans.anchoredPosition, centerPos);
         beforeDistance = Vector2.Distance(beforeTrans.anchoredPosition, targetPos);
+    }
+
+    private IEnumerator ArrowFlash(bool b)
+    {
+        int index = Convert.ToInt32(b);
+        arrow[index].color = Color.gray;
+        for (int i = 0; i < 20; i++)
+        {
+            yield return null;
+        }
+        arrow[index].color = Color.white;
     }
 
     /// <summary>
@@ -247,9 +280,32 @@ public class CharacterSelectManager : MonoBehaviour
         characterName.text = nameString[current];
         background.sprite = backgroundSprite[current];
         infoWindow.sprite = infoWindowSprite[current];
+        outer.sprite = outerSprite[current];
+        inner.sprite = innerSprite[current];
+        weaponIcon.sprite = weaponIconSprite[current];
 
         //
         score.text = int.Parse(scoreDatas[current][(int)SCORE.VALUE]).ToString("000000000");
-        rank.text = scoreDatas[current][(int)SCORE.RANK];
+        int rank = 0;
+        switch (scoreDatas[current][(int)SCORE.RANK])
+        {
+            case "C":
+                rank = 0;
+                break;
+            case "B":
+                rank = 1;
+                break;
+            case "A":
+                rank = 2;
+                break;
+            case "S":
+                rank = 3;
+                break;
+            default:
+                Debug.Log("Error");
+                break;
+        }
+        rankIcon.sprite = rankIconSprite[rank];
+        rankText.sprite = rankTextSprite[rank];
     }
 }

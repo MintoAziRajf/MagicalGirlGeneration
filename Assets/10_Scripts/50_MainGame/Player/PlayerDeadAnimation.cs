@@ -6,13 +6,11 @@ public class PlayerDeadAnimation : PlayerManager
 {
     [SerializeField] private SpriteRenderer deadBackground = null;
     [SerializeField] private Camera mainCamera = null;
-    Animator anim;
     Vector3 offset = new Vector3(0f, 4f, 3.5f);
 
     public IEnumerator StartAnimation()
     {
-        anim = this.GetComponent<Animator>();
-        //anim.SetTrigger("Dead");
+        //visualAnim.SetTrigger("Dead");
         //StartCoroutine(BackgroundFade());
         //yield return StartCoroutine(CameraZoomIn());
         gameManager.GameOver();

@@ -45,7 +45,18 @@ public class GameUI : PlayerManager
     private float hpDisplayGauge = 0f;　//値を徐々に変化させるための値
     private int hpMax = 0;
     public int MaxHP { set { hpMax = value;} }
-    
+
+    //
+    [SerializeField] private Image visual = null; // キャラ見た目表示先
+    [SerializeField] private Sprite[] visualSprite = null; // キャラのスプライト
+    [SerializeField] private Color[] hpColor = null; // HPのカラー
+    //HPの基準
+    private const float HIGH = 0.75f;   // 高い
+    private const float DEFAULT = 0.5f; // 普通
+    private const float LOW = 0.25f;    // 低い
+    private enum EMOTE { HIGH, DEFAULT, LOW }
+
+    private int type = -1;
 
     void Update()
     {
@@ -65,6 +76,20 @@ public class GameUI : PlayerManager
         //ゲージのパーセントを計算、表示
         hpDisplay.fillAmount = hpDisplayGauge / hpMax;
         evolutionDisplay.fillAmount = evolutionDisplayGauge / evolutionMax;
+        DisplayVisual(hpDisplayGauge / hpMax);
+    }
+
+    private void DisplayVisual(float per)
+    {
+        if (type == -1) type = playerController.Type;
+        int index = 0;
+        if (per > HIGH) index = (int)EMOTE.HIGH;
+        else if (per > DEFAULT) index = (int)EMOTE.DEFAULT;
+        else if (per < LOW) index = (int)EMOTE.LOW;
+
+        visual.sprite = visualSprite[type * 3 + index];
+        hpDisplay.color = hpColor[index];
+
     }
 
     [SerializeField] private float magnitude = 0f;
