@@ -21,6 +21,8 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public GameUI gameUI;
     [HideInInspector] public CutIn cutIn;
 
+    [HideInInspector] public Animator visualAnim;
+
     public void Awake()
     {
         gameManagerObj = GameObject.FindWithTag("GameManager");
@@ -37,5 +39,7 @@ public class PlayerManager : MonoBehaviour
         evolution = this.GetComponent<Evolution>();
         gameUI = this.GetComponent<GameUI>();
         cutIn = this.GetComponent<CutIn>();
+
+        visualAnim = this.GetComponent<Animator>();
     }
 }

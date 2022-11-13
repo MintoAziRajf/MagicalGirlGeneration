@@ -45,8 +45,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7c23c40214ae9b41a577003a6d3e082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BGM_Clips: []
-  SE_Clips: []
+  BGM_Clips:
+  - {fileID: 8300000, guid: 8aab98daac3f59642ac0eccb517a0b67, type: 3}
+  - {fileID: 8300000, guid: b10c26fa1f6717e419ccfb1d6df53e3f, type: 3}
+  - {fileID: 8300000, guid: d3c3cbfb71a7cb248ab49ec115533af8, type: 3}
+  - {fileID: 8300000, guid: af86737e51e9807408284dd04b32e23a, type: 3}
+  - {fileID: 8300000, guid: 482334fe764cb494eb3a0e5cec481a09, type: 3}
+  - {fileID: 8300000, guid: 36c33e4f5ece9344d9b7557f251448d1, type: 3}
+  - {fileID: 8300000, guid: e1382bb4cb0baff4898c73dd461dee97, type: 3}
+  - {fileID: 8300000, guid: e2c5f24f98bdaca4fa1293701768c84d, type: 3}
+  - {fileID: 8300000, guid: 607244c6a658a5b4894d562f44ba0cc7, type: 3}
+  - {fileID: 8300000, guid: 2c8954c502ee9fb43924a146e42056ea, type: 3}
+  SE_Clips:
+  - {fileID: 8300000, guid: ff84b86d616ff0f4d93aa4dd610b6651, type: 3}
+  - {fileID: 8300000, guid: e97f88248872ae241b1ff743ad5ebfc3, type: 3}
+  - {fileID: 8300000, guid: 3e0dada2bc4269a4f82227c70fb65108, type: 3}
+  - {fileID: 8300000, guid: 24f779a043893cc4da19258c3c56fb31, type: 3}
+  - {fileID: 8300000, guid: cf03417a99e2be5449dfe33e5972c00d, type: 3}
+  - {fileID: 8300000, guid: 0fc0c8e87809f1340a5215a7b7828bac, type: 3}
+  - {fileID: 8300000, guid: 1406e89a2f89c114886579a0de27f7e4, type: 3}
+  - {fileID: 8300000, guid: 8d12cd94afa2d41439af27971b337c27, type: 3}
+  - {fileID: 8300000, guid: d12e41a1aafa5a4458fb042976599da6, type: 3}
+  - {fileID: 8300000, guid: 7a2836e755c760541ad9b9fe9531c1c1, type: 3}
+  - {fileID: 8300000, guid: fb72b0766b7283c4ba01a74ee9936817, type: 3}
+  - {fileID: 8300000, guid: 281ddafff80077f4cb3e1fb924194add, type: 3}
+  - {fileID: 8300000, guid: 6e9acda2755fa5b47a23cab0a3e320c0, type: 3}
+  - {fileID: 8300000, guid: 0ed0d799760caf04cba5546d380170a7, type: 3}
+  - {fileID: 8300000, guid: f79ca72824fd35a4fb2d3ef863056fb9, type: 3}
+  - {fileID: 8300000, guid: 400ce7b2dbb4c5445bb4e6c3f8ecaded, type: 3}
 --- !u!114 &2534192534155806633
 MonoBehaviour:
   m_ObjectHideFlags: 0

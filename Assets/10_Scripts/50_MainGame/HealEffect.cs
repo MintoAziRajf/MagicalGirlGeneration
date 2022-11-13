@@ -17,7 +17,7 @@ public class HealEffect : MonoBehaviour
             player = GameObject.FindWithTag("Player");
         }
         this.transform.position = player.transform.position;
-        Vector3 target = cam.ScreenToWorldPoint(_rTransform.position);
+        Vector3 target = cam.ScreenToWorldPoint(_rTransform.anchoredPosition);
         for(int i = 0; i < 20; i++)
         {
             stars.Add(Instantiate(_star, this.gameObject.transform));

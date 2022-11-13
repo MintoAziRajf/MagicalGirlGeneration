@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
     {
         playerController = player.GetComponent<PlayerController>();
         playerController.IsTutorial = isTutorial;
+        playerController.Type = type;
         enemyManager = enemy.GetComponent<EnemyManager>();
         tutorial = this.GetComponent<Tutorial>();
         prologue = this.GetComponent<Prologue>();
@@ -119,6 +120,7 @@ public class GameManager : MonoBehaviour
             yield break;
         }
         yield return StartCoroutine(StartCountDown()); //カウントダウンを始める
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_01);
         playerController.IsStart = true; // playerとenemyを動かす
         enemyManager.IsStart = true;
         enemyManager.StartAttack();
@@ -130,6 +132,7 @@ public class GameManager : MonoBehaviour
     private IEnumerator Prologue()
     {
         Time.timeScale = 0f;
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.Prologue);
         yield return StartCoroutine(prologue.StartPrologue(type));
         Time.timeScale = 1f;
     }
@@ -139,6 +142,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     private IEnumerator Tutorial()
     {
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_01);
         yield return StartCoroutine(tutorial.Flow());
         Retry();
     }
@@ -149,6 +153,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void GameOver()
     {
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.GameOver);
         gameOverCanvas.SetActive(true);
     }
 
@@ -171,7 +176,9 @@ public class GameManager : MonoBehaviour
     public IEnumerator GameClear()
     {
         StopGame();
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.Epilogue);
         yield return StartCoroutine(epilogue.StartEpilogue(type));
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.Result);
         yield return StartCoroutine(Result());
         //endcard
         LoadManager.instance.LoadScene("71_EndCard");

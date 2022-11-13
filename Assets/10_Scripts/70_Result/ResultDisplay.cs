@@ -17,13 +17,14 @@ public class ResultDisplay : MonoBehaviour
     [SerializeField] private Text rankText = null;
 
     [SerializeField] private Image titleImage = null;
-    [SerializeField] private Image baseImage = null;
-    [SerializeField] private Image characterImage = null;
-    [SerializeField] private Image boardImage = null;
-
     [SerializeField] private Sprite[] titleSprite = null;
+    [SerializeField] private Image baseImage = null;
     [SerializeField] private Sprite[] baseSprite = null;
+    [SerializeField] private Image characterImage = null;
     [SerializeField] private Sprite[] characterSprite = null;
+    [SerializeField] private Image highscoreImage = null;
+    [SerializeField] private Sprite[] highscoreSprite = null;
+    [SerializeField] private Image boardImage = null;
     [SerializeField] private Sprite[] boardSprite = null;
 
     private string scoreString;
@@ -40,16 +41,18 @@ public class ResultDisplay : MonoBehaviour
 
     public void DisplayResult(int type, int score)
     {
+        bool isHighscore = score > resultSave.Highscore(type);
         titleImage.sprite = titleSprite[type];
         baseImage.sprite = baseSprite[type];
         characterImage.sprite = characterSprite[type];
         boardImage.sprite = boardSprite[type];
-        scoreString = score.ToString("000000000");
+        highscoreImage.sprite = highscoreSprite[type];
+       scoreString = score.ToString("000000000");
         rankString = resultSave.Rank(score);
 
         anim.SetTrigger("ResultStart");
-        anim.SetBool("isHighscore", (score > resultSave.Highscore(type)));
-        resultSave.SaveScore(type, score);
+        anim.SetBool("isHighscore", isHighscore);
+        if(isHighscore) resultSave.SaveScore(type, score);
     }
 
     string numbers = "0123456789";

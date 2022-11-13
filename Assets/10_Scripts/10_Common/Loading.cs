@@ -26,6 +26,9 @@ public class Loading : MonoBehaviour
     //変身前かどうか
     [SerializeField] private Text evoText = null;
     [SerializeField] private string[] evoString = new string[2];
+    //キャラクター説明文
+    [SerializeField] private Text infoText = null;
+    [SerializeField, Multiline(3)] private string[] infoString = new string[3];
     //----------------------------------------------
 
     //------------フェード用---------------------
@@ -47,7 +50,8 @@ public class Loading : MonoBehaviour
         background.sprite = backgroundSprite[type]; //背景
         frame.sprite = frameSprite[type]; //フレーム
         nameText.text = characterName[type]; //表示中のキャラの名前
-        nameText.GetComponent<Outline>().effectColor = nameColor[type];
+        nameText.GetComponent<Outline>().effectColor = nameColor[type]; // 表示色
+        infoText.text = infoString[type]; // キャラクターの説明文
 
 
         isEvo = Random.Range(0, 2); //変身前か変身後か　ランダム

@@ -11,14 +11,38 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
     // BGM管理
     public enum BGM_Type
     {
-
+        Title,
+        CharacterSelect,
+        Prologue,
+        MainGame_00,
+        MainGame_01,
+        MainGame_02,
+        GameOver,
+        Epilogue,
+        Result,
+        EndCard
     }
 
     // SE管理
     public enum SE_Type
     {
         // SE登録
-
+        Select,
+        Submit,
+        CS_Scroll,
+        CS_Submit,
+        Attack_Red,
+        Attack_Blue,
+        Attack_Yellow,
+        Enemy_Damage,
+        Evolution,
+        Skill_Red,
+        Skill_Blue,
+        Skill_Yellow,
+        DramRoll,
+        Highscore,
+        Enemy_Damaged,
+        Enemy_WeakPoint
     }
 
     // クロスフェード時間
