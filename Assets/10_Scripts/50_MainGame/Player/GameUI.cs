@@ -38,13 +38,11 @@ public class GameUI : PlayerManager
     [SerializeField] private Sprite[] visualSprite = null; // キャラのスプライト
     [SerializeField] private Color[] hpColor = null; // HPのカラー
     //HPの基準
-    private const float HIGH = 0.5f;   // 高い
-    private const float DEFAULT = 0.5f; // 普通
-    private const float LOW = 0.25f;    // 低い
-    private enum EMOTE { HIGH, MEDIUM, LOW }
+    private enum EMOTE { LOW, MEDIUM, HIGH }
+    private int hpColorType = 0;
+    public int HPColorType { set { hpColorType = value; } }
 
     private int type = -1;
-    int hpIndex = 0;
 
     void Update()
     {
@@ -62,32 +60,38 @@ public class GameUI : PlayerManager
         //ゲージのパーセントを計算、表示
         hpDisplay.fillAmount = hpDisplayGauge / hpMax;
         evolutionDisplay.fillAmount = evolutionDisplayGauge / evolutionMax;
-        DisplayVisual(hpDisplayGauge / hpMax);
+        DisplayVisual();
     }
 
-    private void DisplayVisual(float per)
+    private void DisplayVisual()
     {
         if (type == -1) type = playerController.Type;
+        EMOTE emote = CheckEmote(hpColorType);
+        
+        visual.sprite = visualSprite[type * 3 + (int)emote];
+        hpDisplay.color = hpColor[hpColorType];
 
-        if (per >= HIGH)
-        {
-            if(hpIndex != (int)EMOTE.HIGH) StartCoroutine(MessageManager.instance.DisplayMessage("大丈夫！？まだやれるかい？"));
-            hpIndex = (int)EMOTE.HIGH;
-        }
-        else if (per < HIGH)
-        {
-            if(hpIndex != (int)EMOTE.MEDIUM) StartCoroutine(MessageManager.instance.DisplayMessage("怪我してるよ！気を付けて！"));
-            hpIndex = (int)EMOTE.MEDIUM;
-        }
-        else if (per < LOW)
-        {
-            if(hpIndex != (int)EMOTE.LOW) StartCoroutine(MessageManager.instance.DisplayMessage("これ以上はまずいよ！"));
-            hpIndex = (int)EMOTE.LOW;
-        }
+    }
 
-        visual.sprite = visualSprite[type * 3 + hpIndex];
-        hpDisplay.color = hpColor[hpIndex];
-
+    private EMOTE CheckEmote(int hpType)
+    {
+        EMOTE e;
+        switch (hpType)
+        {
+            case (int)EMOTE.MEDIUM:
+                e = EMOTE.MEDIUM;
+                break;
+            case (int)EMOTE.LOW:
+                e = EMOTE.LOW;
+                break;
+            case (int)EMOTE.HIGH:
+                e = EMOTE.HIGH;
+                break;
+            default:
+                e = EMOTE.HIGH;
+                break;
+        }
+        return e;
     }
 
     [SerializeField] private float magnitude = 0f;

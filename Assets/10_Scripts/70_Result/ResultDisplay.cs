@@ -38,6 +38,7 @@ public class ResultDisplay : MonoBehaviour
         scoreText.text = "";
         resultSave = this.GetComponent<ResultSave>();
         anim = this.GetComponent<Animator>();
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.DramRoll);
         if (isDebug) DisplayResult(debugType, debugScore);
     }
 
@@ -63,7 +64,7 @@ public class ResultDisplay : MonoBehaviour
     public IEnumerator DisplayScore()
     {
         string str = scoreString;
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.DramRoll);
+        
         for (int i = 0; i < str.Length; i++)
         {
             scoreDisplay.Append(RandomNum(str.Length - i));
@@ -98,6 +99,7 @@ public class ResultDisplay : MonoBehaviour
     public IEnumerator WaitInput()
     {
         yield return new WaitUntil(() => Input.GetButtonDown("Submit"));
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
         anim.SetTrigger("ResultEnd");
     }
 

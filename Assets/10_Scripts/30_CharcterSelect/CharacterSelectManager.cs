@@ -28,8 +28,7 @@ public class CharacterSelectManager : MonoBehaviour
     private RectTransform currentTrans, beforeTrans; // 現在、前のキャラの場所
     private Vector2 targetPos; //スクロール先
     
-    private static float speed = 4f; // 基本速度
-    private float currentDistance, beforeDistance; // 速度補間
+    private const float speed = 100f; // 基本速度
     //------------------------------
 
     //--------キャラクター情報-------
@@ -89,7 +88,7 @@ public class CharacterSelectManager : MonoBehaviour
         DisplayCharacterInfo();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         bool isScroll = !(currentTrans.anchoredPosition == centerPos); //スクロール中かどうかの判定
         bool submit = Input.GetButtonDown("Submit") && canOperate;
@@ -140,8 +139,6 @@ public class CharacterSelectManager : MonoBehaviour
         {
             yield return null;
         }
-
-        currentTrans.anchoredPosition = centerPos;
         canOperate = true;
     }
 
@@ -204,10 +201,6 @@ public class CharacterSelectManager : MonoBehaviour
             currentTrans.anchoredPosition = leftPos;
             targetPos = rightPos;
         }
-
-        //速度補間用
-        currentDistance = Vector2.Distance(currentTrans.anchoredPosition, centerPos);
-        beforeDistance = Vector2.Distance(beforeTrans.anchoredPosition, targetPos);
     }
 
     private IEnumerator ArrowFlash(bool b)
@@ -226,8 +219,8 @@ public class CharacterSelectManager : MonoBehaviour
     /// </summary>
     private void Scroll()
     {
-        currentTrans.anchoredPosition = Vector3.MoveTowards(currentTrans.anchoredPosition, centerPos, speed * Time.deltaTime * currentDistance);
-        beforeTrans.anchoredPosition = Vector3.MoveTowards(beforeTrans.anchoredPosition, targetPos, speed * Time.deltaTime * beforeDistance);
+        currentTrans.anchoredPosition = Vector3.MoveTowards(currentTrans.anchoredPosition, centerPos, speed);
+        beforeTrans.anchoredPosition = Vector3.MoveTowards(beforeTrans.anchoredPosition, targetPos, speed);
     }
 
 
