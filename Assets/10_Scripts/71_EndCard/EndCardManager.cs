@@ -9,11 +9,12 @@ public class EndCardManager : UnityGameLib, IUnityGameLib
     public static LoadManager instance = null;
     [SerializeField] private GameObject loadPrefab = null;
     [SerializeField] FadeImage fi = null;
+    private bool isFirst = true;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.EndCard);
     }
 
     // Update is called once per frame
@@ -26,8 +27,10 @@ public class EndCardManager : UnityGameLib, IUnityGameLib
     {
         yield return new WaitUntil(() => fi.CutoutRange == 0f);
 
-        if (Input.GetButtonDown("Submit"))
+        if (Input.GetButtonDown("Submit") && isFirst)
         {
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
+            isFirst = false;
             LoadManager.instance.LoadScene("20_Title");
         }
     }

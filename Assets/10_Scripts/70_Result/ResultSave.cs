@@ -13,9 +13,9 @@ public class ResultSave : MonoBehaviour
     }
     private List<string[]> scoreDatas = new List<string[]>();
     private string path;
-    private const int RANK_S = 100000000;
-    private const int RANK_A = 50000000;
-    private const int RANK_B = 10000000;
+    private const int RANK_S = 2500000;
+    private const int RANK_A = 1000000;
+    private const int RANK_B = 500000;
     public void SaveScore(int type, int score)
     {
         path = Application.dataPath + @"\score.csv";
@@ -88,5 +88,15 @@ public class ResultSave : MonoBehaviour
         else if (score >= RANK_B) s = "B";
         else s = "C";
         return s;
+    }
+
+    public int RankInt(int score)
+    {
+        int rank = 0;
+        if (score >= RANK_S) rank = 3;
+        else if (score >= RANK_A) rank = 2;
+        else if (score >= RANK_B) rank = 1;
+        else rank = 0;
+        return rank;
     }
 }

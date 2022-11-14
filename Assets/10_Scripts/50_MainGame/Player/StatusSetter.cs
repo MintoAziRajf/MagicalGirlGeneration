@@ -19,7 +19,8 @@ public class StatusSetter : PlayerManager
         CA_FREQ = 8,
         CA_DAMAGE = 9,
         MOVE_COOLTIME = 10,
-        ATTACK_LINE = 11
+        ATTACK_LINE = 11,
+        SKILL_ORB = 12
     }
 
     private void Start()
@@ -56,6 +57,7 @@ public class StatusSetter : PlayerManager
         playerController.CounterAttackFreq = ReturnStatus(STATUS.CA_FREQ);
         playerController.MoveCooltime = ReturnStatus(STATUS.MOVE_COOLTIME);
         playerController.AttackType = ReturnStatus(STATUS.ATTACK_LINE);
+        playerSkill.MaxTiles = ReturnStatus(STATUS.SKILL_ORB);
     }
     private int ReturnStatus(STATUS s)
     {

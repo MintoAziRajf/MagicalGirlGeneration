@@ -42,7 +42,13 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         DramRoll,
         Highscore,
         Enemy_Damaged,
-        Enemy_WeakPoint
+        Enemy_WeakPoint,
+        HealOrb,
+        SkillOrb,
+        CountDown,
+        Pause,
+        EnemyAttack,
+        Move
     }
 
     // クロスフェード時間

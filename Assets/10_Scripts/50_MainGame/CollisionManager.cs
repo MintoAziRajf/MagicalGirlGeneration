@@ -23,6 +23,7 @@ public class CollisionManager : MonoBehaviour
 
     public IEnumerator DamageGrid(int x, int y, int power, int frame)
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.EnemyAttack);
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
         {
@@ -35,6 +36,7 @@ public class CollisionManager : MonoBehaviour
         {
             //AvoidSuccess;
             StartCoroutine(playerController.AvoidSuccess());
+            collisionGrid[x, y] = EMPTY;
             Debug.Log("回避成功!");
             yield break;
         }
@@ -112,7 +114,7 @@ public class CollisionManager : MonoBehaviour
 
     private void PlayerDamaged(int value)
     {
-        playerController.Damaged(value);
+        playerController.StartCoroutine(playerController.Damaged(value));
     }
 
     private void Update()

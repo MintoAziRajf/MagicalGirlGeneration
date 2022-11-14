@@ -6,12 +6,6 @@ using System.Collections.Generic;
 public class GameUI : PlayerManager
 {
     //------------------クールタイム表示------------------
-    //移動クールタイム表示
-    [SerializeField] private Image moveDisplay = null; //表示先
-    private int moveCurrentTime = 0;　//現在の時間
-    public int MoveCurrentTime { set { moveCurrentTime = value; } }　//現在の時間のセッター
-    private int moveCooltime = 0;　//クールタイム
-    public int MoveCooltime { set { moveCooltime = value; } }　//クールタイムのセッター
 
     //回避クールタイム表示
     [SerializeField] private Image avoidDisplay = null;
@@ -19,13 +13,6 @@ public class GameUI : PlayerManager
     public int AvoidCurrentTime { set { avoidCurrentTime = value; } }
     private int avoidCooltime = 0;
     public int AvoidCooltime { set { avoidCooltime = value; } }
-
-    //スキルクールタイム表示
-    [SerializeField] private Image skillDisplay = null;
-    private int skillCurrentTime = 0;
-    public int SkillCurrentTime { set { skillCurrentTime = value; } }
-    private int skillCooltime = 0;
-    public int SkillCooltime { set { skillCooltime = value; } }
 
     //------------------ゲージ表示------------------
     private float displaySpeed = 80f;　//変化のスピード
@@ -51,12 +38,13 @@ public class GameUI : PlayerManager
     [SerializeField] private Sprite[] visualSprite = null; // キャラのスプライト
     [SerializeField] private Color[] hpColor = null; // HPのカラー
     //HPの基準
-    private const float HIGH = 0.75f;   // 高い
+    private const float HIGH = 0.5f;   // 高い
     private const float DEFAULT = 0.5f; // 普通
     private const float LOW = 0.25f;    // 低い
-    private enum EMOTE { HIGH, DEFAULT, LOW }
+    private enum EMOTE { HIGH, MEDIUM, LOW }
 
     private int type = -1;
+    int hpIndex = 0;
 
     void Update()
     {
@@ -66,9 +54,7 @@ public class GameUI : PlayerManager
     private void DisplayUI()
     {
         //クールタイムのパーセントを計算、表示
-        moveDisplay.fillAmount = (float)moveCurrentTime / moveCooltime;
         avoidDisplay.fillAmount = (float)avoidCurrentTime / avoidCooltime;
-        skillDisplay.fillAmount = (float)skillCurrentTime / skillCooltime;
 
         //ゲージの計算
         evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displaySpeed * Time.unscaledDeltaTime);
@@ -82,13 +68,25 @@ public class GameUI : PlayerManager
     private void DisplayVisual(float per)
     {
         if (type == -1) type = playerController.Type;
-        int index = 0;
-        if (per > HIGH) index = (int)EMOTE.HIGH;
-        else if (per > DEFAULT) index = (int)EMOTE.DEFAULT;
-        else if (per < LOW) index = (int)EMOTE.LOW;
 
-        visual.sprite = visualSprite[type * 3 + index];
-        hpDisplay.color = hpColor[index];
+        if (per >= HIGH)
+        {
+            if(hpIndex != (int)EMOTE.HIGH) StartCoroutine(MessageManager.instance.DisplayMessage("大丈夫！？まだやれるかい？"));
+            hpIndex = (int)EMOTE.HIGH;
+        }
+        else if (per < HIGH)
+        {
+            if(hpIndex != (int)EMOTE.MEDIUM) StartCoroutine(MessageManager.instance.DisplayMessage("怪我してるよ！気を付けて！"));
+            hpIndex = (int)EMOTE.MEDIUM;
+        }
+        else if (per < LOW)
+        {
+            if(hpIndex != (int)EMOTE.LOW) StartCoroutine(MessageManager.instance.DisplayMessage("これ以上はまずいよ！"));
+            hpIndex = (int)EMOTE.LOW;
+        }
+
+        visual.sprite = visualSprite[type * 3 + hpIndex];
+        hpDisplay.color = hpColor[hpIndex];
 
     }
 

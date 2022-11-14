@@ -136,7 +136,7 @@ public class CharacterSelectManager : MonoBehaviour
     private IEnumerator AllowOperate()
     {
         canOperate = false;
-        for(int i = 0; i < 12; i++)
+        for(int i = 0; i < 10; i++)
         {
             yield return null;
         }
@@ -148,6 +148,7 @@ public class CharacterSelectManager : MonoBehaviour
     public void LoadMainGame()
     {
         Debug.Log((int)currentCharacter);
+        canOperate = false;
         SceneManager.sceneLoaded += GameSceneLoaded;
         LoadManager.instance.LoadScene("50_MainGame");
     }
@@ -285,7 +286,7 @@ public class CharacterSelectManager : MonoBehaviour
         weaponIcon.sprite = weaponIconSprite[current];
 
         //
-        score.text = int.Parse(scoreDatas[current][(int)SCORE.VALUE]).ToString("000000000");
+        score.text = int.Parse(scoreDatas[current][(int)SCORE.VALUE]).ToString("0000000");
         int rank = 0;
         switch (scoreDatas[current][(int)SCORE.RANK])
         {

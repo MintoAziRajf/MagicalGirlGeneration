@@ -22,7 +22,7 @@ public class GameOverCanvas : MonoBehaviour
 
     [SerializeField] private GameObject[] buttonsOutline = null;
 
-    private const int INPUT_DELAY = 20;
+    private const int INPUT_DELAY = 10;
     private int currentSelect = 0;
     private enum MENU
     {
@@ -57,6 +57,7 @@ public class GameOverCanvas : MonoBehaviour
             }
             if (Input.GetButtonDown("Submit"))
             {
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
                 isSelected = true;
             }
             for(int i = 0; i < buttonsOutline.Length; i++)

@@ -316,6 +316,7 @@ public class EnemyManager : MonoBehaviour
         }
         //
         currentEnemy++;
+        gameManager.AddScore(currentEnemy * 100000);
         switch (currentEnemy)
         {
             case 0:
@@ -351,6 +352,7 @@ public class EnemyManager : MonoBehaviour
 
     private void EndGame()
     {
+        StartCoroutine(MessageManager.instance.DisplayMessage("よく世界を救ったね！"));
         StartCoroutine(gameManager.GameClear());
     }
 

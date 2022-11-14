@@ -21,7 +21,7 @@ public class HealEffect : MonoBehaviour
         for(int i = 0; i < 20; i++)
         {
             stars.Add(Instantiate(_star, this.gameObject.transform));
-            stars[i].GetComponent<HealGather>().SetTarget(target, (90f - 18f * i) * Mathf.Deg2Rad, 360f/20f); 
+            stars[i].GetComponent<HealGather>().SetTarget(target); 
         }
     }
 } 

@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerSkill : PlayerManager
 {
     private int maxTiles = 4;//スキルタイルの最大枚数
+    public int MaxTiles { set { maxTiles = value; } }
     private int currentTiles = 0;//現在の枚数
     private const int SKILL_COOLTIME = 600;//スキルタイル再生成までの時間(フレーム)
     private int time = 0; //クールタイム計算用
@@ -19,14 +20,8 @@ public class PlayerSkill : PlayerManager
         }
     }
 
-    private void Start()
-    {
-        gameUI.SkillCooltime = SKILL_COOLTIME;
-    }
-
     private void FixedUpdate()
     {
-        gameUI.SkillCurrentTime = time;
         //変身中、タイルが残っていない
         bool canGenerate = isEvo && currentTiles == 0;
         if (canGenerate)
