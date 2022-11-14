@@ -27,7 +27,7 @@ namespace NTitleController
         // Start is called before the first frame update
         protected virtual void Start()
         {
-           
+            SoundManager.instance.PlayBGM(SoundManager.BGM_Type.Title);
             getHorizontalValue = 0f;
             decisionGameStart.SetActive(true);
             decisionEXIT.SetActive(false);
@@ -70,6 +70,7 @@ namespace NTitleController
             {
                 checkIf = false;
                 LoadManager.instance.LoadScene("30_CharacterSelect");
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             }
 
             if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf)

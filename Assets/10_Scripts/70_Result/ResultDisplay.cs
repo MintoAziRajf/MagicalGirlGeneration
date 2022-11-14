@@ -14,26 +14,28 @@ public class ResultDisplay : MonoBehaviour
     public int debugType = 0;
 
     [SerializeField] private Text scoreText = null;
-    [SerializeField] private Text rankText = null;
 
-    [SerializeField] private Image titleImage = null;
-    [SerializeField] private Sprite[] titleSprite = null;
-    [SerializeField] private Image baseImage = null;
-    [SerializeField] private Sprite[] baseSprite = null;
-    [SerializeField] private Image characterImage = null;
-    [SerializeField] private Sprite[] characterSprite = null;
-    [SerializeField] private Image highscoreImage = null;
-    [SerializeField] private Sprite[] highscoreSprite = null;
-    [SerializeField] private Image boardImage = null;
-    [SerializeField] private Sprite[] boardSprite = null;
+    [System.Serializable]
+    private class UIData
+    {
+        [SerializeField, Header("表示先")]
+        public Image displayImage = null;
+        [SerializeField, Header("赤、青、黄")]
+        public Sprite[] displaySprite = null;
+    }
+    [SerializeField, Header("キャラに応じてUIを表示")]
+    private List<UIData> uiData = new List<UIData>();
+
+    [SerializeField] private Image rankIconImage = null;
+    [SerializeField] private Sprite[] rankIconSprite = null;
+    [SerializeField] private Image rankImage = null;
+    [SerializeField] private Sprite[] rankSprite = null;
 
     private string scoreString;
-    private string rankString;
 
     private void Awake()
     {
         scoreText.text = "";
-        rankText.text = "";
         resultSave = this.GetComponent<ResultSave>();
         anim = this.GetComponent<Animator>();
         if (isDebug) DisplayResult(debugType, debugScore);
@@ -42,13 +44,14 @@ public class ResultDisplay : MonoBehaviour
     public void DisplayResult(int type, int score)
     {
         bool isHighscore = score > resultSave.Highscore(type);
-        titleImage.sprite = titleSprite[type];
-        baseImage.sprite = baseSprite[type];
-        characterImage.sprite = characterSprite[type];
-        boardImage.sprite = boardSprite[type];
-        highscoreImage.sprite = highscoreSprite[type];
-       scoreString = score.ToString("000000000");
-        rankString = resultSave.Rank(score);
+        foreach (UIData data in uiData)
+        {
+            data.displayImage.sprite = data.displaySprite[type];
+        }
+        int rank = resultSave.RankInt(score);
+        rankIconImage.sprite = rankIconSprite[rank];
+        rankImage.sprite = rankSprite[rank];
+        scoreString = score.ToString("0000000");
 
         anim.SetTrigger("ResultStart");
         anim.SetBool("isHighscore", isHighscore);
@@ -60,6 +63,7 @@ public class ResultDisplay : MonoBehaviour
     public IEnumerator DisplayScore()
     {
         string str = scoreString;
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.DramRoll);
         for (int i = 0; i < str.Length; i++)
         {
             scoreDisplay.Append(RandomNum(str.Length - i));
@@ -100,5 +104,10 @@ public class ResultDisplay : MonoBehaviour
     public void InactiveResult()
     {
         this.gameObject.SetActive(false);
+    }
+
+    public void PlaySE()
+    {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Highscore);
     }
 }

@@ -28,7 +28,6 @@ public class CutIn : PlayerManager
         else damageAnim.SetTrigger("Attack");
 
         yield return StartCoroutine(WaitAnim(ATTACK_COOLTIME));
-        StartCoroutine(MessageManager.instance.DisplayMessage("ナイス攻撃！"));
     }
 
 

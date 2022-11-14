@@ -9,15 +9,10 @@ public class HealGather : MonoBehaviour
     private Vector3 _targetPos;
     private float _period = 1f;
     private bool _isStart = false;
-    private float _radius = 0f;
-    private float _angle = 0f;
-    private Vector3 _diff;
     private float speed = 50f;
-    public void SetTarget(Vector3 pos, float angle, float radius)
+    public void SetTarget(Vector3 pos)
     {
-        _radius = radius;
         _targetPos = pos;
-        _angle = angle;
         AwakeScript();
     }
 
@@ -33,7 +28,7 @@ public class HealGather : MonoBehaviour
     {
         if (!_isStart) return;
         var acceleration = Vector3.zero;
-        _diff = _targetPos - _position;
+        Vector3 _diff = _targetPos - _position;
         acceleration += (_diff - _velocity * _period) * 2f / (_period * _period);
 
         _period -= Time.deltaTime;
@@ -50,7 +45,9 @@ public class HealGather : MonoBehaviour
 
     private void CircleVelocity()
     {
-        _velocity = new Vector3(_radius * Mathf.Cos(_angle), _radius * Mathf.Sin(_angle), 0f);
+        float angle = Random.Range(0f, 360f);
+        float radius = Random.Range(10f, 15f);
+        _velocity = new Vector3(radius * Mathf.Cos(angle), radius * Mathf.Sin(angle), 0f);
         //Debug.Log(_velocity);
     }
 }

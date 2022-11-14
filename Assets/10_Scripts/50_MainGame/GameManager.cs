@@ -99,6 +99,7 @@ public class GameManager : MonoBehaviour
     private const int COUNTDOWN_TIME = 180; //3秒
     public IEnumerator StartCountDown()
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.CountDown);
         Time.timeScale = 0f;
         countDownObj.SetActive(true);
         for (int i = 0; i < COUNTDOWN_TIME; i++) yield return null;
@@ -119,8 +120,8 @@ public class GameManager : MonoBehaviour
             yield return StartCoroutine(Tutorial()); // isTutorialがTrueならチュートリアルを開始する
             yield break;
         }
-        yield return StartCoroutine(StartCountDown()); //カウントダウンを始める
         SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_01);
+        yield return StartCoroutine(StartCountDown()); //カウントダウンを始める
         playerController.IsStart = true; // playerとenemyを動かす
         enemyManager.IsStart = true;
         enemyManager.StartAttack();

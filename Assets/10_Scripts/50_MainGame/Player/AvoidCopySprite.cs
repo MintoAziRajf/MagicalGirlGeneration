@@ -8,7 +8,7 @@ public class AvoidCopySprite : MonoBehaviour
     private SpriteRenderer myVisual;
     private void FixedUpdate()
     {
-        if (playerVisual == null) playerVisual = GameObject.Find("PlayerVisual").GetComponent<SpriteRenderer>();
+        if (playerVisual == null) playerVisual = GameObject.FindWithTag("Player").transform.Find("PlayerVisual").GetComponent<SpriteRenderer>();
         if (myVisual == null) myVisual = this.GetComponent<SpriteRenderer>();
         myVisual.sprite = playerVisual.sprite;
     }

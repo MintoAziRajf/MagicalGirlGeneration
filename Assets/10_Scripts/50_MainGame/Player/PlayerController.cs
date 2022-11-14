@@ -114,9 +114,9 @@ public class PlayerController : PlayerManager
     private bool isInvincible = false;
     private enum INVINCIBLE
     {
-        ATTACK = 25,
+        ATTACK = 15,
         SKILL = 120,
-        COUNTER = 40,
+        COUNTER = 50,
         DAMAGE = 30
     }
     private float invincibleTime = 0f;
@@ -144,10 +144,10 @@ public class PlayerController : PlayerManager
     {
         MOVE = 50,
         SKILL_ORB = 100,
-        COUNTER = 5000,
+        COUNTER = 30000,
         SKILL = 10000,
         HEAL = 500,
-        ATTACK = 61,
+        ATTACK = 77,
         EVOLUTION = 2000
     }
     // スコアの追加方法
@@ -206,9 +206,9 @@ public class PlayerController : PlayerManager
     /// <param name="time">何フレーム持続させるか</param>
     private IEnumerator Invincible(int time)
     {
-        isInvincible = true;
         for(int i = 0; i < time; i++)
         {
+            isInvincible = true;
             yield return new WaitForSeconds(1f / 60f);
         }
         isInvincible = false;
@@ -220,11 +220,11 @@ public class PlayerController : PlayerManager
     /// </summary>
     private void InputDirection()
     {
-        bool avoid = Input.GetKey(KeyCode.Space) && canAvoid && isEvo;
-        bool up = Input.GetKey(KeyCode.W) && currentY > LIMIT_MIN;
-        bool down = Input.GetKey(KeyCode.S) && currentY < LIMIT_MAX;
-        bool left = Input.GetKey(KeyCode.A) && currentX > LIMIT_MIN;
-        bool right = Input.GetKey(KeyCode.D) && currentX < LIMIT_MAX;
+        bool avoid = Input.GetButton("Submit") && canAvoid && isEvo;
+        bool up = Input.GetAxis("Vertical") == 1f && currentY > LIMIT_MIN;
+        bool down = Input.GetAxis("Vertical") == -1f && currentY < LIMIT_MAX;
+        bool left = Input.GetAxis("Horizontal") == -1f && currentX > LIMIT_MIN;
+        bool right = Input.GetAxis("Horizontal") == 1f && currentX < LIMIT_MAX;
 
         if (avoid)
         {
@@ -308,6 +308,7 @@ public class PlayerController : PlayerManager
     /// <param name="direction">方向</param>
     private void Move(int direction)
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Move); // SE
         gameManager.AddScore((int)SCORE.MOVE); //スコア追加
         targetPos = targetPos + MOVE[direction]; // 移動先を設定
         evolution.Increase("Move"); // 変身ゲージを増やす
@@ -321,11 +322,9 @@ public class PlayerController : PlayerManager
     private IEnumerator MoveDelay()
     {
         isMove = true; //移動中
-        gameUI.MoveCurrentTime = 0;
         for (int i = 0; i < moveCooltime; i++) //クールタイム分待機
         {
             if(i == moveCooltime / 2) collisionManager.PlayerMoved(currentX, currentY); //コリジョンマネージャーに移動先を送る
-            gameUI.MoveCurrentTime = i; //DebugUI
             yield return new WaitForSeconds(1f / 60f); // １フレーム待機
         }
         isMove = false;//移動終了
@@ -351,6 +350,11 @@ public class PlayerController : PlayerManager
         gameUI.AvoidCurrentTime = 0; // 回避クールタイム
         for (int i = 1; i <= AVOID_COOLTIME; i++) //クールタイム分待機
         {
+            if (!isEvo)
+            {
+                gameUI.AvoidCurrentTime = 0;
+                yield break;
+            }
             gameUI.AvoidCurrentTime = i; // クールタイム
             yield return null;
         }
@@ -372,6 +376,7 @@ public class PlayerController : PlayerManager
             yield break;
         }
         gameManager.AddScore((int)SCORE.COUNTER); // スコア追加
+        Healed(); // 回復
         StartCoroutine(Invincible((int)INVINCIBLE.COUNTER)); // カットイン中無敵にする
         enemyManager.StopAttack(); // 敵の攻撃を止める
         yield return StartCoroutine(cutIn.CounterAttack()); // カウンター攻撃のカットイン
@@ -429,7 +434,7 @@ public class PlayerController : PlayerManager
         currentY = BACK_LINE[attackType];
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = targetPos + ATTACK_MOVE[attackType];
-        
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Move);
         // 移動先のタイルを判定
         CheckTile();
     }
@@ -492,7 +497,6 @@ public class PlayerController : PlayerManager
     /// </summary>
     private void RemoveHealGrid()
     {
-        healEffect.StartEffect();
         Destroy(displayGrid[currentX + currentY * 3].transform.Find("HealOrb(Clone)").gameObject); // 回復タイルの見た目を削除
         healGrid[currentX, currentY] = false; // 回復タイルのタイルを削除
         healPos = -1;
@@ -521,9 +525,10 @@ public class PlayerController : PlayerManager
     /// ダメージメソッド
     /// </summary>
     /// <param name="value">ダメージ量</param>
-    public void Damaged(int value)
+    public IEnumerator Damaged(int value)
     {
-        if (isInvincible) return;
+        yield return new WaitForSeconds(1f / 60f);
+        if (isInvincible) yield break;
         playerHP.Damaged(value);
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged);
         StartCoroutine(Invincible((int)INVINCIBLE.DAMAGE));
@@ -534,6 +539,8 @@ public class PlayerController : PlayerManager
     private void Healed()
     {
         playerHP.Heal();
+        healEffect.StartEffect();
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.HealOrb);
         gameManager.AddScore((int)SCORE.HEAL);
     }
     //--------------------------------------------------------------
@@ -552,6 +559,7 @@ public class PlayerController : PlayerManager
     }
     private void RemoveSkillGrid()
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb);
         gameManager.AddScore((int)SCORE.SKILL_ORB); // スコア追加
         skillEffect.StartEffect();
         skillGrid[currentX, currentY] = false; // 該当のスキルタイルを削除
@@ -567,6 +575,7 @@ public class PlayerController : PlayerManager
     public IEnumerator Skill()
     {
         isSkill = true; // スキル開始
+       
         yield return new WaitUntil(() => !isAttack && !isCounter); // 通常攻撃とカウンターが終わるのを待つ
         // 敵が途中で倒されたらメソッド終了
         if (!enemyAlive)
@@ -608,11 +617,11 @@ public class PlayerController : PlayerManager
     private void Initialize()
     {
         InitTiles();
+        skillEffect = skillEffectObj.GetComponent<HealEffect>();
         if (isTutorial) return;
         SetUI();
         SetAttackTile();
         healEffect = healEffectObj.GetComponent<HealEffect>();
-        skillEffect = skillEffectObj.GetComponent<HealEffect>();
     }
 
     private void InitTiles()
@@ -637,8 +646,6 @@ public class PlayerController : PlayerManager
 
     private void SetUI()
     {
-        gameUI.MoveCooltime = moveCooltime;
-        gameUI.MoveCurrentTime = moveCooltime;
         gameUI.AvoidCooltime = AVOID_COOLTIME;
     }
     private IEnumerator StartSerif()

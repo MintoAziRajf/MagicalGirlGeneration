@@ -13,6 +13,7 @@ public class EnemySkillList : MonoBehaviour
     [SerializeField] private GameObject beamObj = null;
     [SerializeField] private GameObject lightningObj = null;
     [SerializeField] private GameObject stoneObj = null;
+    [SerializeField] private GameObject iceObj = null;
     [SerializeField] private GameObject enemyAttacks = null;
 
     //---------コンストラクタ------------
@@ -47,15 +48,16 @@ public class EnemySkillList : MonoBehaviour
     }
     public IEnumerator Attack(int type, int x, int y, int damage)
     {
+        //StartCoroutine(PlaySE());
         switch (type)
         {
             case (int)ATTACK.BOMB:
                 yield return StartCoroutine(Bomb(x, y, damage));
                 break;
             case (int)ATTACK.LIGHTNING:
-                StartCoroutine(AttackEffect(0, y, damage, beamObj));
-                StartCoroutine(AttackEffect(1, y, damage, beamObj));
-                yield return StartCoroutine(AttackEffect(2, y, damage, beamObj));
+                StartCoroutine(AttackEffect(0, y, damage, lightningObj));
+                StartCoroutine(AttackEffect(1, y, damage, lightningObj));
+                yield return StartCoroutine(AttackEffect(2, y, damage, lightningObj));
                 break;
             case (int)ATTACK.BEAM:
                 StartCoroutine(AttackEffect(x, 0, damage, beamObj));
@@ -94,25 +96,29 @@ public class EnemySkillList : MonoBehaviour
                 {
                     for (int i = y; i <= 2; i++)
                     {
-                        StartCoroutine(AttackEffect(x, i, damage, stoneObj));
+                        StartCoroutine(AttackEffect(x, i, damage, iceObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
                 else Debug.Log("Error");
                 break;
             case (int)ATTACK.ALL:
-                for(int i = 0; i < 8; i++)
-                {
-                    StartCoroutine(AttackEffect(i%3, i/3, damage, lightningObj));
-                }
-                yield return StartCoroutine(AttackEffect(2, 2, damage, lightningObj));
+                StartCoroutine(MessageManager.instance.DisplayMessage("敵の大技がくるよ！気を付けて！"));
+                yield return StartCoroutine(UltEffect(damage));
                 break;
             default:
                 yield return null;
                 break;
         }
     }
-
+    private IEnumerator PlaySE()
+    {
+        for(int i = 0; i< MARK_LIFETIME; i++)
+        {
+            yield return new WaitForSeconds(1f / 60f);
+        }
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.EnemyAttack);
+    }
     private IEnumerator Bomb(int x, int y, int damage)
     {
         int index = x + y * 3;
@@ -128,7 +134,7 @@ public class EnemySkillList : MonoBehaviour
     {
         int index = x + y * 3;
         yield return StartCoroutine(DisplayDangerZone(x, y));
-        GameObject effect = Instantiate(effectPrefab, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        GameObject effect = Instantiate(effectPrefab, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         StartCoroutine(collisionManager.DamageGrid(x, y, damage, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
@@ -136,10 +142,33 @@ public class EnemySkillList : MonoBehaviour
         Destroy(effect.gameObject);
     }
 
+    [SerializeField] private GameObject ultMark = null;
+    [SerializeField] private GameObject ultEffectPrefab = null;
+    private IEnumerator UltEffect(int damage)
+    {
+        int index = 4; // 中心
+        yield return StartCoroutine(DisplayUltZone());
+        GameObject effect = Instantiate(ultEffectPrefab, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+        yield return StartCoroutine(WaitFrame(OMEN_TIME));
+        for(int i = 0; i < 9; i++)
+        {
+            StartCoroutine(collisionManager.DamageGrid(i%3, i/3, damage, DAMAGE_LIFETIME));
+        }
+        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
+        yield return StartCoroutine(WaitFrame(FADE_TIME));
+        Destroy(effect.gameObject);
+        IEnumerator DisplayUltZone()
+        {
+            GameObject mark = Instantiate(ultMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+            yield return StartCoroutine(WaitFrame(MARK_LIFETIME * 3));
+            Destroy(mark.gameObject);
+        }
+    }
+
     private IEnumerator DisplayDangerZone(int x, int y)
     {
         int index = x + y * 3;
-        GameObject mark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        GameObject mark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
         yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
         Destroy(mark.gameObject);
     }
@@ -155,13 +184,13 @@ public class EnemySkillList : MonoBehaviour
     private GameObject tutorialMark;
     public IEnumerator Tutorial(int index)
     {
-        tutorialMark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        tutorialMark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
         yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
     }
     public IEnumerator TutorialEnd(int index)
     {
         Destroy(tutorialMark);
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyGrid[index].transform);
+        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(FADE_TIME));
