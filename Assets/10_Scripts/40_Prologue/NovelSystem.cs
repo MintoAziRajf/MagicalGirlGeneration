@@ -27,11 +27,12 @@ public class NovelSystem : MonoBehaviour
     private string mainString = null; //本文
 
     //const
-    private const int START_ANIMATION = 20;
-    private const int END_ANIMATION = 20;
+    private const int START_ANIMATION = 30;
+    private const int END_ANIMATION = 30;
 
     //
     private bool isLoad = false;
+    private bool isStart = false;
 
     //csvData
     private string csvName = null;  //使用するCSVの名前
@@ -68,6 +69,7 @@ public class NovelSystem : MonoBehaviour
             yield return null;
         }
         StartCoroutine(DisplaySentence());
+        isStart = true;
         //全文表示するまで待つ
         yield return new WaitUntil(() => current >= novelDatas.Count);
         anim.SetTrigger("End");
@@ -80,6 +82,8 @@ public class NovelSystem : MonoBehaviour
 
     private void Update()
     {
+        if (!isStart) return;
+
         //ノベルシーンをスキップする
         if (Input.GetButtonDown("Cancel"))
         {
