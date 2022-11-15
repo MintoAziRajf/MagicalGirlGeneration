@@ -51,7 +51,7 @@ public class EnemyUI : MonoBehaviour
             StartCoroutine(MessageManager.instance.DisplayMessage("あと少しだ頑張れ！"));
             isFirst = false;
         }
-        hpTextDisplay.text = hpDisplayGauge.ToString("F0");
+        hpTextDisplay.text = "- " +hpDisplayGauge.ToString("F0") + " -";
     }
 
     [SerializeField] private float magnitude = 0f;

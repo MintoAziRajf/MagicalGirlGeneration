@@ -154,7 +154,6 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void GameOver()
     {
-        SoundManager.instance.PlayBGM(SoundManager.BGM_Type.GameOver);
         gameOverCanvas.SetActive(true);
     }
 

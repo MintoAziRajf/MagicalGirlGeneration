@@ -122,14 +122,22 @@ public class CharacterSelectManager : MonoBehaviour
         if (submit)
         {
             anim.SetTrigger("Submit");
+            StartCoroutine(ResetTrigger("Submit"));
             SoundManager.instance.PlaySE(SoundManager.SE_Type.CS_Submit);
             StartCoroutine(AllowOperate());
         }
         else if (cancel)
         {
             anim.SetTrigger("Cancel");
+            StartCoroutine(ResetTrigger("Cancel"));
             StartCoroutine(AllowOperate());
         }
+    }
+
+    private IEnumerator ResetTrigger(string s)
+    {
+        yield return null;
+        anim.ResetTrigger(s);
     }
 
     private IEnumerator AllowOperate()

@@ -20,7 +20,7 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public Evolution evolution;
     [HideInInspector] public GameUI gameUI;
     [HideInInspector] public CutIn cutIn;
-
+    [HideInInspector] public AudienceAnimation audienceAnimation;
     [HideInInspector] public Animator visualAnim;
 
     public void Awake()
@@ -39,6 +39,7 @@ public class PlayerManager : MonoBehaviour
         evolution = this.GetComponent<Evolution>();
         gameUI = this.GetComponent<GameUI>();
         cutIn = this.GetComponent<CutIn>();
+        audienceAnimation = this.GetComponent<AudienceAnimation>();
 
         visualAnim = this.GetComponent<Animator>();
     }

@@ -115,6 +115,11 @@ public class NovelSystem : MonoBehaviour
     //文を表示
     private IEnumerator DisplaySentence()
     {
+        if(current >= novelDatas.Count)
+        {
+            isStart = false;
+            yield break;
+        }
         ImportSentenceDatas();
         DisplayVisual();
 

@@ -48,15 +48,16 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         CountDown,
         Pause,
         EnemyAttack,
-        Move
+        Move,
+        Warning
     }
 
     // クロスフェード時間
     public const float CROSS_FADE_TIME = 0f;
 
     // ボリューム関連
-    private float BGM_Volume = 0.1f;
-    private float SE_Volume = 0.2f;
+    private float BGM_Volume = 0.05f;
+    private float SE_Volume = 0.05f;
 
     // AudioClip
     public AudioClip[] BGM_Clips;
@@ -205,6 +206,12 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         // 再生中ではないAudioSouceをつかってSEを鳴らす
         foreach (AudioSource source in SE_Sources)
         {
+            if(source.clip == SE_Clips[index])
+            {
+                source.clip = SE_Clips[index];
+                source.Play();
+                return;
+            }
             if (false == source.isPlaying)
             {
                 source.clip = SE_Clips[index];
