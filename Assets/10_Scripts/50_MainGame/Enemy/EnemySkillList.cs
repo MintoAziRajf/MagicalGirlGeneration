@@ -21,6 +21,7 @@ public class EnemySkillList : MonoBehaviour
     private const int MARK_LIFETIME = 20;
     private const int DAMAGE_LIFETIME = 5;
     private const int FADE_TIME = 5;
+    private const int ULT_TIME = 5;
 
     private const int SPIKE_DELAY = 10;
 
@@ -88,7 +89,7 @@ public class EnemySkillList : MonoBehaviour
                 {
                     for (int i = y; i >= 0; i--)
                     {
-                        StartCoroutine(AttackEffect(x, i, damage, stoneObj));
+                        StartCoroutine(AttackEffect(x, i, damage, iceObj));
                         yield return StartCoroutine(WaitFrame(SPIKE_DELAY));
                     }
                 }
@@ -103,7 +104,7 @@ public class EnemySkillList : MonoBehaviour
                 else Debug.Log("Error");
                 break;
             case (int)ATTACK.ALL:
-                StartCoroutine(MessageManager.instance.DisplayMessage("敵の大技がくるよ！気を付けて！"));
+                StartCoroutine(MessageManager.instance.DisplayMessage("敵の大技がくるよ！\n気を付けて！"));
                 yield return StartCoroutine(UltEffect(damage));
                 break;
             default:
@@ -146,19 +147,25 @@ public class EnemySkillList : MonoBehaviour
     [SerializeField] private GameObject ultEffectPrefab = null;
     private IEnumerator UltEffect(int damage)
     {
-        int index = 4; // 中心
+        List<GameObject> effects = new List<GameObject>();
         yield return StartCoroutine(DisplayUltZone());
-        GameObject effect = Instantiate(ultEffectPrefab, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+        for (int i = 0; i < 9; i++)
+        {
+            effects.Add(Instantiate(ultEffectPrefab, enemyGrid[i].transform.position, enemyGrid[i].transform.rotation, enemyAttacks.transform));
+        }
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
         for(int i = 0; i < 9; i++)
         {
             StartCoroutine(collisionManager.DamageGrid(i%3, i/3, damage, DAMAGE_LIFETIME));
         }
-        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
-        yield return StartCoroutine(WaitFrame(FADE_TIME));
-        Destroy(effect.gameObject);
+        yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME + FADE_TIME+ULT_TIME));
+        foreach(GameObject effect in effects)
+        {
+            Destroy(effect.gameObject);
+        }
         IEnumerator DisplayUltZone()
         {
+            int index = 4; // 中心
             GameObject mark = Instantiate(ultMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
             yield return StartCoroutine(WaitFrame(MARK_LIFETIME * 3));
             Destroy(mark.gameObject);

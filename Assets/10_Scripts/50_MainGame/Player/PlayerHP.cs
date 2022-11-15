@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerHP : PlayerManager
-{   
-    private void Update()
-    {
-        gameUI.CurrentHP = hp;
-    }
-
+{
     private int hp = 0; //現在のヒットポイント
     private int minHP = 0; //最小値
     private int maxHP = 0; //現在の最大値
@@ -42,6 +37,11 @@ public class PlayerHP : PlayerManager
         }
     }
 
+    private void Update()
+    {
+        gameUI.CurrentHP = hp;
+    }
+
     public void Damaged(int value)
     {
         hp = Mathf.Max(hp - value, minHP);
@@ -52,8 +52,9 @@ public class PlayerHP : PlayerManager
         if (hp == minHP)
         {
             //dead
-            Debug.Log("死にました。");
+            StartCoroutine(MessageManager.instance.DisplayMessage("仕方ない一回撤退だ！"));
             gameManager.StopGame();
+            SoundManager.instance.PlayBGM(SoundManager.BGM_Type.GameOver);
             StartCoroutine(playerDeadAnimation.StartAnimation());
         }
     }
@@ -62,17 +63,17 @@ public class PlayerHP : PlayerManager
     {
         if (hp <= HIGH && hpColor == (int)HP_COLOR.HIGH)
         {
-            StartCoroutine(MessageManager.instance.DisplayMessage("大丈夫！？まだやれるかい？"));
+            StartCoroutine(MessageManager.instance.DisplayMessage("大丈夫！？\nまだやれるかい？"));
             hpColor = (int)HP_COLOR.MEDIUM;
         }
         else if (hp <= MEDIUM && hpColor == (int)HP_COLOR.MEDIUM)
         {
-            StartCoroutine(MessageManager.instance.DisplayMessage("怪我してるよ！気を付けて！"));
+            StartCoroutine(MessageManager.instance.DisplayMessage("怪我してるよ！\n気を付けて！"));
             hpColor = (int)HP_COLOR.LOW;
         }
         else if (hp <= LOW && hpColor == (int)HP_COLOR.LOW)
         {
-            StartCoroutine(MessageManager.instance.DisplayMessage("怪我してるよ！気を付けて！"));
+            StartCoroutine(MessageManager.instance.DisplayMessage("これ以上はまずいよ！"));
             hpColor = (int)HP_COLOR.LOWEST;
         }
         gameUI.HPColorType = hpColor;

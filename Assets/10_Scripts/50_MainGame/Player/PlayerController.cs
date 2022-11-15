@@ -115,9 +115,9 @@ public class PlayerController : PlayerManager
     private enum INVINCIBLE
     {
         ATTACK = 15,
-        SKILL = 120,
-        COUNTER = 50,
-        DAMAGE = 30
+        CUTIN = 60,
+        COUNTER = 30,
+        DAMAGE = 20
     }
     private float invincibleTime = 0f;
     //-----------ゲームのスタートフラグ----------
@@ -221,10 +221,10 @@ public class PlayerController : PlayerManager
     private void InputDirection()
     {
         bool avoid = Input.GetButton("Submit") && canAvoid && isEvo;
-        bool up = Input.GetAxis("Vertical") == 1f && currentY > LIMIT_MIN;
-        bool down = Input.GetAxis("Vertical") == -1f && currentY < LIMIT_MAX;
-        bool left = Input.GetAxis("Horizontal") == -1f && currentX > LIMIT_MIN;
-        bool right = Input.GetAxis("Horizontal") == 1f && currentX < LIMIT_MAX;
+        bool up = Input.GetAxis("Vertical") >= 0.5f && currentY > LIMIT_MIN;
+        bool down = Input.GetAxis("Vertical") <= -0.5f && currentY < LIMIT_MAX;
+        bool left = Input.GetAxis("Horizontal") <= -0.5f && currentX > LIMIT_MIN;
+        bool right = Input.GetAxis("Horizontal") >= 0.5f && currentX < LIMIT_MAX;
 
         if (avoid)
         {
@@ -356,7 +356,7 @@ public class PlayerController : PlayerManager
                 yield break;
             }
             gameUI.AvoidCurrentTime = i; // クールタイム
-            yield return null;
+            yield return new WaitForSeconds(1f / 60f);
         }
         StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！")); // メッセージ表示
         canAvoid = true; // 回避できるようにする
@@ -512,6 +512,7 @@ public class PlayerController : PlayerManager
     private IEnumerator WaitAnim(string s)
     {
         isAnim = true; // アニメーション中
+        StartCoroutine(Invincible((int)INVINCIBLE.CUTIN)); // カットイン中無敵にする
         enemyManager.StopAttack(); // エネミーの攻撃を停止
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Evolution); // 効果音
         yield return cutIn.StartCoroutine(s); // アニメーション
@@ -559,9 +560,10 @@ public class PlayerController : PlayerManager
     }
     private void RemoveSkillGrid()
     {
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb);
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb); // 効果音
+        audienceAnimation.StartAnimation(); // 観客のアニメーションを変更する
         gameManager.AddScore((int)SCORE.SKILL_ORB); // スコア追加
-        skillEffect.StartEffect();
+        skillEffect.StartEffect(); // スキルオーブの取得エフェクトを再生
         skillGrid[currentX, currentY] = false; // 該当のスキルタイルを削除
         Destroy(displayGrid[currentX + currentY * 3].transform.Find("SkillOrb(Clone)").gameObject); // スキルオーブのエフェクトを削除
         playerSkill.RemoveTile(); // スキルメソッドにスキルタイルを削除したことを伝える
@@ -584,7 +586,7 @@ public class PlayerController : PlayerManager
             yield break; 
         }
         gameManager.AddScore((int)SCORE.SKILL); // スコア追加
-        StartCoroutine(Invincible((int)INVINCIBLE.SKILL)); // カットイン中無敵にする
+        StartCoroutine(Invincible((int)INVINCIBLE.CUTIN)); // カットイン中無敵にする
         enemyManager.StopAttack(); // 敵の攻撃を止める
         yield return StartCoroutine(cutIn.Skill()); // スキルのカットインが終わるのを待つ
         enemyManager.StartAttack(); // 敵の攻撃を再開

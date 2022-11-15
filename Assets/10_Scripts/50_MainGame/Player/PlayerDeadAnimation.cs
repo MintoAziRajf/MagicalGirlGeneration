@@ -10,9 +10,9 @@ public class PlayerDeadAnimation : PlayerManager
 
     public IEnumerator StartAnimation()
     {
-        //visualAnim.SetTrigger("Dead");
+        visualAnim.SetTrigger("Dead");
         //StartCoroutine(BackgroundFade());
-        //yield return StartCoroutine(CameraZoomIn());
+        yield return StartCoroutine(CameraZoomIn());
         gameManager.GameOver();
         yield break;
     }
@@ -35,7 +35,11 @@ public class PlayerDeadAnimation : PlayerManager
         float diff = (mainCamera.transform.localPosition - targetPos).magnitude;
         for (int i = 0; i < 60; i++)
         {
-            mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, targetPos, diff / 60f);
+            //mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, targetPos, diff / 60f);
+            yield return null;
+        }
+        for (int i = 0; i < 60; i++)
+        {
             yield return null;
         }
     }

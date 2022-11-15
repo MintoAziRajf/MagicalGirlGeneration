@@ -37,6 +37,9 @@ public class GameUI : PlayerManager
     [SerializeField] private Image visual = null; // キャラ見た目表示先
     [SerializeField] private Sprite[] visualSprite = null; // キャラのスプライト
     [SerializeField] private Color[] hpColor = null; // HPのカラー
+    [SerializeField] private SpriteRenderer gridImage = null;
+    [SerializeField] private Image hpFrame = null;
+
     //HPの基準
     private enum EMOTE { LOW, MEDIUM, HIGH }
     private int hpColorType = 0;
@@ -70,25 +73,30 @@ public class GameUI : PlayerManager
         
         visual.sprite = visualSprite[type * 3 + (int)emote];
         hpDisplay.color = hpColor[hpColorType];
-
+        gridImage.color = hpColor[hpColorType];
+        hpFrame.color = new Color(hpColor[hpColorType].r, hpColor[hpColorType].g, hpColor[hpColorType].b, hpFrame.color.a);
+        Debug.Log(emote);
     }
 
     private EMOTE CheckEmote(int hpType)
     {
         EMOTE e;
+        hpFrame.enabled = true;
         switch (hpType)
         {
-            case (int)EMOTE.MEDIUM:
-                e = EMOTE.MEDIUM;
-                break;
             case (int)EMOTE.LOW:
                 e = EMOTE.LOW;
                 break;
+            case (int)EMOTE.MEDIUM:
+                e = EMOTE.MEDIUM;
+                break;
             case (int)EMOTE.HIGH:
                 e = EMOTE.HIGH;
+                hpFrame.enabled = false;
                 break;
             default:
                 e = EMOTE.HIGH;
+                hpFrame.enabled = false;
                 break;
         }
         return e;

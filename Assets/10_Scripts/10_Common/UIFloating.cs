@@ -12,8 +12,8 @@ public class UIFloating : MonoBehaviour
     {
         pos = this.GetComponent<RectTransform>().anchoredPosition;
     }
-    private void FixedUpdate()
+    private void Update()
     {
-        this.GetComponent<RectTransform>().anchoredPosition = new Vector2(pos.x,pos.y + Mathf.Sin(Time.time * speed) * limit);
+        this.GetComponent<RectTransform>().anchoredPosition = new Vector2(pos.x,pos.y + Mathf.Sin(Time.unscaledTime * speed) * limit);
     }
 }

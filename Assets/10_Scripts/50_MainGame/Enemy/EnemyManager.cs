@@ -129,7 +129,7 @@ public class EnemyManager : MonoBehaviour
     {
         StartCoroutine(enemyUI.DamagedEffect());
         StartCoroutine(DamagedShake());
-        float y = 400f; //ダメージ表記の高さを設定する
+        float y = 350f; //ダメージ表記の高さを設定する
         if (isWeak) SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_WeakPoint);
         else SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged);
         for (int i = 0; i < freq; i++)
@@ -187,7 +187,7 @@ public class EnemyManager : MonoBehaviour
             hpCurrent = hpMin;
         }
         enemyUI.HPCurrent = hpCurrent; //チェック後のHPをUIにセット
-
+        if (!isAlive) return;
         //HPが0なら現在のエネミーを消滅させる
         if (hpCurrent == hpMin)
         {
@@ -316,7 +316,7 @@ public class EnemyManager : MonoBehaviour
         }
         //
         currentEnemy++;
-        gameManager.AddScore(currentEnemy * 100000);
+        gameManager.AddScore(300000);
         switch (currentEnemy)
         {
             case 0:
@@ -332,6 +332,7 @@ public class EnemyManager : MonoBehaviour
                 yield break;
         }
         anim.SetTrigger("Transition");
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning);
         for (int i = 0; i < 120; i++)
         {
             yield return null;

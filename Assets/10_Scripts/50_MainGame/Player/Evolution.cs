@@ -14,7 +14,7 @@ public class Evolution : PlayerManager
     private const int EVO_MIN = 0;    //最小値
     private const int EVO_MOVE = 5;　 //移動時のゲージ上昇量
     private const int EVO_ATTACK = 10;//攻撃時のゲージ上昇量
-    private const int EVO_TICK = -1;　//毎秒減る値
+    private const float EVO_TICK = 0.25f; //何秒ごとに減らすか
     private float evoTime = 0f;//秒数記録用
     private int evoGauge = 0;  //現在のゲージ 
     public int EvoGauge { set { evoGauge = value; } } //Debug用
@@ -88,11 +88,11 @@ public class Evolution : PlayerManager
     {
         evoTime += Time.deltaTime;
         //一秒を超えたら
-        if (evoTime >= 1.0f)
+        if (evoTime >= EVO_TICK)
         {
-            evoTime -= 1.0f;
+            evoTime -= EVO_TICK;
             //最小値を下回らないように減少させる
-            evoGauge = Mathf.Max(evoGauge + EVO_TICK, EVO_MIN);
+            evoGauge = Mathf.Max(evoGauge - 1, EVO_MIN);
         }
     }
 }
