@@ -11,7 +11,7 @@ public class FadeCheck : MonoBehaviour
     {
         obj.SetActive(true);
         Invoke("wait", 0.1f);
-        fade.FadeIn(0, () => fade.FadeOut(3));
+        fade.FadeIn(0, () => fade.FadeOut(2));
         
     }
 

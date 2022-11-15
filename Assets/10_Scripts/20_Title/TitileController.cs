@@ -76,7 +76,12 @@ namespace NTitleController
             if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf)
             {
                 checkIf = false;
-                LoadManager.instance.LoadScene("50_MainGame");
+                
+            #if UNITY_EDITOR
+                         UnityEditor.EditorApplication.isPlaying = false;//ゲームプレイ終了
+            #else
+                         Application.Quit();//ゲームプレイ終了
+            #endif
             }
         }
     }
