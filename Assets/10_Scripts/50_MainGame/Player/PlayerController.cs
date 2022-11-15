@@ -130,6 +130,7 @@ public class PlayerController : PlayerManager
     //----------操作フラグ----------
     private bool isMove = false;
     private bool isAttack = false;
+    private bool isBringBack = false;
     private bool isSkill = false;
     private bool isCounter = false;
     private bool canAvoid = true;
@@ -174,7 +175,7 @@ public class PlayerController : PlayerManager
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, speed * Time.deltaTime);
         evolution.Check();
       
-        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter && isStart;
+        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter && isStart && !isBringBack;
         if (!canInput) return;
         InputDirection();
     }
@@ -400,10 +401,10 @@ public class PlayerController : PlayerManager
         else AttackEnemy(damageNormal / attackFreq, attackFreq); // 通常時
         yield return StartCoroutine(cutIn.Attack(isEvo)); // 攻撃エフェクト(変身してるかどうか)
         isAttack = false; // 通常攻撃終了
-        isMove = true; // 移動開始
+        isBringBack = true; // 移動開始
         yield return new WaitUntil(() => !isCounter && !isSkill);
         BringBackPlayer(); // 攻撃が終わったら反対のタイルに移動
-        isMove = false; // 移動終了
+        isBringBack = false; // 移動終了
     }
 
     private void AttackSE()
