@@ -52,6 +52,7 @@ public class PlayerHP : PlayerManager
         if (hp == minHP)
         {
             //dead
+            Debug.Log("b");
             StartCoroutine(MessageManager.instance.DisplayMessage("仕方ない一回撤退だ！"));
             gameManager.StopGame();
             SoundManager.instance.PlayBGM(SoundManager.BGM_Type.GameOver);

@@ -282,7 +282,7 @@ public class EnemyManager : MonoBehaviour
         }
         Time.timeScale = 0f;
         
-        Color c = new Color(1f, 1f, 1f, 0f);
+        Color c = new Color(0f, 0f, 0f, 0f);
         int flashDuration = 30; // 点滅に要するフレーム数
         int flashTimes = 3; // 敵キャラの点滅回数
         float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
@@ -333,7 +333,7 @@ public class EnemyManager : MonoBehaviour
         }
         anim.SetTrigger("Transition");
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning);
-        for (int i = 0; i < 120; i++)
+        for (int i = 0; i < 255; i++)
         {
             yield return null;
         }

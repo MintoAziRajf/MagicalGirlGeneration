@@ -22,7 +22,7 @@ public class PlayerController : PlayerManager
     private const int LIMIT_MIN = 0; // 移動制限　
     private const int LIMIT_MAX = 2; // 移動制限　
     private Vector3 targetPos; // 移動先
-    private float speed = 250f; // 移動の速さ
+    private float speed = 200f; // 移動の速さ
     private int moveCooltime = 0; // 移動クールタイム　
     public int MoveCooltime { set { moveCooltime = value; speed = speed / value;} }
     //方向
@@ -88,16 +88,18 @@ public class PlayerController : PlayerManager
     {
         set
         {
-            visualAnim.SetTrigger("Evolution");
             isEvo = value;
+            visualAnim.SetBool("Evolution", isEvo);
             if (isEvo)
             {
+                gameUI.AvoidCurrentTime = AVOID_COOLTIME;
+                canAvoid = true;
                 gameManager.AddScore((int)SCORE.EVOLUTION); // スコア追加
                 StartCoroutine(WaitAnim("Evolution"));
-                StartCoroutine(AvoidCooltime());
             }
             else
             {
+                gameUI.AvoidCurrentTime = 0;
                 StartCoroutine(WaitAnim("SolveEvolution"));
                 ResetSkillGrid();
             }
@@ -119,7 +121,6 @@ public class PlayerController : PlayerManager
         COUNTER = 30,
         DAMAGE = 20
     }
-    private float invincibleTime = 0f;
     //-----------ゲームのスタートフラグ----------
     private bool isStart = false;
     public bool IsStart { set { isStart = value; evolution.IsStart = value; } }
@@ -133,7 +134,10 @@ public class PlayerController : PlayerManager
     private bool isBringBack = false;
     private bool isSkill = false;
     private bool isCounter = false;
+    private bool isAvoid = false;
+    public bool IsAvoid { set { isAvoid = value; } }
     private bool canAvoid = true;
+    public bool CanAvoid { set { canAvoid = value; } }
     private bool isAnim = false;
     private bool canInput = true;
     private bool enemyAlive = false; //エネミーが存在しているかどうか
@@ -160,7 +164,6 @@ public class PlayerController : PlayerManager
     [SerializeField] private GameObject attackGridEffectPrefab = null; // 攻撃タイルエフェクト
     [SerializeField] private GameObject skillOrbPrefab = null; // スキルオーブエフェクト
     [SerializeField] private GameObject healOrbEffectPrefab = null; // 回復エフェクト
-    [SerializeField] private GameObject playerVisual = null; // プレイヤーの見た目
 
     private void Start()
     {
@@ -170,37 +173,17 @@ public class PlayerController : PlayerManager
 
     private void FixedUpdate()
     {
-        InvincibleDisplay(); // 無敵中は点滅させる
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, speed * Time.deltaTime);
         evolution.Check();
-      
-        canInput = (transform.localPosition == targetPos) && !isMove && !isAttack && !isAnim && !isSkill && !isCounter && isStart && !isBringBack;
+        
+        canInput = !isAttack && !isAnim && !isSkill && !isCounter && isStart && !isBringBack;
         if (!canInput) return;
+        InputAvoid();
+        if (transform.localPosition != targetPos || isMove) return; // 自分のいる場所が目的地じゃなかったら操作を受け付けない
         InputDirection();
     }
     // 無敵関連--------------------------------------------------
-    /// <summary>
-    /// 無敵表示
-    /// </summary>
-    private void InvincibleDisplay()
-    {
-        if (isInvincible)
-        {
-            invincibleTime += Time.deltaTime;
-            if (invincibleTime >= 4f/60f) // 4フレームおきに点滅
-            {
-                playerVisual.SetActive(!playerVisual.activeSelf);
-                invincibleTime = 0f;
-            }
-        }
-        else
-        {
-            playerVisual.SetActive(true);
-            invincibleTime = 0f;
-        }
-    }
-
     /// <summary>
     /// 無敵メソッド
     /// </summary>
@@ -221,65 +204,20 @@ public class PlayerController : PlayerManager
     /// </summary>
     private void InputDirection()
     {
-        bool avoid = Input.GetButton("Submit") && canAvoid && isEvo;
         bool up = Input.GetAxis("Vertical") >= 0.5f && currentY > LIMIT_MIN;
         bool down = Input.GetAxis("Vertical") <= -0.5f && currentY < LIMIT_MAX;
         bool left = Input.GetAxis("Horizontal") <= -0.5f && currentX > LIMIT_MIN;
         bool right = Input.GetAxis("Horizontal") >= 0.5f && currentX < LIMIT_MAX;
 
-        if (avoid)
-        {
-            StartCoroutine(WaitInput());
-        }
-        else
-        {
-            if (up)
-            {
-                MoveUp();
-            }
-            else if (down)
-            {
-                MoveDown();
-            }
-            else if (left)
-            {
-                MoveLeft();
-            }
-            else if (right)
-            {
-                MoveRight();
-            }
-        }
-        IEnumerator WaitInput()
-        {
-            bool isInput = up || down || left || right;
-            for (int i = 0; i < AVOID_INPUT_FRAME; i++)
-            {
-                if (isInput)
-                {
-                    collisionManager.PlayerAvoided(currentX, currentY, 30);
-                    StartCoroutine(AvoidCooltime());
-                    if (up)
-                    {
-                        MoveUp();
-                    }
-                    else if (down)
-                    {
-                        MoveDown();
-                    }
-                    else if (left)
-                    {
-                        MoveLeft();
-                    }
-                    else if (right)
-                    {
-                        MoveRight();
-                    }
-                    yield break;
-                }
-                yield return null;
-            }
-        }
+        if (up) MoveUp();
+        else if (down) MoveDown();
+        else if (left) MoveLeft();
+        else if (right) MoveRight();
+    }
+    private void InputAvoid()
+    {
+        bool avoid = Input.GetButtonDown("Submit") && canAvoid && isEvo;
+        if (avoid) StartCoroutine(Avoid());
     }
     //--------------------------移動関連-------------------------
     private void MoveUp()
@@ -325,7 +263,7 @@ public class PlayerController : PlayerManager
         isMove = true; //移動中
         for (int i = 0; i < moveCooltime; i++) //クールタイム分待機
         {
-            if(i == moveCooltime / 2) collisionManager.PlayerMoved(currentX, currentY); //コリジョンマネージャーに移動先を送る
+            if(i == moveCooltime / 2) collisionManager.PlayerMoved(currentX, currentY); // コリジョンマネージャーに移動したことを伝える
             yield return new WaitForSeconds(1f / 60f); // １フレーム待機
         }
         isMove = false;//移動終了
@@ -345,11 +283,20 @@ public class PlayerController : PlayerManager
     /// <summary>
     /// 回避メソッド
     /// </summary>
-    private IEnumerator AvoidCooltime()
+    private IEnumerator Avoid()
     {
         canAvoid = false; // 回避できなくする
-        gameUI.AvoidCurrentTime = 0; // 回避クールタイム
-        for (int i = 1; i <= AVOID_COOLTIME; i++) //クールタイム分待機
+        isAvoid = true;
+        visualAnim.SetTrigger("Avoid");
+        for (int i = AVOID_TIME; i > 0; i--)
+        {
+            gameUI.AvoidCurrentTime = i * (AVOID_COOLTIME / AVOID_TIME);
+            yield return new WaitForSeconds(1f / 60f);
+        }
+        isAvoid = false;
+        
+        gameUI.AvoidCurrentTime = 0; // 回避クールタイムを最低値に
+        for (int i = 0; i < AVOID_COOLTIME; i++) //クールタイム分待機
         {
             if (!isEvo)
             {
@@ -359,6 +306,7 @@ public class PlayerController : PlayerManager
             gameUI.AvoidCurrentTime = i; // クールタイム
             yield return new WaitForSeconds(1f / 60f);
         }
+        gameUI.AvoidCurrentTime = AVOID_COOLTIME; // 回避クールタイムを最大値に
         StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！")); // メッセージ表示
         canAvoid = true; // 回避できるようにする
     }
@@ -379,9 +327,13 @@ public class PlayerController : PlayerManager
         gameManager.AddScore((int)SCORE.COUNTER); // スコア追加
         Healed(); // 回復
         StartCoroutine(Invincible((int)INVINCIBLE.COUNTER)); // カットイン中無敵にする
-        enemyManager.StopAttack(); // 敵の攻撃を止める
+        //enemyManager.StopAttack(); // 敵の攻撃を止める
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Counter); // 効果音
+        Time.timeScale = 0.5f;
+        visualAnim.SetTrigger("Counter");
         yield return StartCoroutine(cutIn.CounterAttack()); // カウンター攻撃のカットイン
-        if (!isSkill) enemyManager.StartAttack(); // 敵の攻撃を開始
+        //if (!isSkill) enemyManager.StartAttack(); // 敵の攻撃を開始
+        Time.timeScale = 1f;
         AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq); // 攻撃メソッド
         isCounter = false; // カウンター攻撃終了
     }
@@ -529,6 +481,12 @@ public class PlayerController : PlayerManager
     /// <param name="value">ダメージ量</param>
     public IEnumerator Damaged(int value)
     {
+        if (isAvoid)
+        {
+            StartCoroutine(AvoidSuccess());
+            isAvoid = false;
+            yield break;
+        }
         yield return new WaitForSeconds(1f / 60f);
         if (isInvincible) yield break;
         playerHP.Damaged(value);

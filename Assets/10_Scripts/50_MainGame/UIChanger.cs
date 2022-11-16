@@ -21,11 +21,21 @@ public class UIChanger : MonoBehaviour
         [SerializeField, Header("赤、青、黄")]
         public Sprite[] displaySprite = null;
     }
+    [System.Serializable]
+    private class TextData
+    {
+        [SerializeField, Header("表示先")]
+        public Text displayText = null;
+        [SerializeField, Header("赤、青、黄"), Multiline]
+        public string[] displayString = null;
+    }
 
     [SerializeField, Header("キャラに応じてUIを表示")]
     private List<UIData> uiData = new List<UIData>();
     [SerializeField, Header("キャラに応じて2DSpriteObjを表示")]
     private List<SpriteData> spriteData = new List<SpriteData>();
+    [SerializeField, Header("キャラに応じてテキストを表示")]
+    private List<TextData> textData = new List<TextData>();
 
     private void Start()
     {
@@ -41,6 +51,10 @@ public class UIChanger : MonoBehaviour
         foreach (SpriteData data in spriteData)
         {
             data.displayObj.sprite = data.displaySprite[type];
+        }
+        foreach (TextData data in textData)
+        {
+            data.displayText.text = data.displayString[type];
         }
     }
 }

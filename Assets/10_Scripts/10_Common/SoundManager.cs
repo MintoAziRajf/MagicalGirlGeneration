@@ -49,7 +49,8 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         Pause,
         EnemyAttack,
         Move,
-        Warning
+        Warning,
+        Counter
     }
 
     // クロスフェード時間
