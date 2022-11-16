@@ -40,9 +40,9 @@ public class CutIn : PlayerManager
     }
     public IEnumerator CounterAttack()
     {
-        cutInAnim.SetTrigger("Counter");
-        yield return StartCoroutine(WaitAnim(COUNTER_COOLTIME));
         damageAnim.SetTrigger("Counter");
+        yield return StartCoroutine(WaitAnim(COUNTER_COOLTIME));
+        
         StartCoroutine(MessageManager.instance.DisplayMessage("ナイスカウンター！"));
     }
     public IEnumerator Skill()
@@ -61,7 +61,6 @@ public class CutIn : PlayerManager
     }
     public IEnumerator SolveEvolution()
     {
-        Debug.Log("a");
         cutInAnim.SetTrigger("SolveEvolution");
         yield return StartCoroutine(WaitAnim(ANIM_COOLTIME));
     }

@@ -22,9 +22,16 @@ public class Evolution : PlayerManager
     private bool isStart = false;
     public bool IsStart { set { isStart = value; } }
 
+    [SerializeField] private bool debugMode = false;
+
     
     private void FixedUpdate()
     {
+        if(debugMode)
+        {
+            Increase(100);
+            Check();
+        }
         gameUI.EvolutionCurrentGauge = evoGauge;
         if (!isEvo || !isStart) return;
         Decrease();

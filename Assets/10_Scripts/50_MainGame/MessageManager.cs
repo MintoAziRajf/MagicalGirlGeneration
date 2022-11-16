@@ -30,7 +30,7 @@ public class MessageManager : MonoBehaviour
         }
         isDisplay = true;
         GameObject message = Instantiate(messageObj, messageCanvas.transform);
-        Debug.Log(msg);
+        //Debug.Log(msg);
         Text displayText = message.transform.Find("Text").gameObject.GetComponent<Text>();
         displayText.text = msg;
         for(int i = 0; i < DISPLAY_TIME; i++)

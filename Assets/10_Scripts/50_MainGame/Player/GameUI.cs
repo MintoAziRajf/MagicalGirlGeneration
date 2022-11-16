@@ -75,7 +75,7 @@ public class GameUI : PlayerManager
         hpDisplay.color = hpColor[hpColorType];
         gridImage.color = hpColor[hpColorType];
         hpFrame.color = new Color(hpColor[hpColorType].r, hpColor[hpColorType].g, hpColor[hpColorType].b, hpFrame.color.a);
-        Debug.Log(emote);
+        //Debug.Log(emote);
     }
 
     private EMOTE CheckEmote(int hpType)
