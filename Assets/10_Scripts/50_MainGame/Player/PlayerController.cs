@@ -385,11 +385,16 @@ public class PlayerController : PlayerManager
     {
         //反対のタイルに移動させる
         currentY = BACK_LINE[attackType];
-        collisionManager.PlayerMoved(currentX, currentY);
+        StartCoroutine(BringBackCollision());
         targetPos = targetPos + ATTACK_MOVE[attackType];
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Move);
         // 移動先のタイルを判定
         CheckTile();
+    }
+    private IEnumerator BringBackCollision()
+    {
+        yield return new WaitForSeconds((float)moveCooltime / 60f);
+        collisionManager.PlayerMoved(currentX, currentY);
     }
 
     /// <summary>
