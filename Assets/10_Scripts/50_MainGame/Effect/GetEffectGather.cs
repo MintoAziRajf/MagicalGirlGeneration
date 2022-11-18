@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HealGather : MonoBehaviour
+public class GetEffectGather : MonoBehaviour
 {
     private Vector3 _velocity;
     private Vector3 _position;
@@ -32,7 +32,7 @@ public class HealGather : MonoBehaviour
         acceleration += (_diff - _velocity * _period) * 2f / (_period * _period);
 
         _period -= Time.deltaTime;
-        if ((this.transform.position - _targetPos).magnitude <= 0.1f)
+        if (_period < 0f)
         {
             Destroy(this.gameObject);
             return;

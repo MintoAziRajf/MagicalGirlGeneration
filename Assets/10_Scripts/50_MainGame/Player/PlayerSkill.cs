@@ -74,7 +74,7 @@ public class PlayerSkill : PlayerManager
             int y = numbers[index] / 3;
             
             //
-            playerController.SetSkillGrid(x,y);
+            playerController.InstanceSkillOrb(x,y);
             //使った位置を消す
             numbers.RemoveAt(index);
         }
@@ -86,6 +86,45 @@ public class PlayerSkill : PlayerManager
         if (currentTiles == 0)
         {
             StartCoroutine(playerController.Skill());
+        }
+    }
+    public void ResetGrid()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            if (playerController.SkillGrid[i % 3, i / 3])
+            {
+                playerController.SkillGrid[i % 3, i / 3] = false;
+                playerController.RemoveSkillOrb(i);
+            }
+        }
+    }
+
+    public void RemoveGrid()
+    {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb); // 効果音
+        audienceAnimation.StartAnimation(); // 観客のアニメーションを変更する
+        gameManager.AddScore((int)SCORE.SKILL_ORB); // スコア追加
+        playerController.SkillGrid[playerController.CurrentX, playerController.CurrentY] = false; // 該当のスキルタイルを削除
+        playerController.RemoveSkillOrb(playerController.CurrentPos);
+        playerSkill.RemoveTile(); // スキルメソッドにスキルタイルを削除したことを伝える
+    }
+    public void SkillSE()
+    {
+        switch (playerController.Type)
+        {
+            case (int)CHARACTER.RED:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Red);
+                break;
+            case (int)CHARACTER.BLUE:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Blue);
+                break;
+            case (int)CHARACTER.YELLOW:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Yellow);
+                break;
+            default:
+                Debug.Log("Error");
+                break;
         }
     }
 }

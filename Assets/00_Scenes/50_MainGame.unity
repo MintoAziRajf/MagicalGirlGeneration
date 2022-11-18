@@ -664,7 +664,7 @@ MonoBehaviour:
   debugCanvas: {fileID: 2049119285}
   isTutorial: 0
   isPrologue: 0
-  type: 2
+  type: 1
   gameOverCanvas: {fileID: 2097407741}
   resultPrefab: {fileID: 3800670209594576732, guid: b7095aad05d753442a1994eb86aa4a2d,
     type: 3}
@@ -1853,6 +1853,7 @@ GameObject:
   - component: {fileID: 239253430}
   - component: {fileID: 239253429}
   - component: {fileID: 239253428}
+  - component: {fileID: 239253436}
   - component: {fileID: 239253427}
   - component: {fileID: 239253425}
   - component: {fileID: 239253433}
@@ -1900,6 +1901,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -1924,6 +1926,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -1950,6 +1953,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -1975,6 +1979,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -1999,6 +2004,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -2023,6 +2029,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -2048,6 +2055,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -2097,6 +2105,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -2117,9 +2126,9 @@ MonoBehaviour:
   - {fileID: 1379675734}
   attackGridEffectPrefab: {fileID: 7904232983442466692, guid: 5771ac5402d77754f87413fd641c6e7f,
     type: 3}
-  skillOrbPrefab: {fileID: 8671361155807170254, guid: 87dafacb995878f4dbbd8254aca0c71d,
+  healOrbPrefab: {fileID: 7676410944830857986, guid: 3c80dc445a578d649bc2099875e464ad,
     type: 3}
-  healOrbEffectPrefab: {fileID: 7676410944830857986, guid: 3c80dc445a578d649bc2099875e464ad,
+  skillOrbPrefab: {fileID: 8671361155807170254, guid: 87dafacb995878f4dbbd8254aca0c71d,
     type: 3}
 --- !u!114 &239253433
 MonoBehaviour:
@@ -2139,6 +2148,7 @@ MonoBehaviour:
   playerHP: {fileID: 0}
   playerDeadAnimation: {fileID: 0}
   playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
   playerController: {fileID: 0}
   evolution: {fileID: 0}
   gameUI: {fileID: 0}
@@ -2179,6 +2189,31 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   audienceAnim: {fileID: 1819948816}
+--- !u!114 &239253436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 239253423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 675bb4947670bff49bfe3615b10b985d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameManager: {fileID: 0}
+  collisionManager: {fileID: 0}
+  enemyManager: {fileID: 0}
+  playerHP: {fileID: 0}
+  playerDeadAnimation: {fileID: 0}
+  playerSkill: {fileID: 0}
+  playerAttack: {fileID: 0}
+  playerController: {fileID: 0}
+  evolution: {fileID: 0}
+  gameUI: {fileID: 0}
+  cutIn: {fileID: 0}
+  audienceAnimation: {fileID: 0}
+  visualAnim: {fileID: 0}
 --- !u!1 &242506097
 GameObject:
   m_ObjectHideFlags: 0
@@ -22020,7 +22055,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 7.05
   m_Depth: 0
   m_CullingMask:

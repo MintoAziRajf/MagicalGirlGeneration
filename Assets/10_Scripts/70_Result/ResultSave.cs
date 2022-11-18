@@ -13,9 +13,9 @@ public class ResultSave : MonoBehaviour
     }
     private List<string[]> scoreDatas = new List<string[]>();
     private string path;
-    private const int RANK_S = 2500000;
-    private const int RANK_A = 1000000;
-    private const int RANK_B = 500000;
+    private const int RANK_S = 3000000;
+    private const int RANK_A = 2000000;
+    private const int RANK_B = 1000000;
     public void SaveScore(int type, int score)
     {
         path = Application.dataPath + @"\score.csv";
@@ -26,7 +26,7 @@ public class ResultSave : MonoBehaviour
                 if (i == type)
                 {
                     string s = Rank(score);
-                    streamWriter.WriteLine(score.ToString("000000000") + "," + s);
+                    streamWriter.WriteLine(score.ToString("0000000") + "," + s);
                 }
                 else
                 {
