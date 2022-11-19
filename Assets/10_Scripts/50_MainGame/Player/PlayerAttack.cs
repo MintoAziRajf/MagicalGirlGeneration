@@ -36,8 +36,8 @@ public class PlayerAttack : PlayerManager
         StartCoroutine(playerController.Invincible((int)PlayerController.INVINCIBLE.ATTACK));
         AttackSE(); // 効果音
         // 攻撃メソッド
-        if (isEvo) AttackEnemy("Normal");
-        else AttackEnemy("Evolution");
+        if (isEvo) AttackEnemy("Evolution");
+        else AttackEnemy("Normal");
         yield return StartCoroutine(cutIn.Attack(isEvo)); // 攻撃エフェクト(変身してるかどうか)
         StartCoroutine(playerController.BringBackPlayer()); // 攻撃が終わったら反対のタイルに移動
     }

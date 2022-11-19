@@ -232,6 +232,7 @@ public class PlayerController : PlayerManager
         }
         isAvoid = false;
         
+        if(isTutorial) yield break;
         gameUI.AvoidCurrentTime = 0; // 回避クールタイムを最低値に
         for (int i = 0; i < AVOID_COOLTIME; i++) //クールタイム分待機
         {
@@ -254,7 +255,7 @@ public class PlayerController : PlayerManager
     public IEnumerator AvoidSuccess()
     {
         isCounter = true; // カウンター攻撃中
-        yield return new WaitUntil(() => !isAttack && isStart); // 通常攻撃を待機
+        yield return new WaitUntil(() => !isAttack && isStart || isTutorial); // 通常攻撃を待機
         // 敵が途中で倒されたらメソッド終了
         if (!enemyAlive)
         {
@@ -268,7 +269,9 @@ public class PlayerController : PlayerManager
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Counter); // 効果音
         Time.timeScale = 0.5f;
         visualAnim.SetTrigger("Counter");
+        
         yield return StartCoroutine(cutIn.CounterAttack()); // カウンター攻撃のカットイン
+        
         //if (!isSkill) enemyManager.StartAttack(); // 敵の攻撃を開始
         Time.timeScale = 1f;
         playerAttack.AttackEnemy("Counter"); // 攻撃メソッド
@@ -486,21 +489,10 @@ public class PlayerController : PlayerManager
     }
     public IEnumerator TutorialCounter()
     {
-        yield return StartCoroutine(enemyManager.Tutorial(currentX, currentY));
-        bool tutorialAvoid = false;
-        while (!tutorialAvoid)
-        {
-            yield return new WaitUntil(() => (Input.GetButtonDown("Submit")));
-            for(int i = 0; i < AVOID_INPUT_FRAME; i++)
-            {
-                if (Input.GetAxisRaw("Horizontal") == -1f) tutorialAvoid = true;
-                yield return null;
-            }
-        }
-        enemyManager.TutorialEnd(currentX, currentY);
-        MoveLeft();
-        yield return StartCoroutine(cutIn.CounterAttack());
-        playerAttack.AttackEnemy("Counter");
+        yield return StartCoroutine(enemyManager.TutorialCounter());
+        yield return new WaitUntil(() => (Input.GetButtonDown("Submit")));
+        StartCoroutine(Avoid());
+        yield return StartCoroutine(enemyManager.TutorialCounterEnd());
     }
     public IEnumerator TutorialSkill()
     {

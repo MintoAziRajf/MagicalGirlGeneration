@@ -18,7 +18,7 @@ public class EnemySkillList : MonoBehaviour
 
     //---------コンストラクタ------------
     private const int OMEN_TIME = 1;
-    private const int MARK_LIFETIME = 20;
+    private const int MARK_LIFETIME = 30;
     private const int DAMAGE_LIFETIME = 5;
     private const int FADE_TIME = 5;
     private const int ULT_TIME = 5;
@@ -159,7 +159,7 @@ public class EnemySkillList : MonoBehaviour
         {
             int index = 4; // 中心
             GameObject mark = Instantiate(ultMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
-            yield return StartCoroutine(WaitFrame(MARK_LIFETIME * 3));
+            yield return StartCoroutine(WaitFrame(MARK_LIFETIME * 2));
             Destroy(mark.gameObject);
         }
     }
@@ -180,19 +180,38 @@ public class EnemySkillList : MonoBehaviour
         }
     }
 
-    private GameObject tutorialMark;
-    public IEnumerator Tutorial(int index)
+    private List<GameObject> tutorialMark = new List<GameObject>();
+    public IEnumerator TutorialAttackStart()
     {
-        tutorialMark = Instantiate(dangerMark, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+        yield return StartCoroutine(Attack((int)ATTACK.LIGHTNING, 0, 0, 10));
+    }
+    public IEnumerator TutorialCounterStart()
+    {
+        yield return StartCoroutine(Attack((int)ATTACK.LIGHTNING, 0, 0, 10));
+        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[0].transform.position, enemyGrid[0].transform.rotation, enemyAttacks.transform));
+        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[1].transform.position, enemyGrid[1].transform.rotation, enemyAttacks.transform));
+        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[2].transform.position, enemyGrid[2].transform.rotation, enemyAttacks.transform));
         yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
     }
-    public IEnumerator TutorialEnd(int index)
+    public IEnumerator TutorialCounterEnd()
     {
-        Destroy(tutorialMark);
-        GameObject effect = Instantiate(bombObj, enemyGrid[index].transform.position, enemyGrid[index].transform.rotation, enemyAttacks.transform);
+        foreach(GameObject g in tutorialMark)
+        {
+            Destroy(g);
+        }
+        List<GameObject> effect = new List<GameObject>();
+        effect.Add(Instantiate(beamObj, enemyGrid[0].transform.position, enemyGrid[0].transform.rotation, enemyAttacks.transform));
+        effect.Add(Instantiate(beamObj, enemyGrid[1].transform.position, enemyGrid[1].transform.rotation, enemyAttacks.transform));
+        effect.Add(Instantiate(beamObj, enemyGrid[2].transform.position, enemyGrid[2].transform.rotation, enemyAttacks.transform));
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
+        collisionManager.StartCoroutine(collisionManager.DamageGrid(0, 0, 10, DAMAGE_LIFETIME));
+        collisionManager.StartCoroutine(collisionManager.DamageGrid(1, 0, 10, DAMAGE_LIFETIME));
+        collisionManager.StartCoroutine(collisionManager.DamageGrid(2, 0, 10, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(FADE_TIME));
-        Destroy(effect.gameObject);
+        foreach (GameObject g in effect)
+        {
+            Destroy(g);
+        }
     }
 }

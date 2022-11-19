@@ -9,6 +9,7 @@ public class GameUI : PlayerManager
 
     //回避クールタイム表示
     [SerializeField] private Image avoidDisplay = null;
+    [SerializeField] private Image avoidDisplaySprite = null;
     private int avoidCurrentTime = 0;
     public int AvoidCurrentTime { set { avoidCurrentTime = value; } }
     private int avoidCooltime = 0;
@@ -56,6 +57,7 @@ public class GameUI : PlayerManager
     {
         //クールタイムのパーセントを計算、表示
         avoidDisplay.fillAmount = (float)avoidCurrentTime / avoidCooltime;
+        avoidDisplaySprite.fillAmount = (float)avoidCurrentTime / avoidCooltime;
 
         //ゲージの計算
         evolutionDisplayGauge = Mathf.MoveTowards(evolutionDisplayGauge, evolutionCurrentGauge, displaySpeed * Time.unscaledDeltaTime);

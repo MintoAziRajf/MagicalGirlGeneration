@@ -111,6 +111,7 @@ public class Evolution : PlayerManager
         isEvo = b;
         playerController.IsEvo = b;
         playerHP.IsEvo = b;
+        playerAttack.IsEvo = b;
         visualAnim.SetBool("Evolution", b);
         playerController.IsAnim = true;       // アニメーション中
         enemyManager.StopAttack();            // エネミーの攻撃を停止

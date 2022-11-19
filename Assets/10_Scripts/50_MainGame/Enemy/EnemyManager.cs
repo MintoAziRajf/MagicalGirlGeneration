@@ -358,14 +358,16 @@ public class EnemyManager : MonoBehaviour
     }
 
     //------------チュートリアル関連----------------
-    public IEnumerator Tutorial(int x, int y)
+    public IEnumerator TutorialAttack()
     {
-        int index = x + y * 3;
-        yield return StartCoroutine(enemySkillList.Tutorial(index));
+        yield return StartCoroutine(enemySkillList.TutorialAttackStart());
     }
-    public void TutorialEnd(int x, int y)
+    public IEnumerator TutorialCounter()
     {
-        int index = x + y * 3;
-        StartCoroutine(enemySkillList.TutorialEnd(index));
+        yield return StartCoroutine(enemySkillList.TutorialCounterStart());
+    }
+    public IEnumerator TutorialCounterEnd()
+    {
+        yield return StartCoroutine(enemySkillList.TutorialCounterEnd());
     }
 }
