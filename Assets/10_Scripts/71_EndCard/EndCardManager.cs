@@ -6,10 +6,13 @@ using NUnityGameLib;
 
 public class EndCardManager : UnityGameLib, IUnityGameLib
 {
-    public static LoadManager instance = null;
+    
     [SerializeField] private GameObject loadPrefab = null;
     [SerializeField] FadeImage fi = null;
+
+    public static LoadManager instance = null;
     private bool isFirst = true;
+
 
     // Start is called before the first frame update
     void Start()
@@ -34,6 +37,4 @@ public class EndCardManager : UnityGameLib, IUnityGameLib
             LoadManager.instance.LoadScene("20_Title");
         }
     }
-
-
 }

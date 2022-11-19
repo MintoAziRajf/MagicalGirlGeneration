@@ -34,7 +34,7 @@ public class Fade : MonoBehaviour
 		fade.Range = cutoutRange;
 	}
 
-	float cutoutRange;
+	float cutoutRange = 0f;
 
 	void Init ()
 	{
@@ -52,13 +52,13 @@ public class Fade : MonoBehaviour
 		float endTime = Time.timeSinceLevelLoad + time * (cutoutRange);
 
 		var endFrame = new WaitForEndOfFrame ();
-
+		cutoutRange = 1f;
 		while (Time.timeSinceLevelLoad <= endTime) {
 			cutoutRange = (endTime - Time.timeSinceLevelLoad) / time;
 			fade.Range = cutoutRange;
 			yield return endFrame;
 		}
-		cutoutRange = 0;
+		cutoutRange = 0f;
 		fade.Range = cutoutRange;
 
 		if (action != null) {
@@ -71,13 +71,13 @@ public class Fade : MonoBehaviour
 		float endTime = Time.timeSinceLevelLoad + time * (1 - cutoutRange);
 		
 		var endFrame = new WaitForEndOfFrame ();
-
+		cutoutRange = 0f;
 		while (Time.timeSinceLevelLoad <= endTime) {
 			cutoutRange = 1 - ((endTime - Time.timeSinceLevelLoad) / time);
 			fade.Range = cutoutRange;
 			yield return endFrame;
 		}
-		cutoutRange = 1;
+		cutoutRange = 1f;
 		fade.Range = cutoutRange;
 
 		if (action != null) {

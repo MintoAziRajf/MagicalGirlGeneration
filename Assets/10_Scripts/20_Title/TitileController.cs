@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 namespace NTitleController
 { 
+
     interface ITitileController
     {
        void GetHorizontal(); 
@@ -12,18 +14,26 @@ namespace NTitleController
 
     public class TitileController : MonoBehaviour,ITitileController
     {
+        [SerializeField]MediaController mC;
         [SerializeField]GameObject decisionGameStart;
         [SerializeField]GameObject decisionEXIT;
+        [SerializeField] private GameObject loadPrefab = null;
+        [SerializeField] float timer = 0f;
+        [SerializeField] FadeImage fi;
 
         public static LoadManager instance;
-        [SerializeField] private GameObject loadPrefab = null;
 
         float getHorizontalValue = 0f;
         bool isGameStartCheck = true;
         bool isExitGameCheck = true;
         bool checkIf = true;
 
-        [SerializeField]FadeImage fi;
+        public float Timer
+        {
+            set { timer = value;}
+            get { return timer;}
+        }
+
         // Start is called before the first frame update
         protected virtual void Start()
         {
@@ -35,8 +45,10 @@ namespace NTitleController
 
         // Update is called once per frame
         protected virtual void Update()
-        {
-          
+        {         
+            timer += Time.deltaTime;
+
+            Debug.Log(mC.WaitCheck);
             StartCoroutine(wait());
         }
 
@@ -65,15 +77,16 @@ namespace NTitleController
         {
             yield return new WaitUntil(() => fi.CutoutRange == 0f);
 
-            GetHorizontal();
-            if (Input.GetButtonDown("Submit") && isGameStartCheck && checkIf)
+            GetHorizontal();//スタートかEXITか選択されている関数
+
+            if (Input.GetButtonDown("Submit") && isGameStartCheck && checkIf && mC.WaitCheck)
             {
                 checkIf = false;
                 LoadManager.instance.LoadScene("30_CharacterSelect");
                 SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             }
 
-            if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf)
+            if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf && mC.WaitCheck)
             {
                 checkIf = false;
                 
