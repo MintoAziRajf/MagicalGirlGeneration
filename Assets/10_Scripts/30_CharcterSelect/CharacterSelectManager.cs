@@ -48,6 +48,8 @@ public class CharacterSelectManager : MonoBehaviour
 
     [SerializeField] private Text characterName = null, score = null; //キャラクターの名前、ハイスコア
     [SerializeField] private string[] nameString = new string[3]; //キャラクターの名前
+    [SerializeField] private Text characterType = null; //キャラクターのタイプ名
+    [SerializeField] private string[] typeString = new string[3]; //キャラクターの名前
 
     [SerializeField] private Sprite[] rankIconSprite = null; // ランクの表示 アイコン
     [SerializeField] private Image rankIcon = null; // 表示先
@@ -280,6 +282,7 @@ public class CharacterSelectManager : MonoBehaviour
     {
         int current = (int)currentCharacter;
         characterName.text = nameString[current];
+        characterType.text = typeString[current];
         background.sprite = backgroundSprite[current];
         infoWindow.sprite = infoWindowSprite[current];
         outer.sprite = outerSprite[current];

@@ -8,6 +8,7 @@ public class TutorialController : MonoBehaviour
 
     private GameObject player;
     private PlayerController playerController;
+    private EnemyManager enemyManager;
     private Animator anim;
 
     private void Awake()
@@ -31,6 +32,14 @@ public class TutorialController : MonoBehaviour
         yield return StartCoroutine(playerController.TutorialMove());
         anim.SetTrigger("Next");
     }
+
+    public IEnumerator EnemyAttack()
+    {
+        yield return StartCoroutine(WaitGuide());
+        yield return StartCoroutine(enemyManager.TutorialAttack());
+        anim.SetTrigger("Next");
+    }
+
     public IEnumerator Attack()
     {
         yield return StartCoroutine(WaitGuide());
@@ -57,6 +66,7 @@ public class TutorialController : MonoBehaviour
         yield return StartCoroutine(playerController.TutorialCounter());
         anim.SetTrigger("Next");
     }
+
     public IEnumerator Skill()
     {
         yield return StartCoroutine(WaitGuide());
