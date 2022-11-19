@@ -71,6 +71,6 @@ public class ScoreManager : MonoBehaviour
     /// </summary>
     private void UpdateScoreUI()
     {
-        scoreText.text = score.ToString("000000000");
+        scoreText.text = score.ToString("0000000");
     }
 }

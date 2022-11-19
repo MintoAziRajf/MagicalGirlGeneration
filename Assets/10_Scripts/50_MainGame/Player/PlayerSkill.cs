@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerSkill : PlayerManager
 {
     private int maxTiles = 4;//スキルタイルの最大枚数
+    public int MaxTiles { set { maxTiles = value; } }
     private int currentTiles = 0;//現在の枚数
     private const int SKILL_COOLTIME = 600;//スキルタイル再生成までの時間(フレーム)
     private int time = 0; //クールタイム計算用
@@ -19,14 +20,8 @@ public class PlayerSkill : PlayerManager
         }
     }
 
-    private void Start()
-    {
-        gameUI.SkillCooltime = SKILL_COOLTIME;
-    }
-
     private void FixedUpdate()
     {
-        gameUI.SkillCurrentTime = time;
         //変身中、タイルが残っていない
         bool canGenerate = isEvo && currentTiles == 0;
         if (canGenerate)
@@ -62,7 +57,6 @@ public class PlayerSkill : PlayerManager
         //プレイヤーの現在の位置を取得
         int playerPos = playerController.CurrentX + playerController.CurrentY * 3;
         int healPos = playerController.HealPos;
-        Debug.Log(healPos);
         List<int> numbers = new List<int>();
         //生成可能な位置を追加
         for (int i = 0; i < 9; i++)
@@ -80,7 +74,7 @@ public class PlayerSkill : PlayerManager
             int y = numbers[index] / 3;
             
             //
-            playerController.SetSkillGrid(x,y);
+            playerController.InstanceSkillOrb(x,y);
             //使った位置を消す
             numbers.RemoveAt(index);
         }
@@ -92,6 +86,45 @@ public class PlayerSkill : PlayerManager
         if (currentTiles == 0)
         {
             StartCoroutine(playerController.Skill());
+        }
+    }
+    public void ResetGrid()
+    {
+        for (int i = 0; i < 9; i++)
+        {
+            if (playerController.SkillGrid[i % 3, i / 3])
+            {
+                playerController.SkillGrid[i % 3, i / 3] = false;
+                playerController.RemoveSkillOrb(i);
+            }
+        }
+    }
+
+    public void RemoveGrid()
+    {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb); // 効果音
+        audienceAnimation.StartAnimation(); // 観客のアニメーションを変更する
+        gameManager.AddScore((int)SCORE.SKILL_ORB); // スコア追加
+        playerController.SkillGrid[playerController.CurrentX, playerController.CurrentY] = false; // 該当のスキルタイルを削除
+        playerController.RemoveSkillOrb(playerController.CurrentPos);
+        playerSkill.RemoveTile(); // スキルメソッドにスキルタイルを削除したことを伝える
+    }
+    public void SkillSE()
+    {
+        switch (playerController.Type)
+        {
+            case (int)CHARACTER.RED:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Red);
+                break;
+            case (int)CHARACTER.BLUE:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Blue);
+                break;
+            case (int)CHARACTER.YELLOW:
+                SoundManager.instance.PlaySE(SoundManager.SE_Type.Skill_Yellow);
+                break;
+            default:
+                Debug.Log("Error");
+                break;
         }
     }
 }

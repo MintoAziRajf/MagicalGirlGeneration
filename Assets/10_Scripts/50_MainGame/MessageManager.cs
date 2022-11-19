@@ -13,26 +13,32 @@ public class MessageManager : MonoBehaviour
         {
             instance = this;
         }
-        messageObj.SetActive(false);
     }
-
-    [SerializeField] private Text displayText = null;
+    [SerializeField] private GameObject messageCanvas = null;
     [SerializeField] private GameObject messageObj = null;
-    private const int DISPLAY_TIME = 180;
+    private const int DISPLAY_TIME = 60;
+    private Queue<IEnumerator> messageQueue = new Queue<IEnumerator>();
 
     private bool isDisplay = false;
 
     public IEnumerator DisplayMessage(string msg)
     {
-        if (isDisplay) yield break;
+        if (isDisplay)
+        {
+            messageQueue.Enqueue(DisplayMessage(msg));
+            yield break;
+        }
         isDisplay = true;
-        messageObj.SetActive(true);
+        GameObject message = Instantiate(messageObj, messageCanvas.transform);
+        //Debug.Log(msg);
+        Text displayText = message.transform.Find("Text").gameObject.GetComponent<Text>();
         displayText.text = msg;
         for(int i = 0; i < DISPLAY_TIME; i++)
         {
             yield return new WaitForSeconds(1f/60f);
         }
         isDisplay = false;
-        messageObj.SetActive(false);
+        Destroy(message);
+        if(messageQueue.Count != 0) StartCoroutine(messageQueue.Dequeue());
     }
 }

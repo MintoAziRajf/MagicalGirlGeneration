@@ -6,15 +6,13 @@ public class PlayerDeadAnimation : PlayerManager
 {
     [SerializeField] private SpriteRenderer deadBackground = null;
     [SerializeField] private Camera mainCamera = null;
-    Animator anim;
     Vector3 offset = new Vector3(0f, 4f, 3.5f);
 
     public IEnumerator StartAnimation()
     {
-        anim = this.GetComponent<Animator>();
-        //anim.SetTrigger("Dead");
+        visualAnim.SetTrigger("Dead");
         //StartCoroutine(BackgroundFade());
-        //yield return StartCoroutine(CameraZoomIn());
+        yield return StartCoroutine(CameraZoomIn());
         gameManager.GameOver();
         yield break;
     }
@@ -37,7 +35,11 @@ public class PlayerDeadAnimation : PlayerManager
         float diff = (mainCamera.transform.localPosition - targetPos).magnitude;
         for (int i = 0; i < 60; i++)
         {
-            mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, targetPos, diff / 60f);
+            //mainCamera.transform.localPosition = Vector3.MoveTowards(mainCamera.transform.localPosition, targetPos, diff / 60f);
+            yield return null;
+        }
+        for (int i = 0; i < 60; i++)
+        {
             yield return null;
         }
     }

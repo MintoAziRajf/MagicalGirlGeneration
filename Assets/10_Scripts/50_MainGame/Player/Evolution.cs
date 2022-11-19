@@ -10,21 +10,28 @@ public class Evolution : PlayerManager
         gameUI.EvolutionCurrentGauge = EVO_MIN;
     }
 
-    private const int EVO_MAX = 100;  //ゲージ最大値
-    private const int EVO_MIN = 0;    //最小値
-    private const int EVO_MOVE = 5;　 //移動時のゲージ上昇量
-    private const int EVO_ATTACK = 10;//攻撃時のゲージ上昇量
-    private const int EVO_TICK = -1;　//毎秒減る値
-    private float evoTime = 0f;//秒数記録用
-    private int evoGauge = 0;  //現在のゲージ 
+    private const int EVO_MAX = 100;   // ゲージ最大値
+    private const int EVO_MIN = 0;     // 最小値
+    private const int EVO_MOVE = 5;　  // 移動時のゲージ上昇量
+    private const int EVO_ATTACK = 10; // 攻撃時のゲージ上昇量
+    private const float EVO_TICK = 0.25f;  // 何秒ごとに減らすか
+    private float evoTime = 0f; // 秒数記録用
+    private int evoGauge = 0;   // 現在のゲージ 
     public int EvoGauge { set { evoGauge = value; } } //Debug用
-    private bool isEvo = false;//変身しているかどうか
-    private bool isStart = false;
+    private bool isEvo = false; // 変身しているかどうか
+    private bool isStart = false; //
     public bool IsStart { set { isStart = value; } }
+
+    [SerializeField] private bool debugMode = false;
 
     
     private void FixedUpdate()
     {
+        if(debugMode)
+        {
+            Increase(100);
+            Check();
+        }
         gameUI.EvolutionCurrentGauge = evoGauge;
         if (!isEvo || !isStart) return;
         Decrease();
@@ -35,21 +42,19 @@ public class Evolution : PlayerManager
         //ゲージがMAX　且つ　変身していないとき
         if (evoGauge == EVO_MAX && !isEvo)
         {
-            //変身
-            isEvo = true; 
-            //set
-            playerController.IsEvo = true;
+            gameUI.AvoidCurrentTime = AVOID_COOLTIME;
+            gameManager.AddScore((int)SCORE.EVOLUTION); // スコア追加
+            StartCoroutine(WaitAnim(true));
         }
         //ゲージがMIN　且つ　変身しているとき
         if (evoGauge == EVO_MIN && isEvo)
         {
-            //変身を解除
-            isEvo = false;
-            //set
-            playerController.IsEvo = false;
+            gameUI.AvoidCurrentTime = 0;
+            playerSkill.ResetGrid();
+            StartCoroutine(WaitAnim(false));
         }
     }
-    
+
     /// <summary>
     /// 変身ゲージを溜める
     /// </summary>
@@ -82,17 +87,41 @@ public class Evolution : PlayerManager
 
 
     /// <summary>
-    /// 変身時、毎秒ゲージを減少させる
+    /// 変身後、毎秒ゲージを減少させる
     /// </summary>
     private void Decrease()
     {
         evoTime += Time.deltaTime;
         //一秒を超えたら
-        if (evoTime >= 1.0f)
+        if (evoTime >= EVO_TICK)
         {
-            evoTime -= 1.0f;
+            evoTime -= EVO_TICK;
             //最小値を下回らないように減少させる
-            evoGauge = Mathf.Max(evoGauge + EVO_TICK, EVO_MIN);
+            evoGauge = Mathf.Max(evoGauge - 1, EVO_MIN);
         }
+    }
+
+    /// <summary>
+    /// 変身メソッド
+    /// </summary>
+    /// <param name="b"> (通常⇒変身)かどうか </param>
+    private IEnumerator WaitAnim(bool b)
+    {
+        //変身を解除
+        isEvo = b;
+        playerController.IsEvo = b;
+        playerHP.IsEvo = b;
+        visualAnim.SetBool("Evolution", b);
+        playerController.IsAnim = true;       // アニメーション中
+        enemyManager.StopAttack();            // エネミーの攻撃を停止
+
+        StartCoroutine(playerController.Invincible((int)PlayerController.INVINCIBLE.CUTIN)); // カットイン中無敵にする
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Evolution); // 効果音
+
+        if (b) yield return StartCoroutine(cutIn.Evolution());     // 通常⇒変身カットイン
+        else  yield return StartCoroutine(cutIn.SolveEvolution()); // 変身⇒通常カットイン
+
+        enemyManager.StartAttack();           // エネミーの攻撃を開始
+        playerController.IsAnim = false;      // アニメーション終了
     }
 }

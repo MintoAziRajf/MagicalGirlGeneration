@@ -22,6 +22,7 @@ public class PauseManager : MonoBehaviour
     private void OnEnable()
     {
         if(gameManager == null) gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Pause);
         currentSelect = POSITIVE;
         pauseMenu.SetActive(true);
         dialogMenu.SetActive(false);
@@ -86,11 +87,13 @@ public class PauseManager : MonoBehaviour
 
         if (submit)
         {
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             if (pauseMenu.activeSelf) Unpause();
             else LoadManager.instance.LoadScene("20_Title");
         }
         else if (cancel)
         {
+            SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             if (pauseMenu.activeSelf)
             {
                 pauseMenu.SetActive(false);
@@ -108,6 +111,7 @@ public class PauseManager : MonoBehaviour
 
     private void Unpause()
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
         gameManager.StartCoroutine(gameManager.StartCountDown());
         this.gameObject.SetActive(false);
     }

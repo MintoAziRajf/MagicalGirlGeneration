@@ -19,7 +19,8 @@ public class StatusSetter : PlayerManager
         CA_FREQ = 8,
         CA_DAMAGE = 9,
         MOVE_COOLTIME = 10,
-        ATTACK_LINE = 11
+        ATTACK_LINE = 11,
+        SKILL_ORB = 12
     }
 
     private void Start()
@@ -44,18 +45,22 @@ public class StatusSetter : PlayerManager
     private void SetStatus()
     {
         PLAYER_TYPE = gameManager.Type;
-        
+        //
         playerHP.NormalHP = ReturnStatus(STATUS.NOR_HP);
         playerHP.EvoHP = ReturnStatus(STATUS.EVO_HP);
-        playerController.AttackFreq = ReturnStatus(STATUS.ATTACK_FREQ);
-        playerController.DamageNormal = ReturnStatus(STATUS.NOR_DAMAGE);
-        playerController.DamageEvolution = ReturnStatus(STATUS.EVO_DAMAGE);
-        playerController.DamageSkill = ReturnStatus(STATUS.SKILL_DAMAGE);
-        playerController.SkillFreq = ReturnStatus(STATUS.SKILL_FREQ);
-        playerController.DamageCounterAttack = ReturnStatus(STATUS.CA_DAMAGE);
-        playerController.CounterAttackFreq = ReturnStatus(STATUS.CA_FREQ);
+        //
+        playerAttack.AttackFreq = ReturnStatus(STATUS.ATTACK_FREQ);
+        playerAttack.DamageNormal = ReturnStatus(STATUS.NOR_DAMAGE);
+        playerAttack.DamageEvolution = ReturnStatus(STATUS.EVO_DAMAGE);
+        playerAttack.DamageSkill = ReturnStatus(STATUS.SKILL_DAMAGE);
+        playerAttack.SkillFreq = ReturnStatus(STATUS.SKILL_FREQ);
+        playerAttack.DamageCounterAttack = ReturnStatus(STATUS.CA_DAMAGE);
+        playerAttack.CounterAttackFreq = ReturnStatus(STATUS.CA_FREQ);
+        //
         playerController.MoveCooltime = ReturnStatus(STATUS.MOVE_COOLTIME);
         playerController.AttackType = ReturnStatus(STATUS.ATTACK_LINE);
+        //
+        playerSkill.MaxTiles = ReturnStatus(STATUS.SKILL_ORB);
     }
     private int ReturnStatus(STATUS s)
     {

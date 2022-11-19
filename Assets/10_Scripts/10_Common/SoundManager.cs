@@ -11,22 +11,54 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
     // BGM管理
     public enum BGM_Type
     {
-
+        Title,
+        CharacterSelect,
+        Prologue,
+        MainGame_00,
+        MainGame_01,
+        MainGame_02,
+        GameOver,
+        Epilogue,
+        Result,
+        EndCard
     }
 
     // SE管理
     public enum SE_Type
     {
         // SE登録
-
+        Select,
+        Submit,
+        CS_Scroll,
+        CS_Submit,
+        Attack_Red,
+        Attack_Blue,
+        Attack_Yellow,
+        Enemy_Damage,
+        Evolution,
+        Skill_Red,
+        Skill_Blue,
+        Skill_Yellow,
+        DramRoll,
+        Highscore,
+        Enemy_Damaged,
+        Enemy_WeakPoint,
+        HealOrb,
+        SkillOrb,
+        CountDown,
+        Pause,
+        EnemyAttack,
+        Move,
+        Warning,
+        Counter
     }
 
     // クロスフェード時間
     public const float CROSS_FADE_TIME = 0f;
 
     // ボリューム関連
-    private float BGM_Volume = 0.1f;
-    private float SE_Volume = 0.2f;
+    private float BGM_Volume = 0.05f;
+    private float SE_Volume = 0.05f;
 
     // AudioClip
     public AudioClip[] BGM_Clips;
@@ -175,6 +207,12 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         // 再生中ではないAudioSouceをつかってSEを鳴らす
         foreach (AudioSource source in SE_Sources)
         {
+            if(source.clip == SE_Clips[index])
+            {
+                source.clip = SE_Clips[index];
+                source.Play();
+                return;
+            }
             if (false == source.isPlaying)
             {
                 source.clip = SE_Clips[index];

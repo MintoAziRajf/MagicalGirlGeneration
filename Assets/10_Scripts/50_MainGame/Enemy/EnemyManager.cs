@@ -11,6 +11,7 @@ public class EnemyManager : MonoBehaviour
     EnemySkillList enemySkillList; //攻撃スキルを呼び出す用
     EnemyUI enemyUI; //エネミーに関するUI表示
     GameManager gameManager;
+    PlayerController playerController; 
 
     private IEnumerator attackLoop;  //途中停止用に呼び出すコルーチンの保存先
     private IEnumerator attack;      //
@@ -68,6 +69,7 @@ public class EnemyManager : MonoBehaviour
         enemySkillList = GetComponent<EnemySkillList>();
         enemyUI = this.GetComponent<EnemyUI>();
         gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
+        playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
         //エネミー情報をロード
         LoadEnemy();
     }
@@ -105,12 +107,14 @@ public class EnemyManager : MonoBehaviour
         defeatEnemy.GetComponent<SpriteMask>().sprite = enemyVisuals[currentEnemy];
 
         isAlive = true;　//生存情報をセット
+        playerController.EnemyAlive = true;
         //HPをセット
         hpMax = int.Parse(enemyData[0][(int)DATA.HP]); 
         hpCurrent = hpMax; 
         //UIにHP情報をセット
         enemyUI.HPMax = hpMax; 
         enemyUI.HPCurrent = hpCurrent;
+        StartAttack();
         UpdateWeakPoint();
     }
 
@@ -125,8 +129,10 @@ public class EnemyManager : MonoBehaviour
     {
         StartCoroutine(enemyUI.DamagedEffect());
         StartCoroutine(DamagedShake());
-        float y = 400f; //ダメージ表記の高さを設定する
-        for(int i = 0; i < freq; i++)
+        float y = 350f; //ダメージ表記の高さを設定する
+        if (isWeak) SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_WeakPoint);
+        else SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged);
+        for (int i = 0; i < freq; i++)
         {
             GameObject damage = Instantiate(damageUIPrefab, enemyUIObj.transform); //ダメージ表記を生成
             damage.GetComponent<EnemyDamageUI>().Damaged(value, y, isWeak); //生成したダメージ表記にダメージと表示する高さを送る
@@ -181,7 +187,7 @@ public class EnemyManager : MonoBehaviour
             hpCurrent = hpMin;
         }
         enemyUI.HPCurrent = hpCurrent; //チェック後のHPをUIにセット
-
+        if (!isAlive) return;
         //HPが0なら現在のエネミーを消滅させる
         if (hpCurrent == hpMin)
         {
@@ -192,7 +198,7 @@ public class EnemyManager : MonoBehaviour
     private IEnumerator AttackLoop()
     {
         yield return new WaitUntil(() => isStart);
-
+        yield return new WaitForSeconds(1f);
         while (isAlive)//生存情報がTRUEの間攻撃
         {
             attack = Attack();
@@ -208,6 +214,7 @@ public class EnemyManager : MonoBehaviour
     {
         for (int i = currentAttack; i < enemyData.Count; i++)
         {
+            currentAttack++; // 中断された時に次のところから再開するようにカウントを進める
             //攻撃情報をセット
             type = int.Parse(enemyData[i][(int)DATA.TYPE]);
             x = int.Parse(enemyData[i][(int)DATA.X]);
@@ -217,14 +224,13 @@ public class EnemyManager : MonoBehaviour
 
             //攻撃
             yield return StartCoroutine(enemySkillList.Attack(type, x, y, damage));
-            //前の攻撃が終わったら次の攻撃に
-            currentAttack++;
             //次の攻撃までのクールタイム
             for (int j = 0; j < cooltime; j++)
             {
                 yield return null;
             }
         }
+        attack = null;
         currentAttack = 0;
     }
 
@@ -236,18 +242,18 @@ public class EnemyManager : MonoBehaviour
         if (attackLoop != null) return;
         attackLoop = AttackLoop();
         StartCoroutine(attackLoop);
+        Debug.Log("敵の攻撃を開始しました");
     }
 
     /// <summary>
-    /// 攻撃を開始(PlayerControllerとGamaManager呼ばれます)
+    /// 攻撃を中止(PlayerControllerとGamaManager呼ばれます)
     /// </summary>
     public void StopAttack()
     {
         enemySkillList.Stop();
-        if (attackLoop == null) return;
-        if (attack == null) return;
-        StopCoroutine(attackLoop);
-        StopCoroutine(attack);
+        if (attackLoop != null) StopCoroutine(attackLoop);
+        if (attack != null) StopCoroutine(attack);
+        Debug.Log("敵の攻撃を中止しました");
         attackLoop = null;
         attack = null;
     }
@@ -258,9 +264,9 @@ public class EnemyManager : MonoBehaviour
     private void DefeatEnemy()
     {
         isAlive = false; //生存情報をセット
+        playerController.EnemyAlive = false;
         //攻撃ループと現在の攻撃を停止
-        StopCoroutine(attackLoop);
-        StopCoroutine(attack);
+        StopAttack();
         StartCoroutine(DefeatAnimation());
     }
     
@@ -276,7 +282,7 @@ public class EnemyManager : MonoBehaviour
         }
         Time.timeScale = 0f;
         
-        Color c = new Color(1f, 1f, 1f, 0f);
+        Color c = new Color(0f, 0f, 0f, 0f);
         int flashDuration = 30; // 点滅に要するフレーム数
         int flashTimes = 3; // 敵キャラの点滅回数
         float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
@@ -309,24 +315,30 @@ public class EnemyManager : MonoBehaviour
             yield return null;
         }
         //
+        currentEnemy++;
+        gameManager.AddScore(300000);
+        switch (currentEnemy)
+        {
+            case 0:
+                break;
+            case 1:
+                SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_00);
+                break;
+            case 2:
+                SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_02);
+                break;
+            case 3:
+                EndGame();
+                yield break;
+        }
         anim.SetTrigger("Transition");
-        for (int i = 0; i < 120; i++)
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning);
+        for (int i = 0; i < 255; i++)
         {
             yield return null;
         }
         //次のエネミーをロード
-        currentEnemy++;
-        if (currentEnemy == csv.Length)
-        {
-            EndGame();
-            yield break;
-        }
         LoadEnemy();
-        //時間を空ける
-        for (int i = 0; i < flashDuration; i++)
-        {
-            yield return null;
-        }
         //フェードイン
         for (int i = 0; i < flashDuration; i++)
         {
@@ -341,6 +353,7 @@ public class EnemyManager : MonoBehaviour
 
     private void EndGame()
     {
+        StartCoroutine(MessageManager.instance.DisplayMessage("よく世界を救ったね！"));
         StartCoroutine(gameManager.GameClear());
     }
 

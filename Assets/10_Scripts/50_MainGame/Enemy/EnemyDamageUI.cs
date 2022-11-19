@@ -66,7 +66,7 @@ public class EnemyDamageUI : MonoBehaviour
     private Vector3 randomPos = new Vector3(0f, 0f, 0f);
     private IEnumerator DisplayText(float y)
     {
-        randomPos.x = Random.Range(-300f, -200f);
+        randomPos.x = Random.Range(150f, 350f);
         randomPos.y = y;
         onesPos += randomPos;
         tensPos += randomPos;

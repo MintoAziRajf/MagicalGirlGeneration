@@ -9,15 +9,10 @@ public class CollisionManager : MonoBehaviour
     private int[,] collisionGrid = new int[3, 3];
     private const int EMPTY = 0;
     private const int PLAYER = 1;
-    private const int AVOID = 2;
-    private const int DAMAGE = 3;
-    private bool needReplace = false;
-
-    private const int DAMAGE_FRAME = 5;
+    private const int DAMAGE = 2;
 
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
     [Header("EMPTY,PLAYER,AVOID,DAMAGE")] [SerializeField] private Color[] gridColor = new Color[4];
-    [SerializeField] private GameObject avoidObj = null;
     private void Awake()
     {
         InitGrid();
@@ -26,19 +21,12 @@ public class CollisionManager : MonoBehaviour
 
     public IEnumerator DamageGrid(int x, int y, int power, int frame)
     {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.EnemyAttack);
         //生成先にプレイヤーがいたらダメージを与える
         if (collisionGrid[x, y] == PLAYER)
         {
             PlayerDamaged(power);
             Debug.Log("プレイヤーに" + power + "のダメージ");
-            yield break;
-        }
-        //生成先に回避判定があったら成功判定を送る
-        if (collisionGrid[x, y] == AVOID)
-        {
-            //AvoidSuccess;
-            StartCoroutine(playerController.AvoidSuccess());
-            Debug.Log("回避成功!");
             yield break;
         }
 
@@ -63,44 +51,10 @@ public class CollisionManager : MonoBehaviour
     /// <param name="y">移動先Y</param>
     public void PlayerMoved(int x, int y)
     {
-        if (collisionGrid[x, y] == AVOID) needReplace = true;
         ReplaceCollision(EMPTY);
         MoveCheck(x, y);
     }
-    /// <summary>
-    /// プレイヤーが回避したら呼び出されます
-    /// </summary>
-    /// <param name="x">回避タイルの生成先X</param>
-    /// <param name="y">回避タイルの生成先Y</param>
-    /// <param name="frame">持続時間</param>
-    public void PlayerAvoided(int x, int y, int frame)
-    {
-        ReplaceCollision(AVOID);
-        StartCoroutine(AvoidedCollision(x, y, frame));
-    }
-    private IEnumerator AvoidedCollision(int x, int y, int frame)
-    {
-        int value;
-        GameObject playerAvoid = Instantiate(avoidObj, gridObj[x+y*3].transform);
-        //持続
-        for (int i = 0; i < frame; i++)
-        {
-            yield return null;
-        }
-        //
-        if (needReplace)
-        {
-            value = PLAYER;
-            needReplace = false;
-        }
-        else
-        {
-            value = EMPTY;
-        }
-        Destroy(playerAvoid);
-        collisionGrid[x, y] = value;
-    }
-
+    
     private void ReplaceCollision(int value)
     {
         //Playerがいた場所に指定の値を入れる
@@ -121,14 +75,13 @@ public class CollisionManager : MonoBehaviour
             PlayerDamaged(collisionGrid[x, y]);
         }
         //移動先にプレイヤーを置く
-        if (needReplace) return;
         collisionGrid[x, y] = PLAYER;
         
     }
 
     private void PlayerDamaged(int value)
     {
-        playerController.Damaged(value);
+        playerController.StartCoroutine(playerController.Damaged(value));
     }
 
     private void Update()
@@ -145,6 +98,7 @@ public class CollisionManager : MonoBehaviour
                 int index = i + j * 3;
                 int color = collisionGrid[i, j];
                 if (color >= DAMAGE) color = 1;
+                else if(color == PLAYER) color = 2;
                 else color = EMPTY;
                 gridObj[index].color = gridColor[color];
             }

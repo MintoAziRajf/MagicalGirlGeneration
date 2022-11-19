@@ -6,37 +6,52 @@ using UnityEngine.UI;
 public class EnemyUI : MonoBehaviour
 {
     [SerializeField] private Image hpGaugeDisplay = null;
-    [SerializeField] private Image hpGaugeDisplayDelay = null;
     [SerializeField] private Text hpTextDisplay = null;
     private int hpMax = 0;
     public int HPMax
     {
-        set { hpMax = value; }
+        set { hpMax = value; isFirst = false; }
     }
 
-    private float delay = 500f;
+    private float delay = 10f;
     private float hpDisplayGauge = 0f;
     private int hpCurrent = 0;
     public int HPCurrent
     {
         set { hpCurrent = value; }
     }
+    private bool isFirst = true;
+
+    [SerializeField] private Sprite[] hpGaugeSprite = null;
+    private const float HIGH = 0.5f;
+    private const float LOW = 0.2f;
+    private enum GAUGE { HIGH, MEDIUM,LOW }
 
     //弱点表示用
     [SerializeField] private GameObject[] weakIcon = null;
 
-
-    private void FixedUpdate()
+    private void Update()
     {
         if(Mathf.Abs(hpCurrent - hpDisplayGauge) >= 1000f)
         {
             hpDisplayGauge = hpCurrent;
         }
-        hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrent, delay * Time.deltaTime);
+        hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrent, delay);
         
-        //hpGaugeDisplayDelay.fillAmount = hpDisplayGauge / hpMax;
         hpGaugeDisplay.fillAmount = hpDisplayGauge / hpMax;
-        hpTextDisplay.text = hpDisplayGauge.ToString("F0");
+
+        //hpに応じてゲージのカラーを変更
+        if ((hpDisplayGauge / hpMax) > HIGH) hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.HIGH];
+        else if ((hpDisplayGauge / hpMax) > LOW) hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.MEDIUM];
+        else hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.LOW];
+
+        //エネミーのHPが低くなったらメッセージを送る
+        if ((hpDisplayGauge / hpMax) <= LOW && isFirst)
+        {
+            StartCoroutine(MessageManager.instance.DisplayMessage("あと少しだ頑張れ！"));
+            isFirst = false;
+        }
+        hpTextDisplay.text = "- " +hpDisplayGauge.ToString("F0") + " -";
     }
 
     [SerializeField] private float magnitude = 0f;
@@ -60,7 +75,6 @@ public class EnemyUI : MonoBehaviour
         }
 
         hpBar.anchoredPosition = pos;
-        Debug.Log(hpBar.anchoredPosition);
     }
 
     /// <summary>
