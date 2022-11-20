@@ -31,6 +31,8 @@ public class EnemyManager : MonoBehaviour
     private bool isStart = false; //
     public bool IsStart { set { isStart = value; } }
 
+    //元の位置
+    Vector3 originPosition;
     private const int DAMAGE_DELAY = 2; //連続ダメージの間にかけるディレイ(フレーム)
     [SerializeField] private float magnitude = 0f;
     [SerializeField] private float duration = 0f;
@@ -67,6 +69,7 @@ public class EnemyManager : MonoBehaviour
 
     private void Awake()
     {
+        originPosition = this.gameObject.transform.localPosition;
         enemySkillList = GetComponent<EnemySkillList>();
         enemyUI = this.GetComponent<EnemyUI>();
         gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
@@ -175,17 +178,15 @@ public class EnemyManager : MonoBehaviour
     }
     private IEnumerator DamagedShake()
     {
-        Vector3 pos = this.gameObject.transform.localPosition;
-
         for (int i = 0; i < duration; i++)
         {
-            float x = pos.x + Random.Range(-1f, 1f) * magnitude;
-            float y = pos.y + Random.Range(-1f, 1f) * magnitude;
+            float x = originPosition.x + Random.Range(-1f, 1f) * magnitude;
+            float y = originPosition.y + Random.Range(-1f, 1f) * magnitude;
 
-            this.gameObject.transform.localPosition = new Vector3(x, y, pos.z);
+            this.gameObject.transform.localPosition = new Vector3(x, y, originPosition.z);
             yield return null;
         }
-        this.gameObject.transform.localPosition = pos;
+        this.gameObject.transform.localPosition = originPosition;
     }
 
 
@@ -300,7 +301,6 @@ public class EnemyManager : MonoBehaviour
         int flashTimes = 3; // 敵キャラの点滅回数
         float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
         Animator anim = defeatScreen.GetComponent<Animator>();
-        
         // 不透明度の初期化
         defeatEnemy.color = c;
         defeatScreen.color = c;
@@ -320,6 +320,7 @@ public class EnemyManager : MonoBehaviour
                 yield return null;
             }
         }
+        if (currentEnemy == 2) yield return StartCoroutine(EndGame());
         //フェードアウト
         for (int i = 0; i < flashDuration; i++)
         {
@@ -328,22 +329,11 @@ public class EnemyManager : MonoBehaviour
             yield return null;
         }
         //
+        if (currentEnemy == 2) yield break;
         currentEnemy++;
         gameManager.AddScore(300000);
-        switch (currentEnemy)
-        {
-            case 0:
-                break;
-            case 1:
-                SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_00);
-                break;
-            case 2:
-                SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_02);
-                break;
-            case 3:
-                EndGame();
-                yield break;
-        }
+        if (currentEnemy == 1) SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_00);
+        else if (currentEnemy == 2) SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_02);
         anim.SetTrigger("Transition");
         SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning);
         for (int i = 0; i < 255; i++)
@@ -364,10 +354,22 @@ public class EnemyManager : MonoBehaviour
         gameManager.ResumeGame();
     }
 
-    private void EndGame()
+    private IEnumerator EndGame()
     {
+        yield return StartCoroutine(EnemyExplosion());
         StartCoroutine(MessageManager.instance.DisplayMessage("よく世界を救ったね！"));
         StartCoroutine(gameManager.GameClear());
+    }
+    [SerializeField] private GameObject explosionPrefab = null;
+    [SerializeField] private Transform[] explosionPosition = null;
+    private IEnumerator EnemyExplosion()
+    {
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Explosion);
+        for (int i = 0; i < explosionPosition.Length; i++)
+        {
+            Instantiate(explosionPrefab,explosionPosition[i]);
+            yield return new WaitForSecondsRealtime(0.1f);
+        }
     }
 
     //------------チュートリアル関連----------------

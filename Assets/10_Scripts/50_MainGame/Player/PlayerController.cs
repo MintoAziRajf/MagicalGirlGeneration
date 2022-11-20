@@ -39,13 +39,14 @@ public class PlayerController : PlayerManager
     // 回復関連 --------------------
     private int healPos = -1; // ヒールオブジェクトの場所 無い場合は-1
     public int HealPos { get { return healPos; } }
+
+    // エフェクト関連
     [SerializeField] private GameObject healEffectObj = null; // ヒールオブジェクトを取った時のエフェクト
     private GetEffect healEffect; // ヒールエフェクトスクリプト
-    // -----------------------------
-
-    // スキル関連 ------------------
     [SerializeField] private GameObject skillEffectObj = null; // スキルオブジェクトを取った時のエフェクト
     private GetEffect skillEffect; // スキルエフェクトスクリプト
+    [SerializeField] private GameObject attackEffectObj = null; // 攻撃した時のエフェクト
+    private GetEffect attackEffect; // 
 
     //----------攻撃関連------------
     private int[] ATTACK_LINE = { 0, 2 };
@@ -279,6 +280,12 @@ public class PlayerController : PlayerManager
     }
 
     // 攻撃関連----------------------------------------------------------------------------------------
+    public  void AttackEffect()
+    {
+        attackEffectObj.transform.position = displayGrid[currentX + currentY * 3].transform.position;
+        attackEffect.StartEffect();
+    }
+
     /// <summary>
     /// 攻撃が終わったら反対のタイルに移動
     /// </summary>
@@ -421,6 +428,7 @@ public class PlayerController : PlayerManager
         InitTiles();
         skillEffect = skillEffectObj.GetComponent<GetEffect>();
         healEffect = healEffectObj.GetComponent<GetEffect>();
+        attackEffect = attackEffectObj.GetComponent<GetEffect>();
         if (isTutorial) return;
         SetUI();
         SetAttackTile();

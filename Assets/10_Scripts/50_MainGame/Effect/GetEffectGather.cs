@@ -9,10 +9,12 @@ public class GetEffectGather : MonoBehaviour
     private Vector3 _targetPos;
     private float _period = 1f;
     private bool _isStart = false;
-    private float speed = 50f;
-    public void SetTarget(Vector3 pos)
+    private float _speed = 50f;
+    public void SetTarget(Vector3 pos, float speed)
     {
         _targetPos = pos;
+        _period = 50f / speed;
+        _speed = speed;
         AwakeScript();
     }
 
@@ -38,7 +40,7 @@ public class GetEffectGather : MonoBehaviour
             return;
         }
 
-        _velocity += acceleration.normalized * Time.deltaTime * speed;
+        _velocity += acceleration.normalized * Time.deltaTime * _speed;
         _position += _velocity * Time.deltaTime;
         transform.position = _position;
     }
