@@ -34,6 +34,7 @@ public class EnemyManager : MonoBehaviour
     private const int DAMAGE_DELAY = 2; //連続ダメージの間にかけるディレイ(フレーム)
     [SerializeField] private float magnitude = 0f;
     [SerializeField] private float duration = 0f;
+    [SerializeField] private int interval = 0;
 
     //攻撃に使う変数
     private int currentAttack = 0;  //現在の攻撃
@@ -129,6 +130,7 @@ public class EnemyManager : MonoBehaviour
     {
         StartCoroutine(enemyUI.DamagedEffect());
         StartCoroutine(DamagedShake());
+        StartCoroutine(DamagedFlash());
         float y = 350f; //ダメージ表記の高さを設定する
         if (isWeak) SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_WeakPoint);
         else SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged);
@@ -159,7 +161,18 @@ public class EnemyManager : MonoBehaviour
         enemyUI.DisplayWeakIcon(weakPoint);
     }
 
-    
+    private IEnumerator DamagedFlash()
+    {
+        for(int i = 0; i < duration; i++)
+        {
+            if(i % interval == 0)
+            {
+                enemyVisual.enabled = !enemyVisual.enabled;
+            }
+            yield return null;
+        }
+        enemyVisual.enabled = true;
+    }
     private IEnumerator DamagedShake()
     {
         Vector3 pos = this.gameObject.transform.localPosition;

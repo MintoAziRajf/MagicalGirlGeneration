@@ -232,7 +232,6 @@ public class PlayerController : PlayerManager
         }
         isAvoid = false;
         
-        if(isTutorial) yield break;
         gameUI.AvoidCurrentTime = 0; // 回避クールタイムを最低値に
         for (int i = 0; i < AVOID_COOLTIME; i++) //クールタイム分待機
         {
@@ -245,6 +244,7 @@ public class PlayerController : PlayerManager
             yield return new WaitForSeconds(1f / 60f);
         }
         gameUI.AvoidCurrentTime = AVOID_COOLTIME; // 回避クールタイムを最大値に
+        if (isTutorial) yield break;
         StartCoroutine(MessageManager.instance.DisplayMessage("スタミナが回復したよ！")); // メッセージ表示
         canAvoid = true; // 回避できるようにする
     }
@@ -458,19 +458,16 @@ public class PlayerController : PlayerManager
     //--------------------------------------------------------------------------------
 
     // チュートリアル関連 ------------------------------------------------------------
-    private GameObject tutorialAttack;
     public IEnumerator TutorialMove()
     {
         yield return new WaitUntil(() => (Input.GetAxisRaw("Horizontal") == 1f));
         MoveRight();
         yield return StartCoroutine(MoveDelay());
-
-        //次のチュートリアルの準備
-        attackGrid[2, ATTACK_LINE[attackType]] = true;
-        tutorialAttack = Instantiate(attackGridEffectPrefab, displayGrid[2 + ATTACK_LINE[attackType] * 3].transform);
     }
     public IEnumerator TutorialAttack()
     {
+        attackGrid[2, ATTACK_LINE[attackType]] = true;
+        GameObject tutorialAttack = Instantiate(attackGridEffectPrefab, displayGrid[2 + ATTACK_LINE[attackType] * 3].transform);
         yield return new WaitUntil(() => (Input.GetAxisRaw("Vertical") == ((float)BACK_LINE[attackType] - 1f)));
         if(attackType == 0) MoveUp();
         else MoveDown();

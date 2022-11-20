@@ -22,7 +22,7 @@ public class EnemyUI : MonoBehaviour
     }
     private bool isFirst = true;
 
-    [SerializeField] private Sprite[] hpGaugeSprite = null;
+    [SerializeField] private Color[] hpGaugeColor = null;
     private const float HIGH = 0.5f;
     private const float LOW = 0.2f;
     private enum GAUGE { HIGH, MEDIUM,LOW }
@@ -41,9 +41,9 @@ public class EnemyUI : MonoBehaviour
         hpGaugeDisplay.fillAmount = hpDisplayGauge / hpMax;
 
         //hpに応じてゲージのカラーを変更
-        if ((hpDisplayGauge / hpMax) > HIGH) hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.HIGH];
-        else if ((hpDisplayGauge / hpMax) > LOW) hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.MEDIUM];
-        else hpGaugeDisplay.sprite = hpGaugeSprite[(int)GAUGE.LOW];
+        if ((hpDisplayGauge / hpMax) > HIGH) hpGaugeDisplay.color = hpGaugeColor[(int)GAUGE.HIGH];
+        else if ((hpDisplayGauge / hpMax) > LOW) hpGaugeDisplay.color = hpGaugeColor[(int)GAUGE.MEDIUM];
+        else hpGaugeDisplay.color = hpGaugeColor[(int)GAUGE.LOW];
 
         //エネミーのHPが低くなったらメッセージを送る
         if ((hpDisplayGauge / hpMax) <= LOW && isFirst)
