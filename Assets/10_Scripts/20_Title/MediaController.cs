@@ -4,6 +4,11 @@ using UnityEngine;
 using UnityEngine.Video;
 using NTitleController;
 
+
+interface IMediaController
+{
+
+}
 public class MediaController : MonoBehaviour
 {
     [SerializeField] VideoPlayer videoPlayer;
@@ -13,9 +18,10 @@ public class MediaController : MonoBehaviour
     [SerializeField] FadeImage fi;
     [SerializeField,Header("ビデオ再生間隔")] float deltaTime;
     bool wait = true;
-    bool check = true;
+    bool check = true;//一度しか呼ばれないようにする為の変数
     bool isFlag = false;
 
+    //プロパティのラムダ式getだけ
     public bool WaitCheck => wait;
 
     // Start is called before the first frame update
@@ -28,8 +34,7 @@ public class MediaController : MonoBehaviour
     void Update()
     {
 
-        Debug.Log(wait);
-
+        //時間が経過したらフェードインから動画再生
         if( tC.Timer >= deltaTime && check)
         {
             fade.FadeIn(1f, () => screen.SetActive(false));
@@ -38,7 +43,8 @@ public class MediaController : MonoBehaviour
             StartCoroutine(VideoPlay());
         }
 
-        if(!wait)
+        //フェード以外のときtrue
+        if(isFlag)
         {
             if (Input.GetButtonDown("Submit") && tC.Timer >= deltaTime)
             {
@@ -51,28 +57,36 @@ public class MediaController : MonoBehaviour
         
     }
 
-   
+ 　　//動画の再生
     IEnumerator VideoPlay()
     {
         video.SetActive(true);
         yield return new WaitUntil(() => fi.CutoutRange == 1f);
+        SoundManager.instance.MuteBGM();
         videoPlayer.Play();
-        fade.FadeOut(1f);      
+        fade.FadeOut(1f, () => isFlag = true);      
     }
 
+    //動画の停止
     IEnumerator FadeClose()
     {
         yield return new WaitUntil(() => fi.CutoutRange == 1f);
-        Invoke("Await",1f);
+        videoPlayer.Stop();
+        SoundManager.instance.ResumeBGM();
+        fade.FadeOut(1f);
+        check = true;
+        tC.Timer = 0f;
+
+        StartCoroutine(Wait());
+
+        isFlag = false;
     }
 
     void Await()
     {
-       fade.FadeOut(1f);
-        check = true;
-        tC.Timer = 0f;
-        StartCoroutine(Wait());
     }
+
+    //コントローラーを操作できないようにするための遅延
     IEnumerator Wait()
     {
         yield return new WaitForSeconds(1);

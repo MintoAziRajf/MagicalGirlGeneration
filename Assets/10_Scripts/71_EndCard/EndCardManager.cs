@@ -26,6 +26,7 @@ public class EndCardManager : UnityGameLib, IUnityGameLib
         StartCoroutine(wait());
     }
 
+    //フェードアウトされたら呼ばれる
     IEnumerator wait()
     {
         yield return new WaitUntil(() => fi.CutoutRange == 0f);
