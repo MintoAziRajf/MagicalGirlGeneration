@@ -25,6 +25,9 @@ public class PlayerAttack : PlayerManager
 
     private bool isEvo = false;
     public bool IsEvo { set { isEvo = value; } }
+
+    [SerializeField] private bool isEffect = false;
+
     //------------------------------
     /// <summary>
     /// 攻撃メソッド
@@ -91,6 +94,7 @@ public class PlayerAttack : PlayerManager
     /// <param name="freq">攻撃回数</param>
     private void AttackEnemy(int damage, int freq)
     {
+        if(isEffect) playerController.AttackEffect();
         gameManager.AddScore(damage * freq * (int)SCORE.ATTACK); // スコア追加
 
         if (playerController.CurrentX == enemyManager.WeakPoint) //弱点かどうか判定
