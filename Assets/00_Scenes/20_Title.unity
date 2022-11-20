@@ -1984,7 +1984,7 @@ MonoBehaviour:
   video: {fileID: 2141136784}
   fade: {fileID: 1297637840}
   fi: {fileID: 1297637841}
-  deltaTime: 5
+  deltaTime: 30
 --- !u!1 &1868428783
 GameObject:
   m_ObjectHideFlags: 0
@@ -2555,7 +2555,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.06
   m_Pitch: 1
   Loop: 0
   Mute: 0

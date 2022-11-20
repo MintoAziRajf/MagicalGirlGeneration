@@ -5,7 +5,7 @@ using UnityEngine.Video;
 
 namespace NTitleController
 { 
-
+    //インターフェース
     interface ITitileController
     {
        void GetHorizontal(); 
@@ -28,6 +28,7 @@ namespace NTitleController
         bool isExitGameCheck = true;
         bool checkIf = true;
 
+    　　//プロパティ
         public float Timer
         {
             set { timer = value;}
@@ -48,37 +49,18 @@ namespace NTitleController
         {         
             timer += Time.deltaTime;
 
-            Debug.Log(mC.WaitCheck);
             StartCoroutine(wait());
         }
 
-        public virtual void GetHorizontal()
-        {
-            getHorizontalValue = Input.GetAxis("Vertical");
-
-            if (getHorizontalValue == 1)
-            {
-                isGameStartCheck = true;
-                isExitGameCheck = false;
-                decisionGameStart.SetActive(true);
-                decisionEXIT.SetActive(false);
-            }
-
-            if (getHorizontalValue == -1)
-            {
-                isGameStartCheck = false;
-                isExitGameCheck = true;
-                decisionEXIT.SetActive(true);
-                decisionGameStart.SetActive(false);
-            }
-        }
+        
 
         IEnumerator wait()
         {
             yield return new WaitUntil(() => fi.CutoutRange == 0f);
 
-            GetHorizontal();//スタートかEXITか選択されている関数
+            GetHorizontal();
 
+            //Startボタンを押したら
             if (Input.GetButtonDown("Submit") && isGameStartCheck && checkIf && mC.WaitCheck)
             {
                 checkIf = false;
@@ -86,6 +68,7 @@ namespace NTitleController
                 SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             }
 
+            //EXITボタンを押したら
             if (Input.GetButtonDown("Submit") && isExitGameCheck && checkIf && mC.WaitCheck)
             {
                 checkIf = false;
@@ -95,6 +78,31 @@ namespace NTitleController
             #else
                          Application.Quit();//ゲームプレイ終了
             #endif
+            }
+        }
+
+        public virtual void GetHorizontal()
+        {
+            getHorizontalValue = Input.GetAxis("Vertical");
+
+            //Startボタンを選択していたら
+            if (getHorizontalValue == 1)
+            {
+                timer = 0f;
+                isGameStartCheck = true;
+                isExitGameCheck = false;
+                decisionGameStart.SetActive(true);
+                decisionEXIT.SetActive(false);
+            }
+
+            //EXITボタンを選択していたら
+            if (getHorizontalValue == -1)
+            {
+                timer = 0f;
+                isGameStartCheck = false;
+                isExitGameCheck = true;
+                decisionEXIT.SetActive(true);
+                decisionGameStart.SetActive(false);
             }
         }
     }
