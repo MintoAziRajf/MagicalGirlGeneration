@@ -183,14 +183,15 @@ public class EnemySkillList : MonoBehaviour
     private List<GameObject> tutorialMark = new List<GameObject>();
     public IEnumerator TutorialAttackStart()
     {
-        yield return StartCoroutine(Attack((int)ATTACK.LIGHTNING, 0, 0, 10));
+        yield return StartCoroutine(Attack((int)ATTACK.LIGHTNING, 0, 1, 300));
     }
     public IEnumerator TutorialCounterStart()
     {
-        yield return StartCoroutine(Attack((int)ATTACK.LIGHTNING, 0, 0, 10));
-        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[0].transform.position, enemyGrid[0].transform.rotation, enemyAttacks.transform));
-        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[1].transform.position, enemyGrid[1].transform.rotation, enemyAttacks.transform));
+        yield return StartCoroutine(Attack((int)ATTACK.BEAM, 0, 0, 10));
+        yield return StartCoroutine(Attack((int)ATTACK.BEAM, 1, 0, 10));
         tutorialMark.Add(Instantiate(dangerMark, enemyGrid[2].transform.position, enemyGrid[2].transform.rotation, enemyAttacks.transform));
+        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[5].transform.position, enemyGrid[5].transform.rotation, enemyAttacks.transform));
+        tutorialMark.Add(Instantiate(dangerMark, enemyGrid[8].transform.position, enemyGrid[8].transform.rotation, enemyAttacks.transform));
         yield return StartCoroutine(WaitFrame(MARK_LIFETIME));
     }
     public IEnumerator TutorialCounterEnd()
@@ -200,13 +201,13 @@ public class EnemySkillList : MonoBehaviour
             Destroy(g);
         }
         List<GameObject> effect = new List<GameObject>();
-        effect.Add(Instantiate(beamObj, enemyGrid[0].transform.position, enemyGrid[0].transform.rotation, enemyAttacks.transform));
-        effect.Add(Instantiate(beamObj, enemyGrid[1].transform.position, enemyGrid[1].transform.rotation, enemyAttacks.transform));
-        effect.Add(Instantiate(beamObj, enemyGrid[2].transform.position, enemyGrid[2].transform.rotation, enemyAttacks.transform));
+        effect.Add(Instantiate(lightningObj, enemyGrid[2].transform.position, enemyGrid[2].transform.rotation, enemyAttacks.transform));
+        effect.Add(Instantiate(lightningObj, enemyGrid[5].transform.position, enemyGrid[5].transform.rotation, enemyAttacks.transform));
+        effect.Add(Instantiate(lightningObj, enemyGrid[8].transform.position, enemyGrid[8].transform.rotation, enemyAttacks.transform));
         yield return StartCoroutine(WaitFrame(OMEN_TIME));
-        collisionManager.StartCoroutine(collisionManager.DamageGrid(0, 0, 10, DAMAGE_LIFETIME));
-        collisionManager.StartCoroutine(collisionManager.DamageGrid(1, 0, 10, DAMAGE_LIFETIME));
         collisionManager.StartCoroutine(collisionManager.DamageGrid(2, 0, 10, DAMAGE_LIFETIME));
+        collisionManager.StartCoroutine(collisionManager.DamageGrid(2, 1, 10, DAMAGE_LIFETIME));
+        collisionManager.StartCoroutine(collisionManager.DamageGrid(2, 2, 10, DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(DAMAGE_LIFETIME));
         yield return StartCoroutine(WaitFrame(FADE_TIME));
         foreach (GameObject g in effect)

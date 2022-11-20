@@ -12,7 +12,7 @@ public class CollisionManager : MonoBehaviour
     private const int DAMAGE = 2;
 
     [SerializeField] private SpriteRenderer[] gridObj = new SpriteRenderer[9];
-    [Header("EMPTY,PLAYER,AVOID,DAMAGE")] [SerializeField] private Color[] gridColor = new Color[4];
+    [Header("EMPTY, DAMAGE")] [SerializeField] private Color[] gridColor = new Color[2];
     private void Awake()
     {
         InitGrid();
@@ -98,7 +98,6 @@ public class CollisionManager : MonoBehaviour
                 int index = i + j * 3;
                 int color = collisionGrid[i, j];
                 if (color >= DAMAGE) color = 1;
-                else if(color == PLAYER) color = 2;
                 else color = EMPTY;
                 gridObj[index].color = gridColor[color];
             }

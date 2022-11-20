@@ -9,6 +9,7 @@ public class PauseManager : MonoBehaviour
     private const int NEGATIVE = 1;
     private const int ANIM_TIME = 20;
     private int time = 0;
+    private bool isFirst = true;
 
     [SerializeField] private GameObject pauseMenu = null;
     [SerializeField] private GameObject resumeOutline = null;
@@ -89,7 +90,12 @@ public class PauseManager : MonoBehaviour
         {
             SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             if (pauseMenu.activeSelf) Unpause();
-            else LoadManager.instance.LoadScene("20_Title");
+            else
+            {
+                if (!isFirst) return;
+                isFirst = false;
+                LoadManager.instance.LoadScene("20_Title");
+            }
         }
         else if (cancel)
         {

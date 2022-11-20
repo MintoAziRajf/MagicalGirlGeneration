@@ -16,6 +16,8 @@ public class MessageManager : MonoBehaviour
     }
     [SerializeField] private GameObject messageCanvas = null;
     [SerializeField] private GameObject messageObj = null;
+    private bool isTutorial = false;
+    public bool IsTutorial { set { isTutorial = value; } }
     private const int DISPLAY_TIME = 60;
     private Queue<IEnumerator> messageQueue = new Queue<IEnumerator>();
 
@@ -23,6 +25,7 @@ public class MessageManager : MonoBehaviour
 
     public IEnumerator DisplayMessage(string msg)
     {
+        if (isTutorial) yield break;
         if (isDisplay)
         {
             messageQueue.Enqueue(DisplayMessage(msg));

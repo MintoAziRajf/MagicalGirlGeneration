@@ -35,6 +35,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         playerController = player.GetComponent<PlayerController>();
+        MessageManager.instance.IsTutorial = isTutorial;
         playerController.IsTutorial = isTutorial;
         playerController.Type = type;
         enemyManager = enemy.GetComponent<EnemyManager>();

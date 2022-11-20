@@ -10,13 +10,12 @@ public class Evolution : PlayerManager
         gameUI.EvolutionCurrentGauge = EVO_MIN;
     }
 
-    private const int EVO_MAX = 100;   // ゲージ最大値
-    private const int EVO_MIN = 0;     // 最小値
-    private const int EVO_MOVE = 5;　  // 移動時のゲージ上昇量
-    private const int EVO_ATTACK = 10; // 攻撃時のゲージ上昇量
-    private const float EVO_TICK = 0.25f;  // 何秒ごとに減らすか
-    private float evoTime = 0f; // 秒数記録用
-    private int evoGauge = 0;   // 現在のゲージ 
+    private const float EVO_MAX = 100f;   // ゲージ最大値
+    private const float EVO_MIN = 0f;     // 最小値
+    private const float EVO_MOVE = 5f;　  // 移動時のゲージ上昇量
+    private const float EVO_ATTACK = 10f; // 攻撃時のゲージ上昇量
+    private const float EVO_TICK = 4f;  // 毎秒の減少量
+    private float evoGauge = 0f;   // 現在のゲージ 
     public int EvoGauge { set { evoGauge = value; } } //Debug用
     private bool isEvo = false; // 変身しているかどうか
     private bool isStart = false; //
@@ -62,7 +61,7 @@ public class Evolution : PlayerManager
     public void Increase(string s)
     {
         if (isEvo) return;
-        int value = 0;
+        float value = 0;
         if (s == "Attack")
         {
             value = EVO_ATTACK;
@@ -80,7 +79,7 @@ public class Evolution : PlayerManager
     /// 変身ゲージを溜める(チュートリアル用)
     /// </summary>
     /// <param name="value">増加量</param>
-    public void Increase(int value)
+    public void Increase(float value)
     {
         evoGauge = value;
     }
@@ -91,14 +90,8 @@ public class Evolution : PlayerManager
     /// </summary>
     private void Decrease()
     {
-        evoTime += Time.deltaTime;
-        //一秒を超えたら
-        if (evoTime >= EVO_TICK)
-        {
-            evoTime -= EVO_TICK;
-            //最小値を下回らないように減少させる
-            evoGauge = Mathf.Max(evoGauge - 1, EVO_MIN);
-        }
+        //最小値を下回らないように減少させる
+        evoGauge = Mathf.Max(evoGauge - EVO_TICK * Time.deltaTime, EVO_MIN);
     }
 
     /// <summary>
