@@ -11,12 +11,12 @@ public class PauseManager : MonoBehaviour
     private int time = 0;
     private bool isFirst = true;
 
-    [SerializeField] private GameObject pauseMenu = null;
-    [SerializeField] private GameObject resumeOutline = null;
-    [SerializeField] private GameObject exitOutline = null;
-    [SerializeField] private GameObject dialogMenu = null;
-    [SerializeField] private GameObject yesOutline = null;
-    [SerializeField] private GameObject noOutline = null;
+    [SerializeField] private GameObject pauseMenu = null; // ポーズ画面
+    [SerializeField] private GameObject resumeOutline = null; // 再開
+    [SerializeField] private GameObject exitOutline = null; // ゲームをやめる
+    [SerializeField] private GameObject dialogMenu = null; // 確認画面
+    [SerializeField] private GameObject yesOutline = null; // はい
+    [SerializeField] private GameObject noOutline = null; // いいえ
 
     private GameManager gameManager;
 
@@ -41,6 +41,9 @@ public class PauseManager : MonoBehaviour
         PauseDisplay();
     }
 
+    /// <summary>
+    /// 選択中のメニューのアウトラインをアクティブにする
+    /// </summary>
     private void PauseDisplay()
     {
         if (pauseMenu.activeSelf)
@@ -77,6 +80,7 @@ public class PauseManager : MonoBehaviour
         bool submit = Input.GetButtonDown("Submit") && currentSelect == POSITIVE;
         bool cancel = Input.GetButtonDown("Submit") && currentSelect == NEGATIVE;
         bool unpause = Input.GetButtonDown("Option");
+        // 選択
         if (vertical == 1f)
         {
             currentSelect = POSITIVE;
@@ -86,17 +90,19 @@ public class PauseManager : MonoBehaviour
             currentSelect = NEGATIVE;
         }
 
+        // 決定
         if (submit)
         {
             SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
             if (pauseMenu.activeSelf) Unpause();
             else
             {
-                if (!isFirst) return;
+                if (!isFirst) return; // 一度目しか選択されないように
                 isFirst = false;
                 LoadManager.instance.LoadScene("20_Title");
             }
         }
+        // 戻る
         else if (cancel)
         {
             SoundManager.instance.PlaySE(SoundManager.SE_Type.Submit);
@@ -112,7 +118,7 @@ public class PauseManager : MonoBehaviour
             }
         }
 
-        if (unpause) Unpause();
+        if (unpause) Unpause(); // ポーズ終了
     }
 
     private void Unpause()

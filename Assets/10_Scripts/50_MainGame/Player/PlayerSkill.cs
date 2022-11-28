@@ -31,7 +31,7 @@ public class PlayerSkill : PlayerManager
     }
 
     /// <summary>
-    /// 
+    /// 必殺技オーブを生成
     /// </summary>
     /// <param name="x">プレイヤーの位置X</param>
     /// <param name="y">プレイヤーの位置X</param>
@@ -79,15 +79,10 @@ public class PlayerSkill : PlayerManager
             numbers.RemoveAt(index);
         }
     }
-
-    public void RemoveTile()
-    {
-        currentTiles--;
-        if (currentTiles == 0)
-        {
-            StartCoroutine(playerController.Skill());
-        }
-    }
+    
+    /// <summary>
+    /// 必殺技オーブを全てリセット
+    /// </summary>
     public void ResetGrid()
     {
         for (int i = 0; i < 9; i++)
@@ -99,16 +94,25 @@ public class PlayerSkill : PlayerManager
             }
         }
     }
-
+    /// <summary>
+    /// 必殺技オーブが取得された時ゲーム画面から除去する
+    /// </summary>
     public void RemoveGrid()
     {
         SoundManager.instance.PlaySE(SoundManager.SE_Type.SkillOrb); // 効果音
         audienceAnimation.StartAnimation(); // 観客のアニメーションを変更する
         gameManager.AddScore((int)SCORE.SKILL_ORB); // スコア追加
-        playerController.SkillGrid[playerController.CurrentX, playerController.CurrentY] = false; // 該当のスキルタイルを削除
+        // 該当の必殺技オーブを削除
+        playerController.SkillGrid[playerController.CurrentX, playerController.CurrentY] = false; 
         playerController.RemoveSkillOrb(playerController.CurrentPos);
-        playerSkill.RemoveTile(); // スキルメソッドにスキルタイルを削除したことを伝える
+        // 合計オーブ数を減らし、０になったら必殺技発動
+        currentTiles--; 
+        if (currentTiles == 0) StartCoroutine(playerController.Skill());
     }
+
+    /// <summary>
+    /// キャラに応じた効果音を再生
+    /// </summary>
     public void SkillSE()
     {
         switch (playerController.Type)

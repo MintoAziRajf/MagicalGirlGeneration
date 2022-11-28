@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,6 +41,10 @@ public class UIChanger : MonoBehaviour
         SetUI(GameObject.FindWithTag("GameManager").GetComponent<GameManager>().Type);
     }
 
+    /// <summary>
+    /// キャラクターに応じてＵＩを変更
+    /// </summary>
+    /// <param name="type">キャラの種類</param>
     private void SetUI(int type)
     {
         foreach(UIData data in uiData)

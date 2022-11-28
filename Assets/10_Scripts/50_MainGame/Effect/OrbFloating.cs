@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class OrbFloating : MonoBehaviour
 {
-    [SerializeField] private float height = 0f;
-    [SerializeField] private float speed = 0f;
-    [SerializeField] private float angle = 0f;
+    [SerializeField] private float height = 0f; // 浮遊上限
+    [SerializeField] private float speed = 0f; // 浮遊速度
+    [SerializeField] private float angle = 0f; // 回転速度
 
     private float startHeight = 0f;
     private float currentHeight = 0f;
@@ -16,8 +14,8 @@ public class OrbFloating : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        this.transform.Rotate(new Vector3(0f, 0f, angle * Time.deltaTime));
-        if(Mathf.Abs(currentHeight) >= height)
+        this.transform.Rotate(new Vector3(0f, 0f, angle * Time.deltaTime)); // 回転
+        if(Mathf.Abs(currentHeight) >= height) // 上限に達したら反転
         {
             speed *= -1f;
         }

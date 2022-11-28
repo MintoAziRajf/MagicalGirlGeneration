@@ -11,11 +11,25 @@ public class ResultSave : MonoBehaviour
         SCORE,
         RANK
     }
+    private enum RANK
+    {
+        C,
+        B,
+        A,
+        S
+    }
+
     private List<string[]> scoreDatas = new List<string[]>();
     private string path;
     private const int RANK_S = 3000000;
     private const int RANK_A = 2000000;
     private const int RANK_B = 1000000;
+
+    /// <summary>
+    /// スコアを保存
+    /// </summary>
+    /// <param name="type">キャラの種類</param>
+    /// <param name="score">保存するスコア</param>
     public void SaveScore(int type, int score)
     {
         path = Application.dataPath + @"\score.csv";
@@ -75,11 +89,20 @@ public class ResultSave : MonoBehaviour
         Debug.Log("スコアデータをロードしました。");
     }
 
+    /// <summary>
+    /// ハイスコアを返す
+    /// </summary>
+    /// <param name="type">キャラの種類</param>
     public int Highscore(int type)
     {
         LoadHighscore();
         return int.Parse(scoreDatas[type][(int)DATA.SCORE]);
     }
+    /// <summary>
+    /// スコアからランクを判定
+    /// </summary>
+    /// <param name="score">判定するスコア</param>
+    /// <return>文字列で返す</return>
     public string Rank(int score)
     {
         string s = null;
@@ -89,14 +112,18 @@ public class ResultSave : MonoBehaviour
         else s = "C";
         return s;
     }
-
+    /// <summary>
+    /// スコアからランクを判定
+    /// </summary>
+    /// <param name="score"></param>
+    /// <returns>intで返す</returns>
     public int RankInt(int score)
     {
         int rank = 0;
-        if (score >= RANK_S) rank = 3;
-        else if (score >= RANK_A) rank = 2;
-        else if (score >= RANK_B) rank = 1;
-        else rank = 0;
+        if (score >= RANK_S) rank = (int)RANK.S;
+        else if (score >= RANK_A) rank = (int)RANK.A;
+        else if (score >= RANK_B) rank = (int)RANK.B;
+        else rank = (int)RANK.C;
         return rank;
     }
 }

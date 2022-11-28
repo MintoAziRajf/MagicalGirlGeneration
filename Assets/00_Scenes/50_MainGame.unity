@@ -3085,8 +3085,6 @@ MonoBehaviour:
   cutIn: {fileID: 0}
   audienceAnimation: {fileID: 0}
   visualAnim: {fileID: 0}
-  deadBackground: {fileID: 0}
-  mainCamera: {fileID: 1674747495}
 --- !u!95 &239253434
 Animator:
   serializedVersion: 3
@@ -26654,7 +26652,7 @@ MonoBehaviour:
   enemyUIObj: {fileID: 1470725640}
   damageUIPrefab: {fileID: 3899468470267940928, guid: 83cabd977920cd94e9694cc7ca94eced,
     type: 3}
-  csv:
+  enemyCSV:
   - {fileID: 4900000, guid: 682b3be4436360f4a982579714484ce4, type: 3}
   - {fileID: 4900000, guid: 0dcd3ea210e60314e871d105e21ff748, type: 3}
   - {fileID: 4900000, guid: 53a821b053bbaf049918ad4a40858676, type: 3}

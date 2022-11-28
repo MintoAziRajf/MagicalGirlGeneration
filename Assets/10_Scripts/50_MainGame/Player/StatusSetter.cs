@@ -7,6 +7,7 @@ public class StatusSetter : PlayerManager
     private int PLAYER_TYPE = 0;
     [SerializeField] private TextAsset statusCSV = null;
     List<string[]> statusData = new List<string[]>();
+    //CSVの行情報
     private enum STATUS
     {
         NOR_HP = 1,
@@ -27,6 +28,10 @@ public class StatusSetter : PlayerManager
     {
         LoadStatus();
     }
+
+    /// <summary>
+    /// ステータスをCSVからロード
+    /// </summary>
     private void LoadStatus()
     {
         StringReader reader = new StringReader(statusCSV.text);
@@ -42,13 +47,16 @@ public class StatusSetter : PlayerManager
         SetStatus();
     }
 
+    /// <summary>
+    /// プレイヤーのステータスをセット
+    /// </summary>
     private void SetStatus()
     {
         PLAYER_TYPE = gameManager.Type;
-        //
+        
         playerHP.NormalHP = ReturnStatus(STATUS.NOR_HP);
         playerHP.EvoHP = ReturnStatus(STATUS.EVO_HP);
-        //
+        
         playerAttack.AttackFreq = ReturnStatus(STATUS.ATTACK_FREQ);
         playerAttack.DamageNormal = ReturnStatus(STATUS.NOR_DAMAGE);
         playerAttack.DamageEvolution = ReturnStatus(STATUS.EVO_DAMAGE);
@@ -56,10 +64,10 @@ public class StatusSetter : PlayerManager
         playerAttack.SkillFreq = ReturnStatus(STATUS.SKILL_FREQ);
         playerAttack.DamageCounterAttack = ReturnStatus(STATUS.CA_DAMAGE);
         playerAttack.CounterAttackFreq = ReturnStatus(STATUS.CA_FREQ);
-        //
+        
         playerController.MoveCooltime = ReturnStatus(STATUS.MOVE_COOLTIME);
         playerController.AttackType = ReturnStatus(STATUS.ATTACK_LINE);
-        //
+        
         playerSkill.MaxTiles = ReturnStatus(STATUS.SKILL_ORB);
     }
     private int ReturnStatus(STATUS s)

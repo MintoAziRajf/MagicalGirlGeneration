@@ -64,10 +64,10 @@ public class Loading : MonoBehaviour
     }
     public IEnumerator LoadScene(string sceneName)
     {
-        Time.timeScale = 0f; //
-        yield return StartCoroutine(FadeScreen(false));
-        loadingScreen.SetActive(true);
-        yield return StartCoroutine(FadeScreen(true));
+        Time.timeScale = 0f; // 他の処理を停止するために時間を停止
+        yield return StartCoroutine(FadeScreen(false)); // フェードアウト
+        loadingScreen.SetActive(true); // ローディング画面をアクティブにする
+        yield return StartCoroutine(FadeScreen(true)); // フェードイン
         // 非同期でロードを行う
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
 
@@ -78,13 +78,13 @@ public class Loading : MonoBehaviour
         {
             yield return 0;
         }
-        yield return new WaitForSecondsRealtime(2.0f);
+        yield return new WaitForSecondsRealtime(2.0f); // 二秒後フェードアウト
         yield return StartCoroutine(FadeScreen(false));
         
         // ロードが完了したときにシーンのアクティブ化を許可する
         asyncLoad.allowSceneActivation = true;
 
-        Time.timeScale = 1f; //
+        Time.timeScale = 1f; // 時間を戻す
         // ロードが完了するまで待つ
         yield return asyncLoad;
     }
@@ -96,6 +96,7 @@ public class Loading : MonoBehaviour
     private IEnumerator FadeScreen(bool b)
     {
         float start, end;
+        //フェードインの場合アルファ値を１→０にする
         if (b)
         {
             start = 1f;
@@ -107,6 +108,7 @@ public class Loading : MonoBehaviour
             end = 1f;
         }
         alpha = start;
+        // 30フレームかけて変化させる
         for (int i = 0; i < 30; i++)
         {
             yield return null;
