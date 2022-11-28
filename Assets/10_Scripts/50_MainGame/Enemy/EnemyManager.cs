@@ -18,7 +18,7 @@ public class EnemyManager : MonoBehaviour
 
     [SerializeField] private GameObject enemyUIObj = null;　　//UIの表示先(親)
     [SerializeField] private GameObject damageUIPrefab = null;//ダメージ表記のプレファブ
-    [SerializeField] private TextAsset[] csv = null;//エネミーの情報が書いてあるCSV
+    [SerializeField] private TextAsset[] enemyCSV = null;//エネミーの情報が書いてあるCSV
     List<string[]> enemyData = new List<string[]>();//エネミーの情報
 
     [SerializeField] private SpriteRenderer enemyVisual = null;
@@ -69,11 +69,13 @@ public class EnemyManager : MonoBehaviour
 
     private void Awake()
     {
-        originPosition = this.gameObject.transform.localPosition;
+        originPosition = this.gameObject.transform.localPosition; // 元の位置を取得
+        
         enemySkillList = GetComponent<EnemySkillList>();
         enemyUI = this.GetComponent<EnemyUI>();
         gameManager = GameObject.FindWithTag("GameManager").GetComponent<GameManager>();
         playerController = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
+
         //エネミー情報をロード
         LoadEnemy();
     }
@@ -86,7 +88,7 @@ public class EnemyManager : MonoBehaviour
         // 以前のデータをクリア
         enemyData.Clear();
         // 敵のデータをロード
-        StringReader reader = new StringReader(csv[currentEnemy].text); 
+        StringReader reader = new StringReader(enemyCSV[currentEnemy].text); 
         string line = reader.ReadLine(); //見出し行をスキップする
         while (reader.Peek() != -1) // reader.Peekが-1になるまで
         {
@@ -156,16 +158,23 @@ public class EnemyManager : MonoBehaviour
         UpdateWeakPoint();
     }
 
+    /// <summary>
+    /// 弱点を更新
+    /// </summary>
     private void UpdateWeakPoint()
     {
-        if (!isStart) return;
+        if (!isStart) return; // ゲームスタートする前は更新しない
         //弱点をセット
         weakPoint = Random.Range(0, 3);
-        enemyUI.DisplayWeakIcon(weakPoint);
+        enemyUI.DisplayWeakIcon(weakPoint); // 弱点を表示
     }
 
+    /// <summary>
+    /// ダメージを受けたときに点滅させる
+    /// </summary>
     private IEnumerator DamagedFlash()
     {
+        //durationフレームの間 intervalフレームの間隔で切り替え
         for(int i = 0; i < duration; i++)
         {
             if(i % interval == 0)
@@ -176,6 +185,9 @@ public class EnemyManager : MonoBehaviour
         }
         enemyVisual.enabled = true;
     }
+    /// <summary>
+    /// ダメージを受けたときに振動させる
+    /// </summary>
     private IEnumerator DamagedShake()
     {
         for (int i = 0; i < duration; i++)
@@ -289,18 +301,19 @@ public class EnemyManager : MonoBehaviour
     /// </summary>
     private IEnumerator DefeatAnimation()
     {
-        gameManager.StopGame();
+        gameManager.StopGame(); // ゲームを停止
+        // 1秒間待機
         for (int i = 0; i < 60; i++)
         {
             yield return null;
         }
-        Time.timeScale = 0f;
+        Time.timeScale = 0f; // 時間停止
         
         Color c = new Color(0f, 0f, 0f, 0f);
         int flashDuration = 30; // 点滅に要するフレーム数
         int flashTimes = 3; // 敵キャラの点滅回数
         float unitAlpha = 1f / flashDuration; // 一度に変化する不透明度の値
-        Animator anim = defeatScreen.GetComponent<Animator>();
+        Animator anim = defeatScreen.GetComponent<Animator>(); // 撃破スクリーンのアニメーターを取得
         // 不透明度の初期化
         defeatEnemy.color = c;
         defeatScreen.color = c;
@@ -320,7 +333,9 @@ public class EnemyManager : MonoBehaviour
                 yield return null;
             }
         }
-        if (currentEnemy == 2) yield return StartCoroutine(EndGame());
+        currentEnemy++; // 敵のカウントを進める
+        gameManager.AddScore(300000); // スコア追加
+        if (currentEnemy == enemyCSV.Length) yield return StartCoroutine(EndGame()); // 最後の敵だった場合　メインゲームを終了させる
         //フェードアウト
         for (int i = 0; i < flashDuration; i++)
         {
@@ -328,14 +343,13 @@ public class EnemyManager : MonoBehaviour
             defeatScreen.color = c;
             yield return null;
         }
-        //
-        if (currentEnemy == 2) yield break;
-        currentEnemy++;
-        gameManager.AddScore(300000);
+        //現在の敵に応じてBGMを変更
         if (currentEnemy == 1) SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_00);
         else if (currentEnemy == 2) SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_02);
-        anim.SetTrigger("Transition");
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning);
+        else if (currentEnemy == enemyCSV.Length) yield break;
+        anim.SetTrigger("Transition"); // 撃破アニメーションを再生
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Warning); // 効果音
+        // 撃破アニメーション分待機
         for (int i = 0; i < 255; i++)
         {
             yield return null;
@@ -351,20 +365,25 @@ public class EnemyManager : MonoBehaviour
         }
         //時間を戻す
         Time.timeScale = 1f;
-        gameManager.ResumeGame();
+        gameManager.ResumeGame(); // ゲーム再開
     }
 
+    /// <summary>
+    /// メインゲームを終了させる
+    /// </summary>
     private IEnumerator EndGame()
     {
-        yield return StartCoroutine(EnemyExplosion());
-        StartCoroutine(MessageManager.instance.DisplayMessage("よく世界を救ったね！"));
-        StartCoroutine(gameManager.GameClear());
+        yield return StartCoroutine(EnemyExplosion()); // 撃破エフェクト(爆発)
+        StartCoroutine(MessageManager.instance.DisplayMessage("よく世界を救ったね！")); // メッセージ表示
+        StartCoroutine(gameManager.GameClear()); // ゲームクリア
     }
-    [SerializeField] private GameObject explosionPrefab = null;
-    [SerializeField] private Transform[] explosionPosition = null;
+
+    [SerializeField] private GameObject explosionPrefab = null; // 爆発エフェクト
+    [SerializeField] private Transform[] explosionPosition = null; // エフェクトを再生する場所
     private IEnumerator EnemyExplosion()
     {
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.Explosion);
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Explosion); // 効果音
+        // 指定回数エフェクトを再生
         for (int i = 0; i < explosionPosition.Length; i++)
         {
             Instantiate(explosionPrefab,explosionPosition[i]);

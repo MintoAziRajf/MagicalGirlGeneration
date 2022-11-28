@@ -4,15 +4,16 @@ using UnityEngine;
 
 public class PlayerController : PlayerManager
 {
-    private bool[,] attackGrid = new bool[3, 3];
-    private bool[,] skillGrid = new bool[3, 3];
+    // タイルに存在するオブジェクト情報--------------
+    private bool[,] attackGrid = new bool[3, 3]; // 攻撃タイル
+    private bool[,] skillGrid = new bool[3, 3]; // 必殺技オーブタイル
     public bool[,] SkillGrid { set { skillGrid = value; } get { return skillGrid; } }
-    private bool[,] healGrid = new bool[3, 3];
+    private bool[,] healGrid = new bool[3, 3]; // 回復タイル
 
     // キャラクターの種類---------------------
-    private int type = 0;
+    private int type = 0; // キャラの種類
     public int Type { set { type = value; visualAnim.SetInteger("Type", type); } get { return type; } }
-    private int attackType = 0;
+    private int attackType = 0; // 攻撃タイプ(0:近距離　1:遠距離)
     public int AttackType { set { attackType = value; } }
 
     //----------移動関連------------
@@ -114,12 +115,12 @@ public class PlayerController : PlayerManager
         //移動
         transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetPos, speed * Time.deltaTime);
         evolution.Check();
-
+        // 攻撃、アニメーション、必殺技、カウンター中と開始する前は入力を受け付けない
         canInput = !isAttack && !isAnim && !isSkill && !isCounter && isStart;
         if (!canInput) return;
-        InputAvoid();
+        InputAvoid(); // 回避入力
         if (transform.localPosition != targetPos || isMove || isBringBack) return; // 自分のいる場所が目的地じゃなかったら操作を受け付けない
-        InputDirection();
+        InputDirection(); // 移動入力
     }
     // 無敵関連--------------------------------------------------
     /// <summary>
@@ -363,17 +364,21 @@ public class PlayerController : PlayerManager
     /// <param name="value">ダメージ量</param>
     public IEnumerator Damaged(int value)
     {
+        // 回避中ならカウンター
         if (isAvoid)
         {
             StartCoroutine(AvoidSuccess());
             isAvoid = false;
             yield break;
         }
+        // 攻撃を連続で受けないように1フレーム待機させる
         yield return new WaitForSeconds(1f / 60f);
-        if (isInvincible) yield break;
+        if (isInvincible) yield break;　// 無敵中はダメージが入らないように
+
+        //ダメージ
         playerHP.Damaged(value);
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged);
-        StartCoroutine(Invincible((int)INVINCIBLE.DAMAGE));
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.Enemy_Damaged); // 効果音
+        StartCoroutine(Invincible((int)INVINCIBLE.DAMAGE)); // 無敵処理
     }
     /// <summary>
     /// 回復メソッド
@@ -381,9 +386,12 @@ public class PlayerController : PlayerManager
     private void Healed()
     {
         playerHP.Heal();
+        //回復エフェクト
         healEffectObj.transform.position = displayGrid[currentX + currentY * 3].transform.position;
         healEffect.StartEffect();
+        // 効果音
         SoundManager.instance.PlaySE(SoundManager.SE_Type.HealOrb);
+        // スコア追加
         gameManager.AddScore((int)SCORE.HEAL);
     }
     //--------------------------------------------------------------
@@ -434,6 +442,9 @@ public class PlayerController : PlayerManager
         SetAttackTile();
     }
 
+    /// <summary>
+    /// タイルを初期化
+    /// </summary>
     private void InitTiles()
     {
         for (int i = 0; i < 9; i++)
@@ -444,7 +455,10 @@ public class PlayerController : PlayerManager
         collisionManager.PlayerMoved(currentX, currentY);
         targetPos = transform.localPosition;
     }
-
+    
+    /// <summary>
+    /// 攻撃タイルをセット
+    /// </summary>
     private void SetAttackTile()
     {
         for (int i = 0; i < 3; i++)
@@ -454,10 +468,17 @@ public class PlayerController : PlayerManager
         }
     }
 
+    /// <summary>
+    /// UIをセット
+    /// </summary>
     private void SetUI()
     {
         gameUI.AvoidCooltime = AVOID_COOLTIME;
     }
+    
+    /// <summary>
+    /// 開始した時にメッセージを再生
+    /// </summary>
     private IEnumerator StartSerif()
     {
         while (!this.isStart) yield return null;
@@ -466,23 +487,37 @@ public class PlayerController : PlayerManager
     //--------------------------------------------------------------------------------
 
     // チュートリアル関連 ------------------------------------------------------------
+    /// <summary>
+    /// 移動チュートリアル
+    /// </summary>
     public IEnumerator TutorialMove()
     {
         yield return new WaitUntil(() => (Input.GetAxisRaw("Horizontal") == 1f));
         MoveRight();
         yield return StartCoroutine(MoveDelay());
     }
+    /// <summary>
+    /// 攻撃チューリアル
+    /// </summary>
     public IEnumerator TutorialAttack()
     {
-        attackGrid[2, ATTACK_LINE[attackType]] = true;
+        // 攻撃タイルを生成
+        attackGrid[2, ATTACK_LINE[attackType]] = true; 
         GameObject tutorialAttack = Instantiate(attackGridEffectPrefab, displayGrid[2 + ATTACK_LINE[attackType] * 3].transform);
+        // 移動入力待機
         yield return new WaitUntil(() => (Input.GetAxisRaw("Vertical") == ((float)BACK_LINE[attackType] - 1f)));
+        // 移動
         if(attackType == 0) MoveUp();
         else MoveDown();
+        // 攻撃タイルを削除
         attackGrid[2, ATTACK_LINE[attackType]] = false;
         Destroy(tutorialAttack);
+        // 変身ゲージ追加
         evolution.Increase(99);
     }
+    /// <summary>
+    /// 変身チュートリアル
+    /// </summary>
     public IEnumerator TutorialEvolution()
     {
         evolution.Increase(100);
@@ -492,13 +527,24 @@ public class PlayerController : PlayerManager
             yield return null;
         }
     }
+    /// <summary>
+    /// カウンターチュートリアル
+    /// </summary>
     public IEnumerator TutorialCounter()
     {
+        // カウンター用攻撃
         yield return StartCoroutine(enemyManager.TutorialCounter());
+        // 回避入力待機
         yield return new WaitUntil(() => (Input.GetButtonDown("Submit")));
+        // 回避
         StartCoroutine(Avoid());
+        // カウンター用攻撃終了
         yield return StartCoroutine(enemyManager.TutorialCounterEnd());
     }
+    /// <summary>
+    /// 必殺技チュートリアル
+    /// </summary>
+    /// <returns></returns>
     public IEnumerator TutorialSkill()
     {
         playerSkill.IsEvo = true;

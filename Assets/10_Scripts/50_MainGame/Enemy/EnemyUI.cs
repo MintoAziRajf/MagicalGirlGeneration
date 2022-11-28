@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,12 +31,13 @@ public class EnemyUI : MonoBehaviour
 
     private void Update()
     {
+        // 変化量が多い場合は一瞬で変更
         if(Mathf.Abs(hpCurrent - hpDisplayGauge) >= 1000f)
         {
             hpDisplayGauge = hpCurrent;
         }
+        // HPゲージをゆっくり変更
         hpDisplayGauge = Mathf.MoveTowards(hpDisplayGauge, hpCurrent, delay);
-        
         hpGaugeDisplay.fillAmount = hpDisplayGauge / hpMax;
 
         //hpに応じてゲージのカラーを変更

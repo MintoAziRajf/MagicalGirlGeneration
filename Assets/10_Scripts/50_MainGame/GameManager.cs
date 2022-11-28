@@ -12,38 +12,39 @@ public class GameManager : MonoBehaviour
     Epilogue epilogue;
     ScoreManager scoreManager;
 
-    [SerializeField] private GameObject player = null; 
-    [SerializeField] private GameObject enemy = null;
-    [SerializeField] private GameObject pauseCanvas = null;
-    [SerializeField] private GameObject debugCanvas = null;
+    [SerializeField] private GameObject player = null; // プレイヤー
+    [SerializeField] private GameObject enemy = null; // エネミー
+    [SerializeField] private GameObject pauseCanvas = null; // ポーズ画面
+    [SerializeField] private GameObject debugCanvas = null; // デバッグ画面
 
-    [SerializeField] private bool isTutorial = false;
+    [SerializeField] private bool isTutorial = false; // チュートリアルを再生するか
     public bool IsTutorial { set { isTutorial = value; } }
-    [SerializeField] private bool isPrologue = false;
+    [SerializeField] private bool isPrologue = false; // プロローグを再生するか
     public bool IsPrologue { set { isPrologue = value; } }
-    private bool isStart = false;
-    [SerializeField] private int type = 0;
+    private bool isStart = false; // 開始しているか
+    [SerializeField] private int type = 0; // キャラの種類
+    // getter setter
     public int Type
     {
         set { type = value; }
         get { return type; }
     }
 
-    [SerializeField] private GameObject gameOverCanvas = null;
-    [SerializeField] private GameObject resultPrefab = null;
+    [SerializeField] private GameObject gameOverCanvas = null; // ゲームオーバー画面
+    [SerializeField] private GameObject resultPrefab = null; // リザルト画面
 
     private void Start()
     {
         playerController = player.GetComponent<PlayerController>();
-        MessageManager.instance.IsTutorial = isTutorial;
-        playerController.IsTutorial = isTutorial;
-        playerController.Type = type;
+        MessageManager.instance.IsTutorial = isTutorial; // チュートリアル中はゲームガイドを非表示に
+        playerController.IsTutorial = isTutorial; // プレイヤーにチュートリアルの有無を送る
+        playerController.Type = type; // プレイヤーに今回のキャラクターの種類を送る
         enemyManager = enemy.GetComponent<EnemyManager>();
         tutorial = this.GetComponent<Tutorial>();
         prologue = this.GetComponent<Prologue>();
         epilogue = this.GetComponent<Epilogue>();
         scoreManager = this.GetComponent<ScoreManager>();
-        StartCoroutine(GameStart());
+        StartCoroutine(GameStart()); // ゲームスタート
     }
 
     private void FixedUpdate()
@@ -98,20 +99,23 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject countDownObj = null;
     private const int COUNTDOWN_TIME = 180; //3秒
+    /// <summary>
+    /// 開始カウントダウン
+    /// </summary>
     public IEnumerator StartCountDown()
     {
-        SoundManager.instance.PlaySE(SoundManager.SE_Type.CountDown);
-        Time.timeScale = 0f;
-        countDownObj.SetActive(true);
-        for (int i = 0; i < COUNTDOWN_TIME; i++) yield return null;
-        countDownObj.SetActive(false);
-        Time.timeScale = 1f;
-        isStart = true;
+        SoundManager.instance.PlaySE(SoundManager.SE_Type.CountDown); // 効果音
+        Time.timeScale = 0f; // 他の処理を止める
+        countDownObj.SetActive(true); // カウントダウン開始
+        for (int i = 0; i < COUNTDOWN_TIME; i++) yield return null; // カウントダウン終了まで待機
+        countDownObj.SetActive(false);// カウントダウン終了
+        Time.timeScale = 1f; // 他の処理を再開
+        isStart = true; // ゲームスタート
         yield break;
     }
 
     /// <summary>
-    /// ゲームを
+    /// ゲームを開始
     /// </summary>
     private IEnumerator GameStart()
     {
@@ -123,7 +127,8 @@ public class GameManager : MonoBehaviour
         }
         SoundManager.instance.PlayBGM(SoundManager.BGM_Type.MainGame_01);
         yield return StartCoroutine(StartCountDown()); //カウントダウンを始める
-        playerController.IsStart = true; // playerとenemyを動かす
+        // playerとenemyを動かす
+        playerController.IsStart = true; 
         enemyManager.IsStart = true;
         enemyManager.StartAttack();
     }

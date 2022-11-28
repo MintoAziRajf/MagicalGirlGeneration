@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class UVScroll : MonoBehaviour
 {
@@ -18,6 +16,9 @@ public class UVScroll : MonoBehaviour
         offset = _targetMaterial.mainTextureOffset;
     }
 
+    /// <summary>
+    /// テクスチャをスクロールさせる
+    /// </summary>
     private void Update()
     {
         offset.y += _scrollY * Time.unscaledDeltaTime;

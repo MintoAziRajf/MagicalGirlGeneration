@@ -78,7 +78,10 @@ public class CollisionManager : MonoBehaviour
         collisionGrid[x, y] = PLAYER;
         
     }
-
+    /// <summary>
+    /// プレイヤーにダメージを与える
+    /// </summary>
+    /// <param name="value">ダメージ値</param>
     private void PlayerDamaged(int value)
     {
         playerController.StartCoroutine(playerController.Damaged(value));
@@ -88,7 +91,9 @@ public class CollisionManager : MonoBehaviour
     {
         DisplayGrid();
     }
-
+    /// <summary>
+    /// タイルに色をつける
+    /// </summary>
     private void DisplayGrid()
     {
         for (int i = 0; i < 3; i++)
@@ -103,7 +108,9 @@ public class CollisionManager : MonoBehaviour
             }
         }
     }
-
+    /// <summary>
+    /// タイルの初期化
+    /// </summary>
     private void InitGrid()
     {
         for (int i = 0; i < 3; i++)

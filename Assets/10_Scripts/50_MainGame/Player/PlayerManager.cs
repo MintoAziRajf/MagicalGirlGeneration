@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
+/// <summary>
+/// プレイヤー関連の各スクリプトから各スクリプトを取得する作業を省くためのスクリプトです
+/// </summary>
 public class PlayerManager : MonoBehaviour
 {
     GameObject gameManagerObj;
@@ -24,8 +24,11 @@ public class PlayerManager : MonoBehaviour
     [HideInInspector] public AudienceAnimation audienceAnimation;
     [HideInInspector] public Animator visualAnim;
 
-    public enum CHARACTER { RED, BLUE, YELLOW }
-    public enum DIRECTION { UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3 }
+    public enum CHARACTER { RED, BLUE, YELLOW } // キャラの種類
+    public enum DIRECTION { UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3 } // 方向
+    /// <summary>
+    /// スコア情報
+    /// </summary>
     public enum SCORE
     {
         MOVE = 50,

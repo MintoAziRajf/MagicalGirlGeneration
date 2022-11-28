@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -8,7 +7,7 @@ public class DebugManager : MonoBehaviour
 {
     private GameManager gameManager;
     private PlayerController playerController;
-    private bool canInput = true;
+    private bool canInput = true; //入力可能か
 
     private void OnEnable()
     {
@@ -18,12 +17,12 @@ public class DebugManager : MonoBehaviour
 
     void Update()
     {
-        PauseInput();
-        PauseDisplay();
+        DebugInput();
+        DebugDisplay(); 
     }
 
     [SerializeField] private RectTransform selectObj = null;
-    private void PauseDisplay()
+    private void DebugDisplay()
     {
         var pos = selectObj.anchoredPosition;
         var selectPos = buttons[currentSelect].rectTransform.anchoredPosition;
@@ -47,7 +46,10 @@ public class DebugManager : MonoBehaviour
         ENEMY_HP,
         EXIT
     }
-    private void PauseInput()
+    /// <summary>
+    /// ボタンの役割
+    /// </summary>
+    private void DebugInput()
     {
         bool up = Input.GetAxisRaw("Vertical") == 1f && canInput;
         bool down = Input.GetAxisRaw("Vertical") == -1f && canInput;

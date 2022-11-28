@@ -248,19 +248,6 @@ public class SoundManager : SingletonMonoBehaviour<SoundManager>
         BGM_Sources[1].Play();
     }
 
-    // BGMVolume設定
-    public void SetVolumeBGM(float vol)
-    {
-        BGM_Volume = vol;
-    }
-
-    // SEVolume設定v
-    public void SetVolumeSE(float vol)
-    {
-        SE_Volume = vol;
-    }
-
-
     /*使い方
      * SoundManager.instance.PlayBGM(SoundManager.BGM_Type.Title);　　　<=　引数を変える
      * SoundManager.instance.PlaySE(SoundManager.SE_Type.OK);　　　　　 <=　引数を変える

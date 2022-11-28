@@ -9,6 +9,7 @@ using System;
 
 public class CharacterSelectManager : MonoBehaviour
 {
+    //キャラの種類
     private enum CHARACTER
     {
         RED,
@@ -19,7 +20,6 @@ public class CharacterSelectManager : MonoBehaviour
 
     [SerializeField] private GameObject currentObj = null, beforeObj = null; //現在、前のキャラ
 
-    private bool canOperate = true;
     
     //--------スクロール関連--------
     [SerializeField] private Vector2 centerPos, leftPos, rightPos; // スクロール先(固定値)
@@ -58,7 +58,8 @@ public class CharacterSelectManager : MonoBehaviour
     [SerializeField] private Sprite[] weaponIconSprite = null; // 武器アイコンの表示
     [SerializeField] private Image weaponIcon = null; // 表示先
 
-    private List<string[]> scoreDatas = new List<string[]>();
+    private List<string[]> scoreDatas = new List<string[]>(); // スコアデータ
+    // スコアデータCSVの行情報
     private enum SCORE
     {
         VALUE = 0,
@@ -66,37 +67,39 @@ public class CharacterSelectManager : MonoBehaviour
     }
     //------------------------------
 
-    //------------------------------
-    Animator anim;
-    private bool isDialog = false;
+
+    [SerializeField] private GameObject dialogs = null;　// ダイアログ
+    Animator dialogAnim; // ダイアログのアニメーション
+
+    private bool canOperate = true; // 操作可能か
+    private bool isDialog = false; // ダイアログ表示中か
     public bool IsDialog { set { isDialog = value; } }
-    [SerializeField] private GameObject dialogs = null;
-    private bool isPrologue = true;
+    private bool isPrologue = true; // プロローグを再生するか
     public bool IsPrologue { set { isPrologue = value; } }
-    private bool isTutorial = true;
+    private bool isTutorial = true; // チュートリアルを再生するか
     public bool IsTutorial { set { isTutorial = value; } }
     //------------------------------
 
     private void Awake()
     {
         //Init
-        LoadScore();
+        LoadScore(); // スコアを取得
         SoundManager.instance.PlayBGM(SoundManager.BGM_Type.CharacterSelect);
         currentImage = currentObj.GetComponent<Image>();
         currentTrans = currentObj.GetComponent<RectTransform>();
         beforeImage = beforeObj.GetComponent<Image>();
         beforeTrans = beforeObj.GetComponent<RectTransform>();
-        anim = dialogs.GetComponent<Animator>();
-        DisplayCharacterInfo();
+        dialogAnim = dialogs.GetComponent<Animator>();
+        DisplayCharacterInfo(); // キャラクター情報をセット
     }
 
     private void FixedUpdate()
     {
         bool isScroll = !(currentTrans.anchoredPosition == centerPos); //スクロール中かどうかの判定
-        bool submit = Input.GetButtonDown("Submit") && canOperate;
-        bool cancel = Input.GetButtonDown("Cancel") && canOperate;
+        bool submit = Input.GetButtonDown("Submit") && canOperate; // 決定
+        bool cancel = Input.GetButtonDown("Cancel") && canOperate; // 戻る
 
-        bool right = Input.GetAxisRaw("Horizontal") == 1f && !isDialog;
+        bool right = Input.GetAxisRaw("Horizontal") == 1f && !isDialog; 
         bool left = Input.GetAxisRaw("Horizontal") == -1f && !isDialog;
 
         //スクロール中は操作を受け付けない
@@ -123,25 +126,32 @@ public class CharacterSelectManager : MonoBehaviour
         //選択
         if (submit)
         {
-            anim.SetTrigger("Submit");
+            dialogAnim.SetTrigger("Submit");
             StartCoroutine(ResetTrigger("Submit"));
             SoundManager.instance.PlaySE(SoundManager.SE_Type.CS_Submit);
             StartCoroutine(AllowOperate());
         }
         else if (cancel)
         {
-            anim.SetTrigger("Cancel");
+            dialogAnim.SetTrigger("Cancel");
             StartCoroutine(ResetTrigger("Cancel"));
             StartCoroutine(AllowOperate());
         }
     }
 
+    /// <summary>
+    /// アニメーショントリガーをリセット
+    /// </summary>
+    /// <param name="s">リセットするトリガー名</param>
     private IEnumerator ResetTrigger(string s)
     {
         yield return null;
-        anim.ResetTrigger(s);
+        dialogAnim.ResetTrigger(s);
     }
 
+    /// <summary>
+    /// 一定時間操作が効かないように
+    /// </summary>
     private IEnumerator AllowOperate()
     {
         canOperate = false;
@@ -152,12 +162,15 @@ public class CharacterSelectManager : MonoBehaviour
         canOperate = true;
     }
 
+    /// <summary>
+    /// メインゲームをロード
+    /// </summary>
     public void LoadMainGame()
     {
         Debug.Log((int)currentCharacter);
-        canOperate = false;
-        SceneManager.sceneLoaded += GameSceneLoaded;
-        LoadManager.instance.LoadScene("50_MainGame");
+        canOperate = false; // 操作出来ないように
+        SceneManager.sceneLoaded += GameSceneLoaded; // シーンをロードする時に関数を実行
+        LoadManager.instance.LoadScene("50_MainGame"); // メインゲームをロード
     }
 
     private void GameSceneLoaded(Scene next, LoadSceneMode mode)
@@ -213,6 +226,10 @@ public class CharacterSelectManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 矢印を点滅させる
+    /// </summary>
+    /// <param name="b"></param>
     private IEnumerator ArrowFlash(bool b)
     {
         int index = Convert.ToInt32(b);
@@ -268,19 +285,13 @@ public class CharacterSelectManager : MonoBehaviour
     }
 
     /// <summary>
-    /// キャラクター説明をロード
-    /// </summary>
-    private void LoadCharacterInfo()
-    {
-
-    }
-
-    /// <summary>
     /// キャラクター情報を表示
     /// </summary>
     private void DisplayCharacterInfo()
     {
-        int current = (int)currentCharacter;
+        // 現在のキャラをセット
+        int current = (int)currentCharacter; 
+
         characterName.text = nameString[current];
         characterType.text = typeString[current];
         background.sprite = backgroundSprite[current];
@@ -289,8 +300,9 @@ public class CharacterSelectManager : MonoBehaviour
         inner.sprite = innerSprite[current];
         weaponIcon.sprite = weaponIconSprite[current];
 
-        //
+        // スコアを表示
         score.text = int.Parse(scoreDatas[current][(int)SCORE.VALUE]).ToString("0000000");
+        // ランクを表示
         int rank = 0;
         switch (scoreDatas[current][(int)SCORE.RANK])
         {

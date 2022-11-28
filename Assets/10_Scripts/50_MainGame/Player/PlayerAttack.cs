@@ -5,27 +5,29 @@ using UnityEngine;
 public class PlayerAttack : PlayerManager
 {
     //----------攻撃関連------------
-    private int damageNormal = 0;
+    private int damageNormal = 0; // 基礎攻撃ダメージ
     public int DamageNormal { set { damageNormal = value; } }
-    private int damageEvolution = 0;
+    private int damageEvolution = 0; // 変身後基礎攻撃ダメージ
     public int DamageEvolution { set { damageEvolution = value; } }
-    private int attackFreq = 0;
+    private int attackFreq = 0; // 攻撃回数
     public int AttackFreq { set { attackFreq = value; } }
-    private int damageCounterAttack = 0;
+    private int damageCounterAttack = 0; // カウンターダメージ
     public int DamageCounterAttack { set { damageCounterAttack = value; } }
-    private int counterAttackFreq = 0;
+    private int counterAttackFreq = 0; // カウンター攻撃回数
     public int CounterAttackFreq { set { counterAttackFreq = value; } }
-    private int damageSkill = 0;
+    private int damageSkill = 0; // 必殺技ダメージ
     public int DamageSkill { set { damageSkill = value; } }
-    private int skillFreq = 0;
+    private int skillFreq = 0; // 必殺技攻撃回数
     public int SkillFreq { set { skillFreq = value; } }
 
-    //倍率
+    //弱点倍率
     private const float WEAK_MULTIPLIER = 1.5f;
 
+    // 変身中か
     private bool isEvo = false;
     public bool IsEvo { set { isEvo = value; } }
 
+    //攻撃エフェクトを再生するかどうか
     [SerializeField] private bool isEffect = false;
 
     //------------------------------
@@ -45,6 +47,9 @@ public class PlayerAttack : PlayerManager
         StartCoroutine(playerController.BringBackPlayer()); // 攻撃が終わったら反対のタイルに移動
     }
 
+    /// <summary>
+    /// キャラに応じた効果音
+    /// </summary>
     private void AttackSE()
     {
         switch (playerController.Type)
@@ -65,9 +70,9 @@ public class PlayerAttack : PlayerManager
     }
 
     /// <summary>
-    /// 
+    /// 攻撃
     /// </summary>
-    /// <param name="s"></param>
+    /// <param name="s">攻撃の種類</param>
     public void AttackEnemy(string s)
     {
         switch (s)
@@ -78,11 +83,11 @@ public class PlayerAttack : PlayerManager
             case "Evolution":
                 AttackEnemy(damageEvolution / attackFreq, attackFreq);// 変身後
                 break;
-            case "Skill":
-                AttackEnemy(damageSkill / skillFreq, skillFreq);
+            case "Skill": 
+                AttackEnemy(damageSkill / skillFreq, skillFreq); // 必殺技
                 break;
             case "Counter":
-                AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq);
+                AttackEnemy(damageCounterAttack / counterAttackFreq, counterAttackFreq); // カウンター
                 break;
         }
     }
